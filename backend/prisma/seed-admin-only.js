@@ -18,7 +18,7 @@ async function main() {
 
   // 2. Create the Single Root Administrator Account
   console.log('[2/2] Creating Root Admin account...');
-  const hashedPassword = await bcrypt.hash('admin1234', 10);
+  const hashedPassword = await bcrypt.hash('@admin12', 10);
   
   const admin = await prisma.user.create({
     data: {
@@ -32,7 +32,7 @@ async function main() {
   console.log('\n✅ Database successfully initialized with ONLY Admin account!');
   console.log('------------------------------------------------------');
   console.log('  Username : admin@bru.ac.th');
-  console.log('  Password : admin1234');
+  console.log('  Password : @admin12');
   console.log('  Role     : ADMIN');
   console.log('------------------------------------------------------');
   console.log('Database on TiDB Cloud is 100% clean and ready for real usage.');
