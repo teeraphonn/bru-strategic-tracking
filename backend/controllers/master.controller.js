@@ -501,18 +501,35 @@ const getUsers = async (req, res) => {
 const createUser = async (req, res) => {
   try {
     const { username, password, name, role, departmentId } = req.body;
-    if (!password) {
-      return res.status(400).json({ message: 'Password is required for new users' });
+    
+    if (!username || !username.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกชื่อผู้ใช้งาน (Username)' });
+    }
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกชื่อ-นามสกุล' });
+    }
+    if (!password || !password.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกรหัสผ่านสำหรับผู้ใช้ใหม่' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const cleanUsername = username.trim();
+    const existingUser = await prisma.user.findUnique({
+      where: { username: cleanUsername }
+    });
+    if (existingUser) {
+      return res.status(400).json({ message: `ชื่อผู้ใช้งาน "${cleanUsername}" มีอยู่ในระบบแล้ว` });
+    }
+
+    const hashedPassword = await bcrypt.hash(password.trim(), 10);
+    const parsedDeptId = (departmentId && !isNaN(parseInt(departmentId))) ? parseInt(departmentId) : null;
+
     const item = await prisma.user.create({
       data: {
-        username,
+        username: cleanUsername,
         password: hashedPassword,
-        name,
-        role,
-        departmentId: departmentId ? parseInt(departmentId) : null
+        name: name.trim(),
+        role: role || 'TEACHER',
+        departmentId: parsedDeptId
       },
       include: { department: true }
     });
@@ -520,7 +537,7 @@ const createUser = async (req, res) => {
     const { password: _, ...sanitized } = item;
     res.status(201).json(sanitized);
   } catch (error) {
-    handleError(res, error, 'Failed to create user');
+    handleError(res, error, 'ไม่สามารถสร้างบัญชีผู้ใช้งานได้');
   }
 };
 
@@ -529,15 +546,17 @@ const updateUser = async (req, res) => {
     const { id } = req.params;
     const { username, password, name, role, departmentId } = req.body;
 
+    const parsedDeptId = (departmentId && !isNaN(parseInt(departmentId))) ? parseInt(departmentId) : null;
+
     const data = {
-      username,
-      name,
-      role,
-      departmentId: departmentId ? parseInt(departmentId) : null
+      username: username ? username.trim() : undefined,
+      name: name ? name.trim() : undefined,
+      role: role || undefined,
+      departmentId: parsedDeptId
     };
 
     if (password && password.trim() !== '') {
-      data.password = await bcrypt.hash(password, 10);
+      data.password = await bcrypt.hash(password.trim(), 10);
     }
 
     const item = await prisma.user.update({
@@ -549,7 +568,7 @@ const updateUser = async (req, res) => {
     const { password: _, ...sanitized } = item;
     res.json(sanitized);
   } catch (error) {
-    handleError(res, error, 'Failed to update user');
+    handleError(res, error, 'ไม่สามารถอัปเดตข้อมูลผู้ใช้งานได้');
   }
 };
 

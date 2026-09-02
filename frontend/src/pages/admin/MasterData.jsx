@@ -211,11 +211,19 @@ const MasterData = () => {
 
       const payload = { ...formData };
 
-      if (payload.facultyId) payload.facultyId = parseInt(payload.facultyId);
-      if (payload.strategyId) payload.strategyId = parseInt(payload.strategyId);
-      if (payload.subStrategyId) payload.subStrategyId = parseInt(payload.subStrategyId);
-      if (payload.departmentId) payload.departmentId = parseInt(payload.departmentId);
-      if (payload.year) payload.year = parseInt(payload.year);
+      if (payload.facultyId && !isNaN(parseInt(payload.facultyId))) payload.facultyId = parseInt(payload.facultyId);
+      else delete payload.facultyId;
+
+      if (payload.strategyId && !isNaN(parseInt(payload.strategyId))) payload.strategyId = parseInt(payload.strategyId);
+      else delete payload.strategyId;
+
+      if (payload.subStrategyId && !isNaN(parseInt(payload.subStrategyId))) payload.subStrategyId = parseInt(payload.subStrategyId);
+      else delete payload.subStrategyId;
+
+      if (payload.departmentId && !isNaN(parseInt(payload.departmentId))) payload.departmentId = parseInt(payload.departmentId);
+      else payload.departmentId = null;
+
+      if (payload.year && !isNaN(parseInt(payload.year))) payload.year = parseInt(payload.year);
 
       if (editId) {
         await api.put(`${endpoint}/${editId}`, payload);

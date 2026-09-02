@@ -87,7 +87,6 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
         fixed top-0 bottom-0 left-0 z-50 flex flex-col no-print print:hidden
         transition-all duration-300 ease-in-out lg:static shadow-2xl lg:shadow-none
         ${isCollapsed ? 'w-20' : 'w-60'}
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}
         style={{ background: 'linear-gradient(180deg, #2F1481 0%, #1E0A4A 100%)' }}
       >
