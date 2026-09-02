@@ -1,17 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiChevronDown, FiCheck } from 'react-icons/fi';
+import { FiChevronDown, FiCheck, FiSearch, FiX } from 'react-icons/fi';
 
 /**
- * CustomSelect — Premium dropdown replacement for native <select>
- * Props:
- *   value       — current value (string|number)
- *   onChange    — (value) => void
- *   options     — [{ value, label, icon? }]
- *   placeholder — string shown when no option selected
- *   dark        — bool: use dark/glass theme (for dark backgrounds)
- *   icon        — ReactNode: icon shown on the left of trigger button
- *   className   — wrapper div className
- *   disabled    — bool
+ * CustomSelect — High-performance searchable dropdown for large data sets
+ * Features:
+ *   - Auto-search filter when list has > 6 items
+ *   - Large comfortable scroll view (max-h-80 / 320px)
+ *   - Auto-scroll to selected option on open
+ *   - Dark & Light theme glassmorphism support
  */
 const CustomSelect = ({
   value,
@@ -24,11 +20,19 @@ const CustomSelect = ({
   disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const containerRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const selectedItemRef = useRef(null);
 
   const selectedOption = options.find(opt => String(opt.value) === String(value));
   const displayLabel = selectedOption ? selectedOption.label : placeholder;
   const hasValue = !!selectedOption;
+
+  // Filtered options based on search query
+  const filteredOptions = options.filter(opt =>
+    (opt.label || '').toLowerCase().includes(searchQuery.toLowerCase().trim())
+  );
 
   // Close on outside click
   useEffect(() => {
@@ -43,10 +47,27 @@ const CustomSelect = ({
 
   // Close on Escape
   useEffect(() => {
-    const handleEsc = (e) => { if (e.key === 'Escape') setIsOpen(false); };
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
     if (isOpen) document.addEventListener('keydown', handleEsc);
     return () => document.removeEventListener('keydown', handleEsc);
   }, [isOpen]);
+
+  // Auto-focus search input & auto-scroll to selected item when opened
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery('');
+      if (options.length > 6) {
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+      if (selectedItemRef.current) {
+        setTimeout(() => {
+          selectedItemRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }, 60);
+      }
+    }
+  }, [isOpen, options.length]);
 
   const handleSelect = (val) => {
     onChange(val);
@@ -57,35 +78,36 @@ const CustomSelect = ({
   const triggerBase = `
     w-full flex items-center justify-between gap-2
     px-3.5 py-2.5 rounded-xl text-xs font-semibold
-    transition-all duration-200 focus:outline-none
+    transition-all duration-200 focus:outline-none select-none
     ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
   `;
 
   const triggerLight = `
-    bg-white border border-slate-200 hover:border-primary/50
-    text-slate-700 shadow-sm
+    bg-white border border-slate-200 hover:border-primary/60
+    text-slate-700 shadow-xs
     focus:ring-2 focus:ring-primary/20 focus:border-primary
-    ${isOpen ? 'border-primary ring-2 ring-primary/20' : ''}
+    ${isOpen ? 'border-primary ring-2 ring-primary/20 shadow-md' : ''}
   `;
 
   const triggerDark = `
     bg-white/10 hover:bg-white/15 backdrop-blur-md
     border border-white/15 text-white
-    ${isOpen ? 'border-white/30 bg-white/15' : ''}
+    ${isOpen ? 'border-white/30 bg-white/20 ring-2 ring-white/20' : ''}
   `;
 
   // ── Dropdown panel styles ───────────────────────────────────
   const panelLight = `
-    bg-white border border-slate-100 shadow-xl
-    divide-y divide-slate-50/80
+    bg-white border border-slate-200/90 shadow-2xl
+    divide-y divide-slate-100/80
   `;
   const panelDark = `
-    bg-slate-900/95 backdrop-blur-md border border-white/15 shadow-xl
+    bg-slate-900/98 backdrop-blur-xl border border-slate-700/80 shadow-2xl
+    divide-y divide-slate-800/80
   `;
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      {/* ── Trigger ── */}
+      {/* ── Trigger Button ── */}
       <button
         type="button"
         disabled={disabled}
@@ -93,13 +115,11 @@ const CustomSelect = ({
         className={`${triggerBase} ${dark ? triggerDark : triggerLight}`}
       >
         <span className="flex items-center gap-2 min-w-0 flex-1">
-          {/* Left icon (optional) */}
           {icon && (
             <span className={`shrink-0 ${dark ? 'text-white/60' : 'text-slate-400'}`}>
               {icon}
             </span>
           )}
-          {/* Selected option's icon (optional) */}
           {selectedOption?.icon && !icon && (
             <span className={`shrink-0 ${dark ? 'text-white/60' : 'text-slate-400'}`}>
               {selectedOption.icon}
@@ -111,68 +131,106 @@ const CustomSelect = ({
         </span>
         <FiChevronDown
           className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
+            isOpen ? 'rotate-180 text-primary' : ''
           } ${dark ? 'text-white/50' : 'text-slate-400'}`}
         />
       </button>
 
-      {/* ── Dropdown Panel ── */}
+      {/* ── Dropdown Panel (Large comfortable view) ── */}
       {isOpen && (
         <>
-          {/* Invisible backdrop */}
+          {/* Invisible clickaway backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
           <div
             className={`
-              absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[160px]
+              absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[220px]
               rounded-2xl overflow-hidden
-              animate-fadeIn origin-top
+              animate-fadeIn origin-top border
               ${dark ? panelDark : panelLight}
             `}
-            style={{ maxHeight: '240px', overflowY: 'auto' }}
           >
-            {options.length === 0 ? (
-              <div className={`px-4 py-3 text-xs ${dark ? 'text-white/40' : 'text-slate-400'}`}>
-                ไม่มีตัวเลือก
-              </div>
-            ) : (
-              options.map((opt) => {
-                const isSelected = String(opt.value) === String(value);
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleSelect(opt.value)}
+            {/* Quick Search bar when list has > 6 items */}
+            {options.length > 6 && (
+              <div className={`p-2 border-b ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-100 bg-slate-50/80'}`}>
+                <div className="relative flex items-center">
+                  <FiSearch className={`w-3.5 h-3.5 absolute left-3 ${dark ? 'text-slate-400' : 'text-slate-400'}`} />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={`ค้นหาใน ${options.length} รายการ...`}
                     className={`
-                      w-full px-4 py-2.5 text-left text-xs font-semibold
-                      flex items-center justify-between gap-3
-                      transition-colors duration-150 cursor-pointer
-                      ${isSelected
-                        ? dark
-                          ? 'bg-white/15 text-white font-bold'
-                          : 'bg-primary/8 text-primary font-bold'
-                        : dark
-                          ? 'text-white/70 hover:bg-white/8 hover:text-white'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
+                      w-full pl-8 pr-7 py-1.5 rounded-lg text-xs font-medium focus:outline-none
+                      ${dark 
+                        ? 'bg-slate-800 text-white placeholder:text-slate-400 border border-slate-700 focus:border-purple-400' 
+                        : 'bg-white text-slate-800 placeholder:text-slate-400 border border-slate-200 focus:border-primary'}
                     `}
-                  >
-                    <span className="flex items-center gap-2.5 min-w-0">
-                      {opt.icon && (
-                        <span className={`shrink-0 ${isSelected
-                          ? dark ? 'text-white' : 'text-primary'
-                          : dark ? 'text-white/40' : 'text-slate-400'}`}>
-                          {opt.icon}
-                        </span>
-                      )}
-                      <span className="leading-relaxed">{opt.label}</span>
-                    </span>
-                    {isSelected && (
-                      <FiCheck className={`w-3.5 h-3.5 shrink-0 ${dark ? 'text-white' : 'text-primary'}`} />
-                    )}
-                  </button>
-                );
-              })
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5"
+                    >
+                      <FiX className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
+
+            {/* Scrollable Items Container (Comfortable 340px Max Height) */}
+            <div 
+              className="overflow-y-auto"
+              style={{ maxHeight: '340px', scrollbarWidth: 'thin' }}
+            >
+              {filteredOptions.length === 0 ? (
+                <div className={`px-4 py-6 text-center text-xs ${dark ? 'text-slate-400' : 'text-slate-400'}`}>
+                  ไม่พบรายการที่ค้นหา "{searchQuery}"
+                </div>
+              ) : (
+                filteredOptions.map((opt) => {
+                  const isSelected = String(opt.value) === String(value);
+                  return (
+                    <button
+                      key={opt.value}
+                      ref={isSelected ? selectedItemRef : null}
+                      type="button"
+                      onClick={() => handleSelect(opt.value)}
+                      className={`
+                        w-full px-4 py-3 text-left text-xs font-semibold
+                        flex items-center justify-between gap-3
+                        transition-colors duration-150 cursor-pointer border-b last:border-b-0
+                        ${dark ? 'border-slate-800/40' : 'border-slate-50'}
+                        ${isSelected
+                          ? dark
+                            ? 'bg-purple-600/30 text-white font-bold'
+                            : 'bg-primary/10 text-primary font-bold'
+                          : dark
+                            ? 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+                            : 'text-slate-700 hover:bg-slate-50/90 hover:text-slate-900'}
+                      `}
+                    >
+                      <span className="flex items-center gap-2.5 min-w-0 flex-1">
+                        {opt.icon && (
+                          <span className={`shrink-0 ${isSelected
+                            ? dark ? 'text-white' : 'text-primary'
+                            : dark ? 'text-white/40' : 'text-slate-400'}`}>
+                            {opt.icon}
+                          </span>
+                        )}
+                        <span className="leading-snug break-words">{opt.label}</span>
+                      </span>
+                      {isSelected && (
+                        <FiCheck className={`w-4 h-4 shrink-0 ${dark ? 'text-purple-300' : 'text-primary'}`} />
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
           </div>
         </>
       )}
