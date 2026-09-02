@@ -1,6 +1,37 @@
+const path = require('path');
+const fs = require('fs');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 const prisma = require('../config/prisma');
+
+const registerThaiFonts = (doc) => {
+  const localRegular = path.join(__dirname, '../fonts/Thai-Regular.ttf');
+  const localBold = path.join(__dirname, '../fonts/Thai-Bold.ttf');
+  const winRegular = 'C:\\Windows\\Fonts\\tahoma.ttf';
+  const winBold = 'C:\\Windows\\Fonts\\tahomabd.ttf';
+
+  if (fs.existsSync(localRegular)) {
+    doc.registerFont('ThaiRegular', localRegular);
+  } else if (fs.existsSync(winRegular)) {
+    doc.registerFont('ThaiRegular', winRegular);
+  } else {
+    doc.registerFont('ThaiRegular', 'Helvetica');
+  }
+
+  if (fs.existsSync(localBold)) {
+    doc.registerFont('ThaiBold', localBold);
+  } else if (fs.existsSync(winBold)) {
+    doc.registerFont('ThaiBold', winBold);
+  } else {
+    doc.registerFont('ThaiBold', 'Helvetica-Bold');
+  }
+
+  try {
+    doc.font('ThaiRegular');
+  } catch (e) {
+    doc.font('Helvetica');
+  }
+};
 
 const getProjectWarningState = (budget, spent, target, completed, progress, endDate) => {
   const budgetRatio = budget > 0 ? (spent / budget) * 100 : 0;
@@ -439,11 +470,7 @@ const exportPDF = async (req, res) => {
     doc.pipe(res);
 
     // Register Fonts
-    const fontRegular = 'C:\\Windows\\Fonts\\tahoma.ttf';
-    const fontBold = 'C:\\Windows\\Fonts\\tahomabd.ttf';
-    doc.registerFont('ThaiRegular', fontRegular);
-    doc.registerFont('ThaiBold', fontBold);
-    doc.font('ThaiRegular');
+    registerThaiFonts(doc);
 
     const pageWidth = 595.28;
     const pageHeight = 841.89;
@@ -648,9 +675,7 @@ const exportMasterDataPDF = async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="master-data-${activeTab}-${Date.now()}.pdf"`);
     doc.pipe(res);
 
-    doc.registerFont('ThaiRegular', 'C:\\Windows\\Fonts\\tahoma.ttf');
-    doc.registerFont('ThaiBold', 'C:\\Windows\\Fonts\\tahomabd.ttf');
-    doc.font('ThaiRegular');
+    registerThaiFonts(doc);
 
     const pageWidth = 595.28;
     const pageHeight = 841.89;
