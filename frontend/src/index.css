@@ -1,0 +1,199 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Prompt', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  background-color: #F8FAFC;
+  color: #1E293B;
+  overflow-x: hidden;
+}
+
+/* ── Modern Select styling for all native <select> elements ── */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236C3BFF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1rem 1rem;
+  padding-right: 2.5rem !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+select:hover {
+  border-color: #6C3BFF;
+  box-shadow: 0 2px 8px -2px rgba(108, 59, 255, 0.15);
+}
+
+select:focus {
+  outline: none;
+  border-color: #6C3BFF;
+  box-shadow: 0 0 0 3px rgba(108, 59, 255, 0.18);
+}
+
+/* ── Custom Scrollbars ── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6C3BFF;
+}
+
+/* ── Soft Slate Canvas background for main content area ── */
+.bg-content-canvas {
+  background-color: #F8FAFC;
+}
+
+/* ── Page entrance animation ── */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Fade-in (for modals, dropdowns) ── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Smooth transitions ── */
+.transition-all-300 {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── 🖨️ Comprehensive Global Print Stylesheet (Fixes multi-page clipping, fits pages perfectly & prevents orphan rows) ── */
+.official-print-document {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 5mm 7mm 7mm 7mm;
+  }
+  
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+  }
+
+  html, body, #root, .flex, .h-screen, .overflow-hidden, .overflow-y-auto, .overflow-x-hidden, .overflow-x-auto, main, .bg-content-canvas {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    position: static !important;
+    display: block !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  header, nav, aside, .no-print, #topbar, button, input, .modal-backdrop, .screen-only {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  .official-print-document {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  .shadow-xl, .shadow-soft, .shadow-2xl, .shadow-md, .shadow-2xs, .shadow-3xs, .shadow-sm {
+    box-shadow: none !important;
+  }
+
+  /* Prevent elements, rows, and cards from splitting awkwardly across pages */
+  p, h1, h2, h3, h4, h5, h6, tr, td, th {
+    orphans: 3 !important;
+    widows: 3 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    text-wrap: pretty !important;
+  }
+
+  h1, h2, h3, h4, h5, h6, .print-header, .section-title {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .print-section, .avoid-break, .print-card, tr, .print-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+    margin-bottom: 6px !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    height: auto !important;
+  }
+
+  th, td {
+    padding: 3.5px 6px !important;
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+  }
+}
