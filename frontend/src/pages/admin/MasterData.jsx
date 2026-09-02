@@ -634,66 +634,75 @@ const MasterData = () => {
           </div>
         )
       ) : (
-        <div className="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden w-full">
-          <div className="w-full overflow-hidden">
-            <table className="w-full table-fixed text-sm text-left border-collapse">
+        <div className="bg-white rounded-3xl shadow-soft border border-gray-100 overflow-hidden w-full">
+          {/* Mobile swipe hint banner */}
+          <div className="sm:hidden px-4 py-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100/70 text-[11px] font-bold text-primary flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <span>👉</span>
+              <span>เลื่อนตารางไปทางขวาเพื่อดูข้อมูลทั้งหมด</span>
+            </span>
+            <span className="text-[10px] text-purple-400 font-medium">(แนวนอน)</span>
+          </div>
+
+          <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <table className="w-full text-sm text-left border-collapse min-w-[760px] md:min-w-[880px]">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-gray-100 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+                <tr className="bg-slate-50/90 border-b border-gray-100 text-[11px] font-black text-slate-500 uppercase tracking-wider whitespace-nowrap">
                   {activeTab === 'department' && (
                     <>
-                      <th className="w-[12%] px-3.5 py-3.5">รหัสคณะ</th>
-                      <th className="w-[28%] px-3.5 py-3.5">สังกัดคณะ</th>
-                      <th className="w-[14%] px-3.5 py-3.5">รหัสภาควิชา</th>
-                      <th className="w-[36%] px-3.5 py-3.5">ภาควิชา/หน่วยงาน</th>
-                      <th className="w-[10%] px-3 py-3.5 text-center">จัดการ</th>
+                      <th className="w-24 px-4 py-3.5">รหัสคณะ</th>
+                      <th className="min-w-[190px] px-4 py-3.5">สังกัดคณะ</th>
+                      <th className="w-28 px-4 py-3.5">รหัสภาควิชา</th>
+                      <th className="min-w-[240px] px-4 py-3.5">ภาควิชา/หน่วยงาน</th>
+                      <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                   {activeTab === 'user' && (
                     <>
-                      <th className="w-[9%] px-3 py-3.5">รหัสบุคลากร</th>
-                      <th className="w-[11%] px-3 py-3.5">บัญชีผู้ใช้</th>
-                      <th className="w-[18%] px-3 py-3.5">ชื่อ-นามสกุล</th>
-                      <th className="w-[11%] px-3 py-3.5">สิทธิ์การใช้งาน</th>
-                      <th className="w-[18%] px-3 py-3.5">สังกัดคณะ</th>
-                      <th className="w-[21%] px-3 py-3.5">ภาควิชา/หน่วยงาน</th>
-                      <th className="w-[12%] px-3 py-3.5 text-center">จัดการ</th>
+                      <th className="w-24 px-4 py-3.5">รหัสบุคลากร</th>
+                      <th className="w-36 px-4 py-3.5">บัญชีผู้ใช้</th>
+                      <th className="min-w-[190px] px-4 py-3.5">ชื่อ-นามสกุล</th>
+                      <th className="w-32 px-4 py-3.5">สิทธิ์การใช้งาน</th>
+                      <th className="min-w-[170px] px-4 py-3.5">สังกัดคณะ</th>
+                      <th className="min-w-[190px] px-4 py-3.5">ภาควิชา/หน่วยงาน</th>
+                      <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                   {activeTab === 'strategy' && (
                     <>
-                      <th className="w-[15%] px-4 py-3.5">รหัส</th>
-                      <th className="w-[75%] px-4 py-3.5">ประเด็นยุทธศาสตร์หลัก</th>
-                      <th className="w-[10%] px-3 py-3.5 text-center">จัดการ</th>
+                      <th className="w-24 px-4 py-3.5">รหัส</th>
+                      <th className="min-w-[340px] px-4 py-3.5">ประเด็นยุทธศาสตร์หลัก</th>
+                      <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                   {activeTab === 'sub-strategy' && (
                     <>
-                      <th className="w-[15%] px-4 py-3.5">รหัส</th>
-                      <th className="w-[45%] px-4 py-3.5">ยุทธศาสตร์ย่อย</th>
-                      <th className="w-[30%] px-4 py-3.5">ยุทธศาสตร์หลัก</th>
-                      <th className="w-[10%] px-3 py-3.5 text-center">จัดการ</th>
+                      <th className="w-24 px-4 py-3.5">รหัส</th>
+                      <th className="min-w-[280px] px-4 py-3.5">ยุทธศาสตร์ย่อย</th>
+                      <th className="min-w-[260px] px-4 py-3.5">ยุทธศาสตร์หลัก</th>
+                      <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                   {activeTab === 'indicator' && (
                     <>
-                      <th className="w-[15%] px-4 py-3.5">รหัส</th>
-                      <th className="w-[45%] px-4 py-3.5">ตัวชี้วัดความสำเร็จ</th>
-                      <th className="w-[30%] px-4 py-3.5">ยุทธศาสตร์ย่อย</th>
-                      <th className="w-[10%] px-3 py-3.5 text-center">จัดการ</th>
+                      <th className="w-24 px-4 py-3.5">รหัส</th>
+                      <th className="min-w-[280px] px-4 py-3.5">ตัวชี้วัดความสำเร็จ</th>
+                      <th className="min-w-[260px] px-4 py-3.5">ยุทธศาสตร์ย่อย</th>
+                      <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                   {activeTab === 'fiscal-year' && (
                     <>
-                      <th className="w-[45%] px-4 py-3.5">ปีงบประมาณ</th>
-                      <th className="w-[45%] px-4 py-3.5">การใช้งานหลัก</th>
-                      <th className="w-[10%] px-3 py-3.5 text-center">จัดการ</th>
+                      <th className="w-36 px-4 py-3.5">ปีงบประมาณ</th>
+                      <th className="min-w-[220px] px-4 py-3.5">การใช้งานหลัก</th>
+                      <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                   {activeTab === 'budget-source' && (
                     <>
-                      <th className="w-[15%] px-4 py-3.5">ID</th>
-                      <th className="w-[75%] px-4 py-3.5">แหล่งที่มางบประมาณ</th>
-                      <th className="w-[10%] px-3 py-3.5 text-center">จัดการ</th>
+                      <th className="w-20 px-4 py-3.5">ID</th>
+                      <th className="min-w-[340px] px-4 py-3.5">แหล่งที่มางบประมาณ</th>
+                      <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                 </tr>
