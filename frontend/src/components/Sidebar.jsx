@@ -16,7 +16,8 @@ import {
   FiActivity,
   FiAlertTriangle,
   FiBriefcase,
-  FiChevronDown
+  FiChevronDown,
+  FiX
 } from 'react-icons/fi';
 
 // Role label helper
@@ -79,35 +80,49 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
     <>
       {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden no-print print:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden no-print print:hidden transition-opacity cursor-pointer"
+          onClick={toggleSidebar}
         />
       )}
 
       <aside className={`
         fixed top-0 bottom-0 left-0 z-50 flex flex-col no-print print:hidden
-        transition-all duration-300 ease-in-out lg:static shadow-2xl lg:shadow-none
+        transition-transform duration-300 ease-in-out lg:static shadow-2xl lg:shadow-none
         ${isCollapsed ? 'w-20' : 'w-60'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}
         style={{ background: 'linear-gradient(180deg, #2F1481 0%, #1E0A4A 100%)' }}
       >
         {/* ── Branding Header ── */}
-        <div className={`flex items-center border-b border-white/10 shrink-0 ${isCollapsed ? 'justify-center py-4 px-2' : 'gap-3 px-4 py-4'}`}>
-          <img
-            src="/logob.png"
-            alt="BRU Logo"
-            className={`object-contain shrink-0 drop-shadow-md ${isCollapsed ? 'w-9 h-9' : 'w-10 h-10'}`}
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-          {!isCollapsed && (
-            <div>
-              <div className="text-sm font-black tracking-wider text-white leading-tight">
-                BRU STRATEGIC
+        <div className={`flex items-center justify-between border-b border-white/10 shrink-0 ${isCollapsed ? 'justify-center py-4 px-2' : 'px-4 py-4'}`}>
+          <div className="flex items-center gap-3">
+            <img
+              src="/logob.png"
+              alt="BRU Logo"
+              className={`object-contain shrink-0 drop-shadow-md ${isCollapsed ? 'w-9 h-9' : 'w-10 h-10'}`}
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            {!isCollapsed && (
+              <div>
+                <div className="text-sm font-black tracking-wider text-white leading-tight">
+                  BRU STRATEGIC
+                </div>
+                <div className="text-[9px] font-bold text-purple-300/80 tracking-wider uppercase mt-0.5">
+                  Performance Tracking
+                </div>
               </div>
-              <div className="text-[9px] font-bold text-purple-300/80 tracking-wider uppercase mt-0.5">
-                Performance Tracking
-              </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Close button for mobile drawer */}
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-xl text-purple-200 hover:text-white hover:bg-white/10 lg:hidden transition-colors cursor-pointer"
+            title="ปิดเมนู"
+          >
+            <FiX className="w-5 h-5" />
+          </button>
         </div>
 
         {/* ── User Profile Card (Clean & Full Name) ── */}
