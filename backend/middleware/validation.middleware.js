@@ -12,33 +12,33 @@ const validate = (validations) => {
       return next();
     }
 
-    res.status(400).json({ errors: errors.array() });
+    const firstMsg = errors.array()[0]?.msg || 'ข้อมูลที่กรอกไม่ถูกต้องตามเงื่อนไข';
+    res.status(400).json({ 
+      message: firstMsg, 
+      errors: errors.array() 
+    });
   };
 };
 
 // Define shared validation rules
 const loginSchema = [
-  body('username').trim().notEmpty().withMessage('Username is required'),
-  body('password').notEmpty().withMessage('Password is required')
+  body('username').trim().notEmpty().withMessage('กรุณากรอกชื่อผู้ใช้งาน (Username)'),
+  body('password').notEmpty().withMessage('กรุณากรอกรหัสผ่าน (Password)')
 ];
 
 const changePasswordSchema = [
-  body('oldPassword').notEmpty().withMessage('Old password is required'),
+  body('oldPassword').notEmpty().withMessage('กรุณากรอกรหัสผ่านเดิม'),
   body('newPassword')
-    .isLength({ min: 8 }).withMessage('รหัสผ่านใหม่ต้องยาวอย่างน้อย 8 ตัวอักษร (New password must be at least 8 characters long)')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
-    .withMessage('รหัสผ่านต้องประกอบด้วยพิมพ์เล็ก พิมพ์ใหญ่ ตัวเลข และสัญลักษณ์พิเศษอย่างละอย่างน้อย 1 ตัว (Password must include uppercase, lowercase, numbers, and symbols)')
+    .isLength({ min: 6 }).withMessage('รหัสผ่านใหม่ต้องยาวอย่างน้อย 6 ตัวอักษร')
 ];
 
 const userSchema = [
-  body('username').trim().notEmpty().withMessage('Username is required'),
-  body('name').trim().notEmpty().withMessage('Full name is required'),
-  body('role').isIn(['ADMIN', 'TEACHER', 'DEAN', 'PRESIDENT']).withMessage('Invalid role'),
+  body('username').trim().notEmpty().withMessage('กรุณากรอกชื่อเข้าใช้ระบบ (Username)'),
+  body('name').trim().notEmpty().withMessage('กรุณากรอกชื่อ-นามสกุลจริง'),
+  body('role').isIn(['ADMIN', 'TEACHER', 'DEAN', 'PRESIDENT']).withMessage('บทบาทระบบไม่ถูกต้อง'),
   body('departmentId').optional({ nullable: true }),
   body('password').optional({ checkFalsy: true })
-    .isLength({ min: 8 }).withMessage('รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร (Password must be at least 8 characters long)')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
-    .withMessage('รหัสผ่านต้องประกอบด้วยพิมพ์เล็ก พิมพ์ใหญ่ ตัวเลข และสัญลักษณ์พิเศษอย่างละอย่างน้อย 1 ตัว (Password must include uppercase, lowercase, numbers, and symbols)')
+    .isLength({ min: 6 }).withMessage('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร')
 ];
 
 const facultySchema = [

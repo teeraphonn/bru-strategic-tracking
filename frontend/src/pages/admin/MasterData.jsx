@@ -237,7 +237,8 @@ const MasterData = () => {
       fetchRelations();
     } catch (err) {
       console.error(err);
-      Swal.fire({ icon: 'error', title: 'การบันทึกข้อมูลล้มเหลว', text: err.response?.data?.message || 'โปรดตรวจสอบความถูกต้องของข้อมูล' });
+      const errorMsg = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'โปรดตรวจสอบความถูกต้องของข้อมูล';
+      Swal.fire({ icon: 'error', title: 'การบันทึกข้อมูลล้มเหลว', text: errorMsg });
     }
   };
 
