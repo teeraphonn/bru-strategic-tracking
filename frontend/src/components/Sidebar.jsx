@@ -86,7 +86,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
       <aside className={`
         fixed top-0 bottom-0 left-0 z-50 flex flex-col no-print print:hidden
         transition-all duration-300 ease-in-out lg:static shadow-2xl lg:shadow-none
-        ${isCollapsed ? 'w-20' : 'w-56'}
+        ${isCollapsed ? 'w-20' : 'w-60'}
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}
         style={{ background: 'linear-gradient(180deg, #2F1481 0%, #1E0A4A 100%)' }}
@@ -111,7 +111,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
           )}
         </div>
 
-        {/* ── User Profile Card (Minimal Clean) ── */}
+        {/* ── User Profile Card (Clean & Full Name) ── */}
         <div className={`mx-3 my-2.5 rounded-xl border border-white/10 bg-white/5 shrink-0 ${isCollapsed ? 'p-2 flex justify-center' : 'p-2.5 px-3'}`}>
           <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2.5'}`}>
             {/* Avatar */}
@@ -130,11 +130,13 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
               <div className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-400/90 rounded-full border border-[#2F1481]" />
             </div>
 
-            {/* User info - Clean typography without bright badges */}
+            {/* User info - Full clean name display */}
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-white truncate">{user?.name}</div>
-                <div className="text-[11px] text-purple-200/70 truncate">
+                <div className="text-xs font-bold text-white leading-snug break-words" title={user?.name}>
+                  {user?.name}
+                </div>
+                <div className="text-[11px] text-purple-200/70 mt-0.5">
                   {getRoleLabel(user?.role)}
                 </div>
               </div>
