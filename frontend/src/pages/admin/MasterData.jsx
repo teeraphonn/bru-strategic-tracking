@@ -18,7 +18,8 @@ import {
   FiBookmark,
   FiKey,
   FiDownload,
-  FiRefreshCw
+  FiRefreshCw,
+  FiX
 } from 'react-icons/fi';
 
 const MasterData = () => {
