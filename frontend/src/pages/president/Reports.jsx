@@ -289,7 +289,7 @@ const PresidentReports = () => {
                     <>
                       <th className="px-6 py-3.5 text-center w-16">ID</th>
                       <th className="px-6 py-3.5">ภาควิชา/หน่วยงาน</th>
-                      <th className="px-6 py-3.5 text-slate-500">คณะต้นสังกัด</th>
+                      <th className="px-6 py-3.5">คณะต้นสังกัด</th>
                       <th className="px-6 py-3.5 text-center">จำนวนโครงการ</th>
                       <th className="px-6 py-3.5 text-right">งบแผนงานสะสม</th>
                       <th className="px-6 py-3.5 text-right">ใช้จ่ายจริง</th>

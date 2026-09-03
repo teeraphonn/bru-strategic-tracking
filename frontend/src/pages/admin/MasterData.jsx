@@ -842,40 +842,40 @@ const MasterData = () => {
 
                       {activeTab === 'local-issue' && (
                         <>
-                          <td className="px-4 py-3 font-semibold text-gray-700 truncate">{item.code}</td>
-                          <td className="px-4 py-3 text-gray-700 font-semibold truncate">{item.name}</td>
+                          <td className="px-4 py-3 font-mono font-bold text-violet-700 whitespace-nowrap align-top">{item.code}</td>
+                          <td className="px-4 py-3 text-slate-800 font-bold break-words leading-relaxed align-top">{item.name}</td>
                         </>
                       )}
 
                       {activeTab === 'strategy' && (
                         <>
-                          <td className="px-4 py-3 font-semibold text-gray-700 truncate">{item.code}</td>
-                          <td className="px-4 py-3 text-gray-700 font-semibold truncate">{item.name}</td>
-                          <td className="px-4 py-3 text-gray-500 font-medium truncate">{item.localIssue?.name || '—'}</td>
+                          <td className="px-4 py-3 font-mono font-bold text-purple-700 whitespace-nowrap align-top">{item.code}</td>
+                          <td className="px-4 py-3 text-slate-800 font-bold break-words leading-relaxed align-top">{item.name}</td>
+                          <td className="px-4 py-3 text-slate-600 font-medium break-words leading-relaxed align-top">{item.localIssue?.name || '—'}</td>
                         </>
                       )}
 
                       {activeTab === 'sub-strategy' && (
                         <>
-                          <td className="px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">{item.code}</td>
-                          <td className="px-4 py-3 text-gray-700 font-semibold max-w-xs md:max-w-md break-words" title={item.name}>{item.name}</td>
-                          <td className="px-4 py-3 text-gray-500 font-medium max-w-xs break-words" title={item.strategy?.name}>{item.strategy?.name || '—'}</td>
+                          <td className="px-4 py-3 font-mono font-bold text-blue-700 whitespace-nowrap align-top">{item.code}</td>
+                          <td className="px-4 py-3 text-slate-800 font-bold break-words leading-relaxed align-top" title={item.name}>{item.name}</td>
+                          <td className="px-4 py-3 text-slate-600 font-medium break-words leading-relaxed align-top" title={item.strategy?.name}>{item.strategy?.name || '—'}</td>
                         </>
                       )}
 
                       {activeTab === 'indicator' && (
                         <>
-                          <td className="px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">{item.code}</td>
-                          <td className="px-4 py-3 text-gray-700 font-semibold max-w-xs md:max-w-md break-words" title={item.name}>{item.name}</td>
-                          <td className="px-4 py-3 text-gray-500 font-medium max-w-xs break-words" title={item.subStrategy?.name}>{item.subStrategy?.name || '—'}</td>
+                          <td className="px-4 py-3 font-mono font-bold text-emerald-700 whitespace-nowrap align-top">{item.code}</td>
+                          <td className="px-4 py-3 text-slate-800 font-bold break-words leading-relaxed align-top" title={item.name}>{item.name}</td>
+                          <td className="px-4 py-3 text-slate-600 font-medium break-words leading-relaxed align-top" title={item.subStrategy?.name}>{item.subStrategy?.name || '—'}</td>
                         </>
                       )}
 
                       {activeTab === 'fiscal-year' && (
                         <>
-                          <td className="px-4 py-3 font-bold text-gray-800 truncate">ปี {item.year}</td>
-                          <td className="px-4 py-3 truncate">
-                            <span className={`text-xs font-bold ${item.active ? 'text-emerald-600' : 'text-gray-400'}`}>
+                          <td className="px-4 py-3 font-mono font-black text-slate-800 whitespace-nowrap align-top">ปี {item.year}</td>
+                          <td className="px-4 py-3 whitespace-nowrap align-top">
+                            <span className={`text-xs font-extrabold px-2.5 py-1 rounded-full border ${item.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                               {item.active ? 'เปิดใช้งานหลัก' : 'ปิดใช้งาน'}
                             </span>
                           </td>
@@ -884,8 +884,8 @@ const MasterData = () => {
 
                       {activeTab === 'budget-source' && (
                         <>
-                          <td className="px-4 py-3 font-semibold text-gray-700 truncate">{item.id}</td>
-                          <td className="px-4 py-3 font-medium text-gray-800 truncate">{item.name}</td>
+                          <td className="px-4 py-3 font-mono font-bold text-slate-500 whitespace-nowrap align-top">#{item.id}</td>
+                          <td className="px-4 py-3 font-bold text-slate-800 break-words leading-relaxed align-top">{item.name}</td>
                         </>
                       )}
 

@@ -277,7 +277,7 @@ const AdminReports = () => {
                     <>
                       <th className="px-6 py-3.5">ID</th>
                       <th className="px-6 py-3.5">ภาควิชา/หน่วยงาน</th>
-                      <th className="px-6 py-3.5 text-right">คณะต้นสังกัด</th>
+                      <th className="px-6 py-3.5">คณะต้นสังกัด</th>
                       <th className="px-6 py-3.5 text-right">จำนวนโครงการ</th>
                       <th className="px-6 py-3.5 text-right">งบแผนงานสะสม</th>
                       <th className="px-6 py-3.5 text-right">ใช้จ่ายจริง</th>
@@ -353,7 +353,7 @@ const AdminReports = () => {
                       <>
                         <td className="px-6 py-3 font-semibold">{index + 1}</td>
                         <td className="px-6 py-3 font-bold text-gray-800">{row.name}</td>
-                        <td className="px-6 py-3 text-right text-gray-500">{row.faculty}</td>
+                        <td className="px-6 py-3 text-gray-500">{row.faculty}</td>
                         <td className="px-6 py-3 text-right">{row.projectsCount} โครงการ</td>
                         <td className="px-6 py-3 text-right">{((row.totalBudget !== undefined && row.totalBudget !== null) ? row.totalBudget : 0).toLocaleString()} ฿</td>
                         <td className="px-6 py-3 text-right font-bold text-emerald-600">{((row.actualSpent !== undefined && row.actualSpent !== null) ? row.actualSpent : 0).toLocaleString()} ฿</td>

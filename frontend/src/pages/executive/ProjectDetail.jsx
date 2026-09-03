@@ -230,6 +230,82 @@ const ExecutiveProjectDetail = () => {
         </div>
       )}
 
+      {/* 4-Tier Strategic Alignment Pipeline */}
+      <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-soft space-y-3">
+        <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+          <span>🎯 ความเชื่อมโยงตามประเด็นยุทธศาสตร์ (Strategic Alignment)</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          {/* Tier 1: Local Issue */}
+          <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-violet-100 flex flex-col justify-start gap-1.5">
+            <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-violet-50 text-violet-700 border border-violet-100/60 w-fit">
+              1. ประเด็นการพัฒนา
+            </span>
+            <div className="space-y-0.5 mt-0.5">
+              {project.subStrategy?.strategy?.localIssue?.code && (
+                <span className="font-mono text-xs font-black text-violet-700 block">
+                  {project.subStrategy.strategy.localIssue.code}
+                </span>
+              )}
+              <p className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
+                {project.subStrategy?.strategy?.localIssue?.name || 'ไม่ระบุ'}
+              </p>
+            </div>
+          </div>
+
+          {/* Tier 2: Strategy */}
+          <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-purple-100 flex flex-col justify-start gap-1.5">
+            <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100/60 w-fit">
+              2. แผนงานหลัก
+            </span>
+            <div className="space-y-0.5 mt-0.5">
+              {project.subStrategy?.strategy?.code && (
+                <span className="font-mono text-xs font-black text-purple-700 block">
+                  {project.subStrategy.strategy.code}
+                </span>
+              )}
+              <p className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
+                {project.subStrategy?.strategy?.name || 'ไม่ระบุ'}
+              </p>
+            </div>
+          </div>
+
+          {/* Tier 3: Sub-Strategy */}
+          <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-blue-100 flex flex-col justify-start gap-1.5">
+            <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100/60 w-fit">
+              3. แผนงานย่อย
+            </span>
+            <div className="space-y-0.5 mt-0.5">
+              {project.subStrategy?.code && (
+                <span className="font-mono text-xs font-black text-blue-700 block">
+                  {project.subStrategy.code}
+                </span>
+              )}
+              <p className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
+                {project.subStrategy?.name || 'ไม่ระบุ'}
+              </p>
+            </div>
+          </div>
+
+          {/* Tier 4: Indicator / Main Project */}
+          <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-emerald-100 flex flex-col justify-start gap-1.5">
+            <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100/60 w-fit">
+              4. โครงการหลัก
+            </span>
+            <div className="space-y-0.5 mt-0.5">
+              {project.indicator?.code && (
+                <span className="font-mono text-xs font-black text-emerald-700 block">
+                  {project.indicator.code}
+                </span>
+              )}
+              <p className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
+                {project.indicator?.name || 'ไม่ระบุ'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* 2. Executive Analytics Gauges */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-soft space-y-2">
