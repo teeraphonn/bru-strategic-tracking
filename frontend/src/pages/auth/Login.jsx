@@ -21,7 +21,7 @@ const Login = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -254,6 +254,59 @@ const Login = () => {
                 <span>เข้าสู่ระบบ</span>
               )}
             </button>
+
+            {/* Quick Login Helper Pills */}
+            <div className="pt-3 border-t border-slate-100 space-y-2">
+              <div className="text-[11px] font-bold text-slate-400 text-center">
+                🔑 บัญชีทดสอบระบบ (คลิกเพื่อกรอกอัตโนมัติ):
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('username', 'admin@bru.ac.th');
+                    setValue('password', 'admin1234');
+                  }}
+                  className="p-2 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold border border-violet-200 transition-all text-left flex flex-col cursor-pointer"
+                >
+                  <span className="text-[9.5px] text-violet-500 uppercase tracking-wider">👑 ผู้ดูแลระบบ</span>
+                  <span className="text-[11px] truncate">admin@bru.ac.th</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('username', 'president@bru.ac.th');
+                    setValue('password', 'admin1234');
+                  }}
+                  className="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold border border-purple-200 transition-all text-left flex flex-col cursor-pointer"
+                >
+                  <span className="text-[9.5px] text-purple-500 uppercase tracking-wider">🏛️ อธิการบดี</span>
+                  <span className="text-[11px] truncate">president@bru.ac.th</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('username', 'dean@bru.ac.th');
+                    setValue('password', 'admin1234');
+                  }}
+                  className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold border border-blue-200 transition-all text-left flex flex-col cursor-pointer"
+                >
+                  <span className="text-[9.5px] text-blue-500 uppercase tracking-wider">🏫 คณบดี</span>
+                  <span className="text-[11px] truncate">dean@bru.ac.th</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('username', 'teacher1@bru.ac.th');
+                    setValue('password', 'admin1234');
+                  }}
+                  className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold border border-emerald-200 transition-all text-left flex flex-col cursor-pointer"
+                >
+                  <span className="text-[9.5px] text-emerald-500 uppercase tracking-wider">👨‍🏫 อาจารย์ผู้รับผิดชอบ</span>
+                  <span className="text-[11px] truncate">teacher1@bru.ac.th</span>
+                </button>
+              </div>
+            </div>
           </form>
         </div>
 
