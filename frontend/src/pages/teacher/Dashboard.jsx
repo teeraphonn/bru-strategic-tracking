@@ -427,59 +427,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* 3. 6-Month Real Expenditure Trend Line Chart */}
-      <div className="p-6 bg-white rounded-3xl shadow-soft border border-slate-100 space-y-4">
-        <div className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-              <FiTrendingUp className="w-4 h-4 text-indigo-600 shrink-0" />
-              <span>แนวโน้มงบประมาณใช้จ่ายจริง ย้อนหลัง 6 เดือน</span>
-            </h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">สถิติการเบิกจ่ายงบประมาณสะสมรายช่วงเวลา</p>
-          </div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-xl text-xs font-black">
-            <span>ยอดจ่ายสะสมล่าสุด: {summary.totalActualBudget?.toLocaleString('th-TH')} บาท</span>
-          </div>
-        </div>
-
-        <div className="h-[250px] w-full flex items-center justify-center">
-          <Line 
-            data={lineData} 
-            options={{ 
-              responsive: true, 
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  backgroundColor: '#1E1B4B',
-                  padding: 12,
-                  cornerRadius: 12,
-                  callbacks: {
-                    label: (ctx) => ` เบิกจ่ายจริง: ${Number(ctx.raw || 0).toLocaleString('th-TH')} บาท`
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  grid: { display: false },
-                  ticks: { font: { size: 11, weight: 'bold' }, color: '#64748B' }
-                },
-                y: {
-                  grid: { color: '#F8FAFC' },
-                  border: { dash: [4, 4] },
-                  ticks: {
-                    font: { size: 10 },
-                    color: '#94A3B8',
-                    callback: (v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
-                  }
-                }
-              }
-            }} 
-          />
-        </div>
-      </div>
-
-      {/* 4. Operations: Recent Projects & Activity Photos */}
+      {/* 3. Operations: Recent Projects & Activity Photos */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Projects (5 cols) */}
         <div className="lg:col-span-5 p-6 bg-white rounded-3xl shadow-soft border border-slate-100 flex flex-col justify-between">
