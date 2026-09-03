@@ -586,6 +586,88 @@ const getDeanDashboardStats = async (req, res) => {
       };
     });
 
+    // 3. Main Projects Summary for this Faculty (Level 4: 10 โครงการหลัก MP1.1 - MP4.3)
+    const indicators = await prisma.indicator.findMany({
+      include: {
+        subStrategy: {
+          include: {
+            strategy: {
+              include: {
+                localIssue: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { code: 'asc' }
+    });
+
+    const mainProjectsSummary = indicators.map(ind => {
+      const indProjects = processedProjects.filter(p => p.indicatorId === ind.id);
+      let indBudget = 0;
+      let indSpent = 0;
+      let indTarget = 0;
+      let indCompleted = 0;
+      let indRed = 0;
+      let indYellow = 0;
+      let indGreen = 0;
+
+      const subProjects = indProjects.map(p => {
+        const b = parseFloat(p.totalBudget || 0);
+        const s = (p.totalSpent || 0);
+        indBudget += b;
+        indSpent += s;
+        indTarget += (p.targetCount || 0);
+        indCompleted += (p.completedCount || 0);
+
+        if (p.rag?.status === 'RED') indRed++;
+        else if (p.rag?.status === 'YELLOW') indYellow++;
+        else indGreen++;
+
+        return {
+          id: p.id,
+          name: p.name,
+          departmentName: p.department?.name || 'ส่วนกลาง',
+          creatorName: p.creator?.name || 'ไม่ระบุ',
+          totalBudget: b,
+          actualSpent: s,
+          progress: p.progress,
+          status: p.status,
+          ragStatus: p.rag?.status || 'GREEN'
+        };
+      });
+
+      const progressPct = indTarget > 0 ? parseFloat(((indCompleted / indTarget) * 100).toFixed(2)) : 0;
+      const burnRatePct = indBudget > 0 ? parseFloat(((indSpent / indBudget) * 100).toFixed(2)) : 0;
+
+      let overallStatus = 'GREEN';
+      if (indRed > 0 || (indProjects.length > 0 && progressPct < 40)) overallStatus = 'RED';
+      else if (indYellow > 0 || (indProjects.length > 0 && progressPct < 75)) overallStatus = 'YELLOW';
+      else if (indProjects.length === 0) overallStatus = 'GRAY';
+
+      return {
+        id: ind.id,
+        code: ind.code,
+        name: ind.name,
+        subStrategyCode: ind.subStrategy?.code || '',
+        subStrategyName: ind.subStrategy?.name || '',
+        strategyCode: ind.subStrategy?.strategy?.code || '',
+        strategyName: ind.subStrategy?.strategy?.name || '',
+        localIssueCode: ind.subStrategy?.strategy?.localIssue?.code || '',
+        localIssueName: ind.subStrategy?.strategy?.localIssue?.name || '',
+        totalProjects: indProjects.length,
+        totalBudget: parseFloat(indBudget.toFixed(2)),
+        totalSpent: parseFloat(indSpent.toFixed(2)),
+        progressPct,
+        burnRatePct,
+        redCount: indRed,
+        yellowCount: indYellow,
+        greenCount: indGreen,
+        overallStatus,
+        projects: subProjects
+      };
+    });
+
     res.json({
       facultyName: faculty?.name || 'คณะวิทยาศาสตร์',
       healthCheck: {
@@ -601,6 +683,7 @@ const getDeanDashboardStats = async (req, res) => {
       },
       localIssues: localIssueStats,
       strategicPillars: pillarStats,
+      mainProjects: mainProjectsSummary,
       redFlagProjects,
       departmentPerformance: Object.values(departmentStats),
       allProjects: processedProjects,
@@ -814,6 +897,89 @@ const getPresidentDashboardStats = async (req, res) => {
     const univProgressPct = univTarget > 0 ? parseFloat(((univCompleted / univTarget) * 100).toFixed(2)) : 0;
     const univBurnRatePct = totalUnivBudget > 0 ? parseFloat(((totalUnivSpent / totalUnivBudget) * 100).toFixed(2)) : 0;
 
+    // 2.3 Main Projects Summary (Level 4: 10 โครงการหลัก MP1.1 - MP4.3)
+    const indicators = await prisma.indicator.findMany({
+      include: {
+        subStrategy: {
+          include: {
+            strategy: {
+              include: {
+                localIssue: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { code: 'asc' }
+    });
+
+    const mainProjectsSummary = indicators.map(ind => {
+      const indProjects = allProcessed.filter(p => p.indicatorId === ind.id);
+      let indBudget = 0;
+      let indSpent = 0;
+      let indTarget = 0;
+      let indCompleted = 0;
+      let indRed = 0;
+      let indYellow = 0;
+      let indGreen = 0;
+
+      const subProjects = indProjects.map(p => {
+        const b = parseFloat(p.totalBudget || 0);
+        const s = parseFloat(p.totalSpent || 0);
+        indBudget += b;
+        indSpent += s;
+        indTarget += (p.targetCount || 0);
+        indCompleted += (p.completedCount || 0);
+
+        if (p.rag.status === 'RED') indRed++;
+        else if (p.rag.status === 'YELLOW') indYellow++;
+        else indGreen++;
+
+        return {
+          id: p.id,
+          name: p.name,
+          facultyName: p.faculty?.name || p.department?.faculty?.name || 'ส่วนกลาง',
+          departmentName: p.department?.name || 'ส่วนกลาง',
+          creatorName: p.creator?.name || 'ไม่ระบุ',
+          totalBudget: b,
+          actualSpent: s,
+          progress: p.progress,
+          status: p.status,
+          ragStatus: p.rag.status
+        };
+      });
+
+      const progressPct = indTarget > 0 ? parseFloat(((indCompleted / indTarget) * 100).toFixed(2)) : 0;
+      const burnRatePct = indBudget > 0 ? parseFloat(((indSpent / indBudget) * 100).toFixed(2)) : 0;
+
+      let overallStatus = 'GREEN';
+      if (indRed > 0 || (indProjects.length > 0 && progressPct < 40)) overallStatus = 'RED';
+      else if (indYellow > 0 || (indProjects.length > 0 && progressPct < 75)) overallStatus = 'YELLOW';
+      else if (indProjects.length === 0) overallStatus = 'GRAY';
+
+      return {
+        id: ind.id,
+        code: ind.code,
+        name: ind.name,
+        subStrategyCode: ind.subStrategy?.code || '',
+        subStrategyName: ind.subStrategy?.name || '',
+        strategyCode: ind.subStrategy?.strategy?.code || '',
+        strategyName: ind.subStrategy?.strategy?.name || '',
+        localIssueCode: ind.subStrategy?.strategy?.localIssue?.code || '',
+        localIssueName: ind.subStrategy?.strategy?.localIssue?.name || '',
+        totalProjects: indProjects.length,
+        totalBudget: parseFloat(indBudget.toFixed(2)),
+        totalSpent: parseFloat(indSpent.toFixed(2)),
+        progressPct,
+        burnRatePct,
+        redCount: indRed,
+        yellowCount: indYellow,
+        greenCount: indGreen,
+        overallStatus,
+        projects: subProjects
+      };
+    });
+
     res.json({
       universityHealth: {
         totalProjects: totalUnivProjects,
@@ -828,6 +994,7 @@ const getPresidentDashboardStats = async (req, res) => {
       crossFacultyMatrix: facultyMatrix,
       localIssues: localIssueStats,
       strategicPillars: pillarStats,
+      mainProjects: mainProjectsSummary,
       criticalBottlenecks,
       recentPhotos: extractRecentPhotos(projects, req)
     });

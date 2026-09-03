@@ -37,7 +37,10 @@ import {
   FiPieChart,
   FiMaximize2,
   FiImage,
-  FiSend
+  FiSend,
+  FiChevronDown,
+  FiChevronUp,
+  FiTarget
 } from 'react-icons/fi';
 
 ChartJS.register(
@@ -71,6 +74,7 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
   const [selectedDeptName, setSelectedDeptName] = useState('');
   const [deptProjects, setDeptProjects] = useState(null);
   const [loadingDeptProjects, setLoadingDeptProjects] = useState(false);
+  const [expandedMainProjectId, setExpandedMainProjectId] = useState(null);
 
   const recentPhotos = data?.recentPhotos || [];
   const visiblePhotos = recentPhotos.slice(0, 4);
@@ -250,6 +254,7 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
     healthCheck = { overallProgress: 0, overallBurnRate: 0, totalSpent: 0, totalBudget: 0, redCount: 0, greenCount: 0, yellowCount: 0, totalProjects: 0 },
     localIssues = [],
     strategicPillars = [],
+    mainProjects = [],
     redFlagProjects = [],
     departmentPerformance = [],
     allProjects = []
@@ -978,7 +983,192 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
         </div>
       </div>
 
+      {/* 3.0 Faculty Main Projects Strategic Tracking & Drill-down */}
+      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+              <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
+                <FiLayers className="w-5 h-5 shrink-0" />
+              </span>
+              <span>ตารางกำกับติดตามโครงการหลักประจำคณะ (Faculty Main Projects Strategic Tracking)</span>
+            </h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              ความก้าวหน้าและการขับเคลื่อนโครงการหลักระดับมหาวิทยาลัย (MP1.1 - MP4.3) จำแนกตามโครงการปฏิบัติการของคณะ
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-black text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl shadow-3xs">
+              🎯 ทั้งหมด {(mainProjects || []).length} โครงการหลัก
+            </span>
+          </div>
+        </div>
 
+        {/* List of Main Projects for this Faculty */}
+        <div className="space-y-3">
+          {(mainProjects || []).map((mp) => {
+            const isExpanded = expandedMainProjectId === mp.id;
+            const hasFacultyProjects = mp.totalProjects > 0;
+            const statusConfig = {
+              GREEN: { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+              YELLOW: { label: 'เฝ้าระวัง', badge: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+              RED: { label: 'วิกฤต', badge: 'bg-rose-50 text-rose-700 border-rose-200', dot: 'bg-rose-500' },
+              GRAY: { label: 'คณะยังไม่มีโครงการ', badge: 'bg-slate-50 text-slate-400 border-slate-200', dot: 'bg-slate-300' }
+            }[mp.overallStatus] || { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' };
+
+            return (
+              <div 
+                key={mp.id}
+                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+                  isExpanded ? 'border-primary/40 shadow-md bg-white' : 'border-slate-100 hover:border-slate-200 bg-slate-50/40'
+                }`}
+              >
+                {/* Main Project Header Row */}
+                <div 
+                  onClick={() => setExpandedMainProjectId(isExpanded ? null : mp.id)}
+                  className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/80 transition-colors select-none"
+                >
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <span className="font-mono text-xs font-black px-2.5 py-1 rounded-xl bg-purple-600 text-white shadow-xs shrink-0 mt-0.5">
+                      {mp.code}
+                    </span>
+                    <div className="min-w-0 space-y-1">
+                      <div className="font-extrabold text-sm text-slate-800 leading-snug break-words">
+                        {mp.name}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                        {mp.localIssueCode && (
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 font-semibold">
+                            {mp.localIssueCode}: {mp.localIssueName}
+                          </span>
+                        )}
+                        {mp.subStrategyCode && (
+                          <span className="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100 font-semibold">
+                            {mp.subStrategyCode}: {mp.subStrategyName}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metrics & Expand Trigger */}
+                  <div className="flex items-center gap-4 shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-100">
+                    {/* Projects Count */}
+                    <div className="text-left lg:text-right">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase">โครงการของคณะ</div>
+                      <div className="text-xs font-extrabold text-slate-800">{mp.totalProjects} โครงการ</div>
+                    </div>
+
+                    {/* Budget & Spent */}
+                    {hasFacultyProjects && (
+                      <div className="text-left lg:text-right">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase">งบประมาณ / เบิกจ่าย</div>
+                        <div className="text-xs font-black text-slate-800">
+                          {mp.totalBudget.toLocaleString()} ฿
+                          <span className="text-[10px] text-slate-400 font-medium block">
+                            จ่าย {mp.totalSpent.toLocaleString()} ฿ ({mp.burnRatePct}%)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Progress Bar & Status */}
+                    {hasFacultyProjects && (
+                      <div className="w-28 text-center">
+                        <div className="flex items-center justify-between text-[11px] font-black mb-1">
+                          <span className="text-slate-600">ก้าวหน้า</span>
+                          <span className="text-primary">{mp.progressPct}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-primary h-full rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(100, mp.progressPct)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status Badge */}
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-extrabold border shadow-3xs ${statusConfig.badge}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`} />
+                      {statusConfig.label}
+                    </span>
+
+                    {/* Toggle Icon */}
+                    <div className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+                      {isExpanded ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Collapsible Inner Projects Table (Drill-down) */}
+                {isExpanded && (
+                  <div className="border-t border-slate-100 bg-white p-4">
+                    {mp.projects && mp.projects.length > 0 ? (
+                      <div className="rounded-xl border border-slate-100 overflow-x-auto shadow-3xs">
+                        <table className="w-full text-xs text-left border-collapse min-w-[650px]">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                              <th className="py-2.5 px-3">ชื่อโครงการปฏิบัติการ (Operational Project)</th>
+                              <th className="py-2.5 px-3 w-44">ภาควิชา / หน่วยงาน</th>
+                              <th className="py-2.5 px-3 w-36">ผู้รับผิดชอบ</th>
+                              <th className="py-2.5 px-3 w-28 text-right">งบประมาณ</th>
+                              <th className="py-2.5 px-3 w-28 text-right">เบิกจ่ายจริง</th>
+                              <th className="py-2.5 px-3 w-24 text-center">% ก้าวหน้า</th>
+                              <th className="py-2.5 px-3 w-20 text-center">ดูข้อมูล</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {mp.projects.map((subP) => (
+                              <tr key={subP.id} className="hover:bg-slate-50/60 transition-colors">
+                                <td className="py-2.5 px-3 font-bold text-slate-800 leading-snug">
+                                  {subP.name}
+                                </td>
+                                <td className="py-2.5 px-3 text-slate-600 text-[11px] font-semibold">
+                                  {subP.departmentName}
+                                </td>
+                                <td className="py-2.5 px-3 text-slate-600 text-[11px]">
+                                  {subP.creatorName}
+                                </td>
+                                <td className="py-2.5 px-3 text-right font-semibold text-slate-700">
+                                  {subP.totalBudget.toLocaleString()} ฿
+                                </td>
+                                <td className="py-2.5 px-3 text-right font-semibold text-slate-700">
+                                  {subP.actualSpent.toLocaleString()} ฿
+                                </td>
+                                <td className="py-2.5 px-3 text-center font-black text-primary">
+                                  {subP.progress}%
+                                </td>
+                                <td className="py-2.5 px-3 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedProjectModal(subP);
+                                    }}
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-primary/10 text-slate-600 hover:text-primary transition-all cursor-pointer"
+                                    title="ดูรายละเอียดโครงการ"
+                                  >
+                                    <FiEye className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-slate-400 text-xs font-medium bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                        คณะยังไม่ได้เสนอโครงการปฏิบัติการภายใต้โครงการหลักนี้
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* 3.5 Recent Faculty Activity Photos (Evidence-based Executive Gallery) */}
       <div className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-slate-100 space-y-5">

@@ -241,13 +241,23 @@ const ProjectForm = () => {
 
         {/* Project Name */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1.5">ชื่อโครงการ <span className="text-red-500">*</span></label>
+          <div className="flex items-baseline justify-between mb-1.5">
+            <label className="block text-xs font-bold text-slate-700">
+              ชื่อโครงการปฏิบัติการของท่าน (Operational Project Name) <span className="text-red-500">*</span>
+            </label>
+            <span className="text-[11px] text-slate-400 hidden sm:inline">
+              ตั้งชื่อโครงการเฉพาะที่จัดทำขึ้นภายใต้โครงการหลักที่เลือก
+            </span>
+          </div>
           <input
             type="text"
-            placeholder="กรุณากรอกชื่อโครงการ"
+            placeholder="เช่น โครงการพัฒนาระบบตรวจวัดคุณภาพน้ำชุมชนห้วยจระเข้มาก"
             className={`w-full px-4 py-2.5 border ${errors.name ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all`}
-            {...register('name', { required: 'กรุณากรอกชื่อโครงการ' })}
+            {...register('name', { required: 'กรุณากรอกชื่อโครงการปฏิบัติการ' })}
           />
+          <p className="text-[11px] text-slate-500 mt-1">
+            💡 <strong>ข้อแนะนำ:</strong> ระบุชื่อโครงการเฉพาะของท่านหรือคณะที่จะลงมือปฏิบัติจริงในพื้นที่ โดยไม่ต้องคัดลอกชื่อโครงการหลัก (MP)
+          </p>
           {errors.name && <span className="text-xs text-red-500 mt-1 block">{errors.name.message}</span>}
         </div>
 
@@ -382,7 +392,7 @@ const ProjectForm = () => {
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                   <span className="w-5 h-5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-black flex items-center justify-center">4</span>
-                  <span>โครงการหลัก</span>
+                  <span>โครงการหลักระดับมหาวิทยาลัย (Main Project - MP)</span>
                 </label>
                 <span className="text-[10px] font-semibold text-slate-400">
                   {selectedSubStrategyId ? `${filteredIndicators.length} โครงการหลัก` : 'ต้องเลือกข้อ 3 ก่อน'}
@@ -508,7 +518,7 @@ const ProjectForm = () => {
                     <div className="flex items-center justify-between gap-1.5 mb-2">
                       <span className="text-[10px] font-black text-emerald-700 tracking-wider uppercase flex items-center gap-1.5">
                         <span className="w-4 h-4 rounded-full bg-emerald-200/80 text-emerald-800 flex items-center justify-center text-[9px] font-black">4</span>
-                        โครงการหลัก
+                        โครงการหลัก (MP)
                       </span>
                       {currentIndicator && (
                         <span className="text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md bg-emerald-600 text-white shadow-xs">

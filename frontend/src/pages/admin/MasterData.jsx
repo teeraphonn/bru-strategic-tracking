@@ -125,7 +125,7 @@ const MasterData = () => {
     { id: 'local-issue', name: 'ประเด็นการพัฒนาท้องถิ่น', icon: <FiGlobe /> },
     { id: 'strategy', name: 'แผนงานหลัก', icon: <FiDatabase /> },
     { id: 'sub-strategy', name: 'แผนงานย่อย', icon: <FiGitCommit /> },
-    { id: 'indicator', name: 'โครงการหลัก', icon: <FiBriefcase /> },
+    { id: 'indicator', name: 'โครงการหลัก (MP)', icon: <FiBriefcase /> },
     { id: 'fiscal-year', name: 'ปีงบประมาณ', icon: <FiCalendar /> },
     { id: 'budget-source', name: 'แหล่งงบประมาณ', icon: <FiDollarSign /> },
     { id: 'faculty', name: 'คณะ', icon: <FiBookmark /> },
@@ -720,9 +720,9 @@ const MasterData = () => {
                   )}
                   {activeTab === 'indicator' && (
                     <>
-                      <th className="w-24 px-4 py-3.5">รหัส</th>
-                      <th className="min-w-[280px] px-4 py-3.5">โครงการหลัก</th>
-                      <th className="min-w-[260px] px-4 py-3.5">แผนงานย่อย</th>
+                      <th className="w-28 px-4 py-3.5">รหัส (MP)</th>
+                      <th className="min-w-[280px] px-4 py-3.5">โครงการหลัก (Main Project)</th>
+                      <th className="min-w-[260px] px-4 py-3.5">แผนงานย่อย (Sub-Strategy)</th>
                       <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
