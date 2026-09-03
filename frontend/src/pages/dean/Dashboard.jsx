@@ -5,6 +5,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import ExecutiveProjectModal from '../../components/ExecutiveProjectModal';
 import Swal from 'sweetalert2';
 import CustomSelect from '../../components/CustomSelect';
+import { getImageUrl } from '../../utils/imageUrl';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -1013,9 +1014,13 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
                 {/* 1. Unobstructed Pure Photo Container (Fixed 16:10 Ratio) */}
                 <div className="relative aspect-16/10 w-full shrink-0 overflow-hidden bg-slate-900">
                   <img 
-                    src={photo.imageUrl} 
+                    src={getImageUrl(photo.imageUrl)} 
                     alt={photo.activityName} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80';
+                    }}
                   />
                   {/* Floating Zoom Hint on Hover */}
                   <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
@@ -1108,9 +1113,13 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
               <div className="md:w-3/5 bg-black/95 flex flex-col items-center justify-center p-4 md:p-6 md:h-full justify-between relative">
                 <div className="flex-1 flex items-center justify-center w-full min-h-[300px]">
                   <img 
-                    src={activePhoto.imageUrl} 
+                    src={getImageUrl(activePhoto.imageUrl)} 
                     alt={activePhoto.activityName} 
                     className="max-w-full max-h-[66vh] object-contain rounded-xl shadow-2xl animate-fadeIn select-none" 
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80';
+                    }}
                   />
                 </div>
                 
@@ -1131,7 +1140,15 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
                             isActive ? 'border-primary scale-105 shadow-md shadow-primary/40' : 'border-white/20 opacity-50 hover:opacity-100 hover:border-white/50'
                           }`}
                         >
-                          <img src={img.imageUrl} alt="thumbnail" className="w-full h-full object-cover" />
+                          <img 
+                            src={getImageUrl(img.imageUrl)} 
+                            alt="thumbnail" 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80';
+                            }}
+                          />
                         </button>
                       );
                     })}

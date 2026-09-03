@@ -250,7 +250,15 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
                   onClick={() => setActivePhotoIndex(index)}
                   className="relative w-24 h-18 rounded-lg overflow-hidden border border-slate-200 shrink-0 shadow-3xs group cursor-pointer"
                 >
-                  <img src={photo.imageUrl} alt={photo.activityName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img 
+                    src={photo.imageUrl} 
+                    alt={photo.activityName} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80';
+                    }}
+                  />
                   <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-1">
                     <span className="text-[8px] font-black text-white text-center line-clamp-2 leading-tight">{photo.activityName}</span>
                   </div>
