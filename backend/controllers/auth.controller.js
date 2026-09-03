@@ -63,9 +63,26 @@ const computePersonnelCode = async (user) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ message: 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน' });
+    }
 
-    const user = await prisma.user.findUnique({
-      where: { username },
+    const cleanUsername = String(username).trim();
+
+    // Support case-insensitive search and username aliases (e.g. 'admin' <-> 'admin@bru.ac.th')
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: cleanUsername },
+          { username: cleanUsername.toLowerCase() },
+          ...(cleanUsername.toLowerCase() === 'admin' ? [{ username: 'admin@bru.ac.th' }] : []),
+          ...(cleanUsername.toLowerCase() === 'admin@bru.ac.th' ? [{ username: 'admin' }] : []),
+          ...(cleanUsername.toLowerCase() === 'president' ? [{ username: 'president@bru.ac.th' }] : []),
+          ...(cleanUsername.toLowerCase() === 'dean' ? [{ username: 'dean@bru.ac.th' }] : []),
+          ...(cleanUsername.toLowerCase() === 'teacher' ? [{ username: 'teacher@bru.ac.th' }] : []),
+          ...(cleanUsername.toLowerCase() === 'csbru' ? [{ username: 'Csbru' }] : [])
+        ]
+      },
       include: {
         department: {
           include: { faculty: true }
@@ -74,12 +91,12 @@ const login = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+      return res.status(401).json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+      return res.status(401).json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
     }
 
     const token = jwt.sign(
