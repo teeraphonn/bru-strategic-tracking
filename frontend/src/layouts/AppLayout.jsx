@@ -11,7 +11,7 @@ const AppLayout = () => {
   return (
     <div 
       className="flex h-screen overflow-hidden bg-background"
-      style={{ '--sidebar-width': sidebarCollapsed ? '80px' : '240px' }}
+      style={{ '--sidebar-width': sidebarCollapsed ? '80px' : '270px' }}
     >
       {/* Sidebar Navigation */}
       <Sidebar 

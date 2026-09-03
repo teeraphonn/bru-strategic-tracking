@@ -489,14 +489,14 @@ const MasterData = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   isActive
                     ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
-                {tab.icon}
-                <span>{tab.name}</span>
+                <span className="shrink-0">{tab.icon}</span>
+                <span className="whitespace-nowrap">{tab.name}</span>
               </button>
             );
           })}

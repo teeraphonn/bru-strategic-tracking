@@ -90,7 +90,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
       <aside className={`
         fixed top-0 bottom-0 left-0 z-50 flex flex-col no-print print:hidden
         transition-transform duration-300 ease-in-out lg:static shadow-2xl lg:shadow-none
-        ${isCollapsed ? 'w-20' : 'w-60'}
+        ${isCollapsed ? 'w-20' : 'w-[270px]'}
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}
         style={{ background: 'linear-gradient(180deg, #2F1481 0%, #1E0A4A 100%)' }}
@@ -193,7 +193,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
                     </button>
 
                     {masterExpanded && (
-                      <div className={isCollapsed ? 'space-y-0.5 mt-1' : 'pl-4 mt-0.5 space-y-0.5 border-l-2 border-white/10 ml-5'}>
+                      <div className={isCollapsed ? 'space-y-0.5 mt-1' : 'pl-2.5 mt-0.5 space-y-0.5 border-l-2 border-white/10 ml-3.5'}>
                         {item.subItems.map(sub => {
                           const currentTab = new URLSearchParams(location.search).get('tab');
                           const subTab = new URLSearchParams(sub.to.split('?')[1]).get('tab');
@@ -206,7 +206,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
                               key={sub.to}
                               to={sub.to}
                               title={isCollapsed ? sub.name : undefined}
-                              className={`flex ${isCollapsed ? 'flex-col items-center justify-center gap-0.5 py-1.5 px-0.5' : 'gap-2.5 px-3 py-2'} rounded-xl font-semibold transition-all duration-150 group relative text-[12px]
+                              className={`flex ${isCollapsed ? 'flex-col items-center justify-center gap-0.5 py-1.5 px-0.5' : 'items-center gap-2.5 px-2.5 py-2'} rounded-xl font-semibold transition-all duration-150 group relative text-[12px] whitespace-nowrap
                                 ${isSubActive
                                   ? 'bg-white text-primary shadow-md shadow-black/20'
                                   : 'text-white/55 hover:text-white hover:bg-white/10'}`}
@@ -216,7 +216,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
                               {isCollapsed ? (
                                 <span className="text-[8px] font-black leading-tight tracking-tight text-center break-words">{sub.shortName || sub.name}</span>
                               ) : (
-                                <span className="leading-snug text-left">{sub.name}</span>
+                                <span className="leading-snug text-left whitespace-nowrap">{sub.name}</span>
                               )}
                             </NavLink>
                           );
