@@ -2,6 +2,7 @@ const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/prisma');
+const cloudinary = require('../config/cloudinary');
 
 const computePersonnelCode = async (user) => {
   if (!user) return '';
@@ -199,12 +200,25 @@ const uploadAvatar = async (req, res) => {
 
     const userId = req.user.id;
     let avatarUrl = `/uploads/${req.file.filename}`;
+
     try {
-      const fileBuffer = fs.readFileSync(req.file.path);
-      avatarUrl = `data:${req.file.mimetype || 'image/jpeg'};base64,${fileBuffer.toString('base64')}`;
+      // Upload to Cloudinary for persistent cloud storage
+      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'bru-strategic/avatars',
+        resource_type: 'image',
+        quality: 'auto:good',
+        fetch_format: 'auto',
+        width: 400,
+        height: 400,
+        crop: 'fill',
+        gravity: 'face'
+      });
+      avatarUrl = uploadResult.secure_url;
+    } catch (uploadErr) {
+      console.error('Cloudinary avatar upload error:', uploadErr);
+      // Fallback: keep local path if Cloudinary fails
+    } finally {
       fs.unlink(req.file.path, () => {});
-    } catch (readErr) {
-      console.error('Error reading avatar buffer:', readErr);
     }
 
     const updatedUser = await prisma.user.update({
@@ -229,6 +243,7 @@ const uploadAvatar = async (req, res) => {
     return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตรูปโปรไฟล์' });
   }
 };
+
 
 module.exports = {
   login,
