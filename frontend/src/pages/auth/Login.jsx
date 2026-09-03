@@ -310,13 +310,13 @@ const Login = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        setValue('username', 'teacher1@bru.ac.th');
-                        setValue('password', 'admin1234');
+                        setValue('username', 'csbru');
+                        setValue('password', 'csbru1');
                       }}
                       className="p-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-700 font-bold border border-slate-200/90 hover:border-emerald-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
                     >
-                      <span className="text-[9.5px] text-emerald-500 uppercase tracking-wider">👨‍🏫 อาจารย์ผู้รับผิดชอบ</span>
-                      <span className="text-[11px] truncate font-medium">teacher1@bru.ac.th</span>
+                      <span className="text-[9.5px] text-emerald-500 uppercase tracking-wider">👨‍🏫 อาจารย์ผู้รับผิดชอบ (วิทคอม)</span>
+                      <span className="text-[11px] truncate font-medium">csbru / csbru1</span>
                     </button>
                   </div>
                 </div>
