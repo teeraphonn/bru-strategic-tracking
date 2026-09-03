@@ -973,101 +973,7 @@ const PresidentDashboard = () => {
         </div>
       </div>
 
-      {/* 3. Cross-Faculty Strategic Heatmap Matrix (Comparative Exception Tracker) */}
-      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-              <FiGrid className="w-5 h-5 text-primary shrink-0" />
-              <span>ตารางเปรียบเทียบผลงานตามคณะ/สำนัก (Cross-Faculty Strategic Heatmap)</span>
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">ตารางประเมินเปรียบเทียบ % ความก้าวหน้ายุทธศาสตร์ % การใช้จ่ายงบประมาณ และจำนวนจุดวิกฤตจำแนกรายคณะ</p>
-          </div>
-
-          {/* Toggle show all faculties / only active */}
-          {(crossFacultyMatrix || []).some(f => f.totalProjects === 0) && (
-            <button
-              type="button"
-              onClick={() => setShowAllFaculties(!showAllFaculties)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer shrink-0 self-start sm:self-auto bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 shadow-3xs active:scale-95 no-print"
-            >
-              <FiFilter className="w-3.5 h-3.5 text-primary" />
-              <span>{showAllFaculties ? 'แสดงเฉพาะคณะที่มีโครงการ' : `แสดงทุกคณะ (${crossFacultyMatrix.length})`}</span>
-            </button>
-          )}
-        </div>
-
-        <div className="overflow-x-auto print:overflow-visible scrollbar-thin">
-          {(() => {
-            const activeFaculties = (crossFacultyMatrix || []).filter(f => f.totalProjects > 0);
-            // In print mode, always display all faculties for complete institutional records
-            const displayedFaculties = crossFacultyMatrix && crossFacultyMatrix.length > 0 ? crossFacultyMatrix : activeFaculties;
-
-            return (
-              <table className="w-full text-xs text-left border-collapse print:text-[11px] min-w-[760px] print:min-w-full">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px] print:bg-slate-100 print:text-slate-800">
-                    <th className="py-3 px-3">คณะ / สำนัก</th>
-                    <th className="py-3 px-3 w-28 text-center">จำนวนโครงการ</th>
-                    <th className="py-3 px-3 w-32 text-right">งบประมาณจัดสรร</th>
-                    <th className="py-3 px-3 w-32 text-right">เบิกจ่ายจริง</th>
-                    <th className="py-3 px-3 w-28 text-center">% ความก้าวหน้า</th>
-                    <th className="py-3 px-3 w-24 text-center">% Burn Rate</th>
-                    <th className="py-3 px-3 w-40 text-center">สถานะโครงการ</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 print:divide-slate-300">
-                  {displayedFaculties.map((fac) => {
-                    const facName = fac.facultyName || 'ส่วนกลาง';
-                    const formattedFac = (!facName || facName === 'ส่วนกลาง' || facName.startsWith('คณะ')) ? facName : `คณะ${facName}`;
-
-                    return (
-                      <tr 
-                        key={fac.facultyId} 
-                        onClick={() => handleFacultyClick(fac.facultyId, formattedFac)}
-                        className="hover:bg-slate-50 hover:shadow-3xs cursor-pointer transition-colors group align-middle"
-                        title={`คลิกเพื่อดูรายการโครงการของ ${formattedFac}`}
-                      >
-                        <td className="py-3.5 px-4 font-extrabold text-slate-800 group-hover:text-primary transition-colors flex items-center gap-2 whitespace-nowrap">
-                          <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${fac.overallStatus === 'RED' ? 'bg-rose-500' : fac.overallStatus === 'YELLOW' ? 'bg-amber-400' : 'bg-emerald-500'}`} />
-                          <span>{formattedFac}</span>
-                        </td>
-                        <td className="py-3.5 px-4 text-center font-bold text-slate-700 whitespace-nowrap">
-                          {fac.totalProjects} โครงการ
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-extrabold text-slate-800 whitespace-nowrap">
-                          {fac.totalBudget.toLocaleString()} ฿
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-extrabold text-emerald-600 whitespace-nowrap">
-                          {fac.totalSpent.toLocaleString()} ฿
-                        </td>
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                          <div className="font-extrabold text-slate-800">{fac.progressPct}%</div>
-                          <div className="w-20 bg-slate-100 h-1.5 rounded-full mx-auto mt-1 overflow-hidden">
-                            <div className={`h-full rounded-full ${fac.progressPct < 40 ? 'bg-rose-500' : fac.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, fac.progressPct)}%` }} />
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-center font-extrabold text-slate-700 whitespace-nowrap">
-                          {fac.burnRatePct}%
-                        </td>
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-2 text-[11px] font-extrabold">
-                            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">🟢 {fac.greenCount} ปกติ</span>
-                            <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">🟡 {fac.yellowCount} เฝ้าระวัง</span>
-                            <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">🔴 {fac.redCount} วิกฤต</span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* 3.5. 10 Main Projects Strategic Tracking & Drill-down */}
+      {/* 3. 10 Main Projects Strategic Tracking & Drill-down */}
       <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
           <div>
@@ -1271,6 +1177,100 @@ const PresidentDashboard = () => {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* 3.5. Cross-Faculty Strategic Heatmap Matrix (Comparative Exception Tracker) */}
+      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+              <FiGrid className="w-5 h-5 text-primary shrink-0" />
+              <span>ตารางเปรียบเทียบผลงานตามคณะ/สำนัก (Cross-Faculty Strategic Heatmap)</span>
+            </h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">ตารางประเมินเปรียบเทียบ % ความก้าวหน้ายุทธศาสตร์ % การใช้จ่ายงบประมาณ และจำนวนจุดวิกฤตจำแนกรายคณะ</p>
+          </div>
+
+          {/* Toggle show all faculties / only active */}
+          {(crossFacultyMatrix || []).some(f => f.totalProjects === 0) && (
+            <button
+              type="button"
+              onClick={() => setShowAllFaculties(!showAllFaculties)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer shrink-0 self-start sm:self-auto bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 shadow-3xs active:scale-95 no-print"
+            >
+              <FiFilter className="w-3.5 h-3.5 text-primary" />
+              <span>{showAllFaculties ? 'แสดงเฉพาะคณะที่มีโครงการ' : `แสดงทุกคณะ (${crossFacultyMatrix.length})`}</span>
+            </button>
+          )}
+        </div>
+
+        <div className="overflow-x-auto print:overflow-visible scrollbar-thin">
+          {(() => {
+            const activeFaculties = (crossFacultyMatrix || []).filter(f => f.totalProjects > 0);
+            // In print mode, always display all faculties for complete institutional records
+            const displayedFaculties = crossFacultyMatrix && crossFacultyMatrix.length > 0 ? crossFacultyMatrix : activeFaculties;
+
+            return (
+              <table className="w-full text-xs text-left border-collapse print:text-[11px] min-w-[760px] print:min-w-full">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px] print:bg-slate-100 print:text-slate-800">
+                    <th className="py-3 px-3">คณะ / สำนัก</th>
+                    <th className="py-3 px-3 w-28 text-center">จำนวนโครงการ</th>
+                    <th className="py-3 px-3 w-32 text-right">งบประมาณจัดสรร</th>
+                    <th className="py-3 px-3 w-32 text-right">เบิกจ่ายจริง</th>
+                    <th className="py-3 px-3 w-28 text-center">% ความก้าวหน้า</th>
+                    <th className="py-3 px-3 w-24 text-center">% Burn Rate</th>
+                    <th className="py-3 px-3 w-40 text-center">สถานะโครงการ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 print:divide-slate-300">
+                  {displayedFaculties.map((fac) => {
+                    const facName = fac.facultyName || 'ส่วนกลาง';
+                    const formattedFac = (!facName || facName === 'ส่วนกลาง' || facName.startsWith('คณะ')) ? facName : `คณะ${facName}`;
+
+                    return (
+                      <tr 
+                        key={fac.facultyId} 
+                        onClick={() => handleFacultyClick(fac.facultyId, formattedFac)}
+                        className="hover:bg-slate-50 hover:shadow-3xs cursor-pointer transition-colors group align-middle"
+                        title={`คลิกเพื่อดูรายการโครงการของ ${formattedFac}`}
+                      >
+                        <td className="py-3.5 px-4 font-extrabold text-slate-800 group-hover:text-primary transition-colors flex items-center gap-2 whitespace-nowrap">
+                          <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${fac.overallStatus === 'RED' ? 'bg-rose-500' : fac.overallStatus === 'YELLOW' ? 'bg-amber-400' : 'bg-emerald-500'}`} />
+                          <span>{formattedFac}</span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center font-bold text-slate-700 whitespace-nowrap">
+                          {fac.totalProjects} โครงการ
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-extrabold text-slate-800 whitespace-nowrap">
+                          {fac.totalBudget.toLocaleString()} ฿
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-extrabold text-emerald-600 whitespace-nowrap">
+                          {fac.totalSpent.toLocaleString()} ฿
+                        </td>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <div className="font-extrabold text-slate-800">{fac.progressPct}%</div>
+                          <div className="w-20 bg-slate-100 h-1.5 rounded-full mx-auto mt-1 overflow-hidden">
+                            <div className={`h-full rounded-full ${fac.progressPct < 40 ? 'bg-rose-500' : fac.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, fac.progressPct)}%` }} />
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-center font-extrabold text-slate-700 whitespace-nowrap">
+                          {fac.burnRatePct}%
+                        </td>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-2 text-[11px] font-extrabold">
+                            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">🟢 {fac.greenCount} ปกติ</span>
+                            <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">🟡 {fac.yellowCount} เฝ้าระวัง</span>
+                            <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">🔴 {fac.redCount} วิกฤต</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            );
+          })()}
         </div>
       </div>
 
