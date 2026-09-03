@@ -1,11 +1,10 @@
 /**
- * Dedicated Seed Script for BRU Strategic Planning Architecture
- * -------------------------------------------------------------
- * S1 - S4: ประเด็นการพัฒนาท้องถิ่น (เอาแบบนี้เป๊ะๆ 4 ด้าน)
- * 1. การพัฒนาท้องถิ่นด้านเศรษฐกิจ
- * 2. การพัฒนาท้องถิ่นด้านสังคม
- * 3. การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม
- * 4. การพัฒนาท้องถิ่นด้านการศึกษา
+ * Dedicated Seed Script for BRU Strategic Planning Architecture (4 Levels 100% Thai)
+ * -----------------------------------------------------------------------------------
+ * 1. ประเด็นการพัฒนาท้องถิ่น (4 รายการ)
+ * 2. แผนงานหลัก (6 รายการ)
+ * 3. แผนงานย่อย (8 รายการ)
+ * 4. โครงการหลัก (10 รายการ)
  */
 
 const { PrismaClient } = require('@prisma/client');
@@ -13,13 +12,34 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('====================================================');
-  console.log('🌱 Updating Strategies to exact 4 Local Development Issues...');
+  console.log('🌱 Seeding 4 Strategic Levels (100% Exact Thai)...');
   console.log('====================================================');
 
+  // 1. ประเด็นการพัฒนาท้องถิ่น (4 ด้าน)
+  const localIssuesData = [
+    { code: 'LDI1', name: 'การพัฒนาท้องถิ่นด้านเศรษฐกิจ' },
+    { code: 'LDI2', name: 'การพัฒนาท้องถิ่นด้านสังคม' },
+    { code: 'LDI3', name: 'การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม' },
+    { code: 'LDI4', name: 'การพัฒนาท้องถิ่นด้านการศึกษา' }
+  ];
+
+  const ldiMap = {};
+  for (const item of localIssuesData) {
+    const record = await prisma.localIssue.upsert({
+      where: { code: item.code },
+      update: { name: item.name },
+      create: { code: item.code, name: item.name }
+    });
+    ldiMap[record.code] = record;
+    console.log(`📌 ประเด็นการพัฒนาท้องถิ่น: [${record.code}] ${record.name}`);
+  }
+
+  // 2. แผนงานหลัก (6 แผนงาน)
   const strategiesData = [
     {
       code: 'S1',
-      name: 'การพัฒนาท้องถิ่นด้านเศรษฐกิจ',
+      name: 'ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง',
+      localIssueId: ldiMap['LDI1'].id,
       subStrategies: [
         {
           code: 'SS1.1',
@@ -49,7 +69,8 @@ async function main() {
     },
     {
       code: 'S2',
-      name: 'การพัฒนาท้องถิ่นด้านสังคม',
+      name: 'ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่',
+      localIssueId: ldiMap['LDI2'].id,
       subStrategies: [
         {
           code: 'SS2.1',
@@ -75,7 +96,8 @@ async function main() {
     },
     {
       code: 'S3',
-      name: 'การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม',
+      name: 'การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ',
+      localIssueId: ldiMap['LDI3'].id,
       subStrategies: [
         {
           code: 'SS3.1',
@@ -101,7 +123,8 @@ async function main() {
     },
     {
       code: 'S4',
-      name: 'การพัฒนาท้องถิ่นด้านการศึกษา',
+      name: 'การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน',
+      localIssueId: ldiMap['LDI4'].id,
       subStrategies: [
         {
           code: 'SS4.1',
@@ -128,37 +151,49 @@ async function main() {
           ]
         }
       ]
+    },
+    {
+      code: 'S5',
+      name: 'โครงการร่วมระดับภูมิภาคภาค',
+      localIssueId: null,
+      subStrategies: []
+    },
+    {
+      code: 'S6',
+      name: 'โครงการร่วมระดับประเทศ',
+      localIssueId: null,
+      subStrategies: []
     }
   ];
 
-  // 1. Delete extra S5, S6 if any
-  const extraStrategies = await prisma.strategy.findMany({
-    where: { code: { in: ['S5', 'S6'] } },
-    include: {
-      subStrategies: {
-        include: {
-          indicators: { include: { projects: true } },
-          projects: true
-        }
-      }
-    }
-  });
+  for (const s of strategiesData) {
+    const strat = await prisma.strategy.upsert({
+      where: { code: s.code },
+      update: { name: s.name, localIssueId: s.localIssueId },
+      create: { code: s.code, name: s.name, localIssueId: s.localIssueId }
+    });
+    console.log(`\n🏛️ แผนงานหลัก: [${strat.code}] ${strat.name}`);
 
-  for (const s of extraStrategies) {
     for (const ss of s.subStrategies) {
-      for (const ind of ss.indicators) {
-        if (ind.projects.length === 0) {
-          await prisma.indicator.delete({ where: { id: ind.id } });
-        }
-      }
-      if (ss.projects.length === 0) {
-        await prisma.subStrategy.delete({ where: { id: ss.id } });
+      const subStrat = await prisma.subStrategy.upsert({
+        where: { code: ss.code },
+        update: { name: ss.name, strategyId: strat.id },
+        create: { code: ss.code, name: ss.name, strategyId: strat.id }
+      });
+      console.log(`   ↳ 🔹 แผนงานย่อย: [${subStrat.code}] ${subStrat.name}`);
+
+      for (const p of ss.projects) {
+        const record = await prisma.indicator.upsert({
+          where: { code: p.code },
+          update: { name: p.name, subStrategyId: subStrat.id },
+          create: { code: p.code, name: p.name, subStrategyId: subStrat.id }
+        });
+        console.log(`      ↳ 📌 โครงการหลัก: [${record.code}] ${record.name}`);
       }
     }
-    await prisma.strategy.delete({ where: { id: s.id } });
   }
 
-  // 2. Clean old IND records
+  // Clean old IND%
   const oldIndicators = await prisma.indicator.findMany({
     where: { code: { startsWith: 'IND' } },
     include: { projects: true }
@@ -169,42 +204,14 @@ async function main() {
     }
   }
 
-  // 3. Upsert S1 to S4 with exact 4 local development issues
-  for (const s of strategiesData) {
-    const strat = await prisma.strategy.upsert({
-      where: { code: s.code },
-      update: { name: s.name },
-      create: { code: s.code, name: s.name }
-    });
-    console.log(`\n🏛️ [${strat.code}] ${strat.name}`);
-
-    for (const ss of s.subStrategies) {
-      const subStrat = await prisma.subStrategy.upsert({
-        where: { code: ss.code },
-        update: { name: ss.name, strategyId: strat.id },
-        create: { code: ss.code, name: ss.name, strategyId: strat.id }
-      });
-      console.log(`   ↳ 🔹 [${subStrat.code}] ${subStrat.name}`);
-
-      for (const p of ss.projects) {
-        const record = await prisma.indicator.upsert({
-          where: { code: p.code },
-          update: { name: p.name, subStrategyId: subStrat.id },
-          create: { code: p.code, name: p.name, subStrategyId: subStrat.id }
-        });
-        console.log(`      ↳ 📌 [${record.code}] ${record.name}`);
-      }
-    }
-  }
-
   console.log('\n====================================================');
-  console.log('🎉 Successfully synced exact 4 Local Development Issues!');
+  console.log('🎉 Successfully seeded all 4 Strategic levels!');
   console.log('====================================================');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error updating strategies:', e);
+    console.error('❌ Error seeding strategic plan:', e);
     process.exit(1);
   })
   .finally(async () => {

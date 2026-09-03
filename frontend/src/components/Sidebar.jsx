@@ -16,6 +16,7 @@ import {
   FiActivity,
   FiAlertTriangle,
   FiBriefcase,
+  FiGlobe,
   FiChevronDown,
   FiX
 } from 'react-icons/fi';
@@ -26,8 +27,8 @@ const getRoleLabel = (role) => {
     case 'ADMIN': return 'ผู้ดูแลระบบ';
     case 'PRESIDENT': return 'อธิการบดี';
     case 'DEAN': return 'คณบดี';
-    case 'TEACHER': return 'อาจารย์ / เจ้าหน้าที่';
-    default: return role || 'ผู้ใช้งาน';
+    case 'TEACHER': return 'อาจารย์ / ผู้รับผิดชอบ';
+    default: return role;
   }
 };
 
@@ -46,9 +47,10 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
       roles: ['ADMIN'],
       subItems: [
         { to: '/master-data?tab=user',          name: 'ผู้ใช้งาน',                     shortName: 'ผู้ใช้',        icon: <FiUsers className="w-4 h-4" /> },
-        { to: '/master-data?tab=strategy',      name: 'ประเด็นการพัฒนาท้องถิ่น',       shortName: 'ประเด็นพัฒนา',  icon: <FiDatabase className="w-4 h-4" /> },
-        { to: '/master-data?tab=sub-strategy',  name: 'แผนงานย่อย (Sub-Program Name)', shortName: 'แผนงานย่อย',    icon: <FiGitCommit className="w-4 h-4" /> },
-        { to: '/master-data?tab=indicator',     name: 'โครงการหลัก (Main project Name)', shortName: 'โครงการหลัก', icon: <FiBriefcase className="w-4 h-4" /> },
+        { to: '/master-data?tab=local-issue',   name: 'ประเด็นการพัฒนาท้องถิ่น',       shortName: 'ประเด็นพัฒนา',  icon: <FiGlobe className="w-4 h-4" /> },
+        { to: '/master-data?tab=strategy',      name: 'แผนงานหลัก',                    shortName: 'แผนงานหลัก',    icon: <FiDatabase className="w-4 h-4" /> },
+        { to: '/master-data?tab=sub-strategy',  name: 'แผนงานย่อย',                    shortName: 'แผนงานย่อย',    icon: <FiGitCommit className="w-4 h-4" /> },
+        { to: '/master-data?tab=indicator',     name: 'โครงการหลัก',                   shortName: 'โครงการหลัก',   icon: <FiBriefcase className="w-4 h-4" /> },
         { to: '/projects',                      name: 'โครงการยุทธศาสตร์ทั้งหมด',     shortName: 'โครงการ',       icon: <FiBriefcase className="w-4 h-4" /> },
         { to: '/activities',                    name: 'รายการกิจกรรม',        shortName: 'กิจกรรม',   icon: <FiActivity className="w-4 h-4" /> },
         { to: '/master-data?tab=fiscal-year',   name: 'ปีงบประมาณ',           shortName: 'ปีงบฯ',    icon: <FiCalendar className="w-4 h-4" /> },

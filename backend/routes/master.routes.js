@@ -17,6 +17,7 @@ const {
 // Public reads (Any authenticated user can fetch master data to populate dropdowns)
 router.get('/faculties', authenticate, masterController.getFaculties);
 router.get('/departments', authenticate, masterController.getDepartments);
+router.get('/local-issues', authenticate, masterController.getLocalIssues);
 router.get('/fiscal-years', authenticate, masterController.getFiscalYears);
 router.get('/budget-sources', authenticate, masterController.getBudgetSources);
 router.get('/strategies', authenticate, masterController.getStrategies);
@@ -25,6 +26,11 @@ router.get('/indicators', authenticate, masterController.getIndicators);
 router.get('/users', authenticate, masterController.getUsers);
 
 // Restrictive writes (ADMIN role only)
+// Local Issues (ประเด็นการพัฒนาท้องถิ่น)
+router.post('/local-issues', authenticate, authorize('ADMIN'), masterController.createLocalIssue);
+router.put('/local-issues/:id', authenticate, authorize('ADMIN'), masterController.updateLocalIssue);
+router.delete('/local-issues/:id', authenticate, authorize('ADMIN'), masterController.deleteLocalIssue);
+
 // Faculties
 router.post('/faculties', authenticate, authorize('ADMIN'), validate(facultySchema), masterController.createFaculty);
 router.put('/faculties/:id', authenticate, authorize('ADMIN'), validate(facultySchema), masterController.updateFaculty);
@@ -45,7 +51,7 @@ router.post('/budget-sources', authenticate, authorize('ADMIN'), validate(budget
 router.put('/budget-sources/:id', authenticate, authorize('ADMIN'), validate(budgetSourceSchema), masterController.updateBudgetSource);
 router.delete('/budget-sources/:id', authenticate, authorize('ADMIN'), masterController.deleteBudgetSource);
 
-// Strategies
+// Strategies (แผนงานหลัก)
 router.post('/strategies', authenticate, authorize('ADMIN'), validate(strategySchema), masterController.createStrategy);
 router.put('/strategies/:id', authenticate, authorize('ADMIN'), validate(strategySchema), masterController.updateStrategy);
 router.delete('/strategies/:id', authenticate, authorize('ADMIN'), masterController.deleteStrategy);

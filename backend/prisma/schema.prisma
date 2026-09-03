@@ -77,10 +77,23 @@ model BudgetSource {
   @@map("budget_sources")
 }
 
+model LocalIssue {
+  id         Int        @id @default(autoincrement())
+  name       String
+  code       String     @unique
+  strategies Strategy[]
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  @@map("local_development_issues")
+}
+
 model Strategy {
   id            Int           @id @default(autoincrement())
   name          String
   code          String        @unique
+  localIssueId  Int?          @map("local_issue_id")
+  localIssue    LocalIssue?   @relation(fields: [localIssueId], references: [id], onDelete: SetNull)
   subStrategies SubStrategy[]
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")

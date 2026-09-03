@@ -230,14 +230,14 @@ const ProjectForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Strategy */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">ประเด็นการพัฒนาท้องถิ่น <span className="text-red-500">*</span></label>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">แผนงานหลัก <span className="text-red-500">*</span></label>
             <select
               className={`w-full px-3 py-2 border ${errors.strategyId ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm`}
-              {...register('strategyId', { required: 'กรุณาเลือกประเด็นการพัฒนาท้องถิ่น' })}
+              {...register('strategyId', { required: 'กรุณาเลือกแผนงานหลัก' })}
               onChange={handleStrategyChange}
               value={selectedStrategyId}
             >
-              <option value="">-- เลือกประเด็นการพัฒนาท้องถิ่น --</option>
+              <option value="">-- เลือกแผนงานหลัก --</option>
               {strategies.map(s => (
                 <option key={s.id} value={s.id}>{s.code} - {s.name}</option>
               ))}
@@ -247,7 +247,7 @@ const ProjectForm = () => {
 
           {/* Sub Strategy */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">แผนงานย่อย (Sub-Program Name) <span className="text-red-500">*</span></label>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">แผนงานย่อย <span className="text-red-500">*</span></label>
             <select
               className={`w-full px-3 py-2 border ${errors.subStrategyId ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm`}
               {...register('subStrategyId', { required: 'กรุณาเลือกแผนงานย่อย' })}
@@ -255,7 +255,7 @@ const ProjectForm = () => {
               disabled={!selectedStrategyId}
               value={selectedSubStrategyId}
             >
-              <option value="">-- เลือกแผนงานย่อย (Sub-Program) --</option>
+              <option value="">-- เลือกแผนงานย่อย --</option>
               {filteredSubStrategies.map(ss => (
                 <option key={ss.id} value={ss.id}>{ss.code} - {ss.name}</option>
               ))}
@@ -265,13 +265,13 @@ const ProjectForm = () => {
 
           {/* Indicator */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">โครงการหลัก (Main project Name)</label>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">โครงการหลัก</label>
             <select
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               {...register('indicatorId')}
               disabled={!selectedSubStrategyId}
             >
-              <option value="">-- เลือกโครงการหลัก (Main Project) --</option>
+              <option value="">-- เลือกโครงการหลัก --</option>
               {filteredIndicators.map(ind => (
                 <option key={ind.id} value={ind.id}>{ind.code} - {ind.name}</option>
               ))}

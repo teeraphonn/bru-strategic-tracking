@@ -31,15 +31,16 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     if (pathname === '/master-data') {
       const masterTabs = {
         'user': 'จัดการข้อมูลผู้ใช้งาน',
-        'strategy': 'ประเด็นการพัฒนาท้องถิ่น',
-        'sub-strategy': 'แผนงานย่อย (Sub-Program Name)',
-        'indicator': 'โครงการหลัก (Main project Name)',
+        'local-issue': 'จัดการประเด็นการพัฒนาท้องถิ่น',
+        'strategy': 'จัดการแผนงานหลัก',
+        'sub-strategy': 'จัดการแผนงานย่อย',
+        'indicator': 'จัดการโครงการหลัก',
         'fiscal-year': 'จัดการปีงบประมาณ',
         'budget-source': 'จัดการแหล่งงบประมาณ',
         'faculty': 'จัดการข้อมูลคณะ',
         'department': 'จัดการภาควิชา/หน่วยงาน'
       };
-      return masterTabs[tab] || 'จัดการข้อมูลพื้นฐานระบบ (Master Data)';
+      return masterTabs[tab] || 'จัดการข้อมูลพื้นฐานระบบ';
     }
 
     if (pathname.startsWith('/dashboard')) return 'แดชบอร์ด';

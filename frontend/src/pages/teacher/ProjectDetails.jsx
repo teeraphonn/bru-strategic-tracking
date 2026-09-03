@@ -925,19 +925,26 @@ const ProjectDetails = () => {
             </div>
 
             <div className="space-y-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
+              {project.subStrategy?.strategy?.localIssue && (
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ประเด็นการพัฒนาท้องถิ่น</label>
+                  <p className="text-slate-800 font-bold mt-1">{project.subStrategy.strategy.localIssue.name}</p>
+                </div>
+              )}
+
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ประเด็นการพัฒนาท้องถิ่น</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">แผนงานหลัก</label>
                 <p className="text-slate-800 font-bold mt-1">{project.subStrategy?.strategy?.name}</p>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">แผนงานย่อย (Sub-Program Name)</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">แผนงานย่อย</label>
                 <p className="text-slate-800 font-bold mt-1">{project.subStrategy?.name}</p>
               </div>
 
               {project.indicator && (
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">โครงการหลัก (Main project Name)</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">โครงการหลัก</label>
                   <p className="text-slate-800 font-bold mt-1">{project.indicator?.name}</p>
                 </div>
               )}

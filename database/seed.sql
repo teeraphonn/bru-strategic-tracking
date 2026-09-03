@@ -51,14 +51,32 @@ INSERT INTO `budget_sources` (`id`, `name`, `created_at`, `updated_at`) VALUES
 (3, 'งบประมาณกองทุนพัฒนาท้องถิ่น', NOW(3), NOW(3));
 
 -- ---------------------------------------------------------
--- 5. บันทึกประเด็นยุทธศาสตร์แผนงานหลัก (Insert Strategies)
--- 2.1 ประเด็นการพัฒนาท้องถิ่น
+-- 4.5 บันทึกประเด็นการพัฒนาท้องถิ่น (Local Development Issues)
 -- ---------------------------------------------------------
-INSERT INTO `strategies` (`id`, `name`, `code`, `created_at`, `updated_at`) VALUES
-(1, 'การพัฒนาท้องถิ่นด้านเศรษฐกิจ', 'S1', NOW(3), NOW(3)),
-(2, 'การพัฒนาท้องถิ่นด้านสังคม', 'S2', NOW(3), NOW(3)),
-(3, 'การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม', 'S3', NOW(3), NOW(3)),
-(4, 'การพัฒนาท้องถิ่นด้านการศึกษา', 'S4', NOW(3), NOW(3));
+CREATE TABLE IF NOT EXISTS `local_development_issues` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `code` VARCHAR(191) NOT NULL UNIQUE,
+  `name` VARCHAR(191) NOT NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `local_development_issues` (`id`, `name`, `code`, `created_at`, `updated_at`) VALUES
+(1, 'การพัฒนาท้องถิ่นด้านเศรษฐกิจ', 'LDI1', NOW(3), NOW(3)),
+(2, 'การพัฒนาท้องถิ่นด้านสังคม', 'LDI2', NOW(3), NOW(3)),
+(3, 'การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม', 'LDI3', NOW(3), NOW(3)),
+(4, 'การพัฒนาท้องถิ่นด้านการศึกษา', 'LDI4', NOW(3), NOW(3));
+
+-- ---------------------------------------------------------
+-- 5. บันทึกแผนงานหลัก (Insert Strategies - Program Name)
+-- ---------------------------------------------------------
+INSERT INTO `strategies` (`id`, `name`, `code`, `local_issue_id`, `created_at`, `updated_at`) VALUES
+(1, 'ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง', 'S1', 1, NOW(3), NOW(3)),
+(2, 'ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่', 'S2', 2, NOW(3), NOW(3)),
+(3, 'การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ', 'S3', 3, NOW(3), NOW(3)),
+(4, 'การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน', 'S4', 4, NOW(3), NOW(3)),
+(5, 'โครงการร่วมระดับภูมิภาคภาค', 'S5', NULL, NOW(3), NOW(3)),
+(6, 'โครงการร่วมระดับประเทศ', 'S6', NULL, NOW(3), NOW(3));
 
 -- ---------------------------------------------------------
 -- 6. บันทึกยุทธศาสตร์ย่อยในการจัดกลุ่ม (Insert Sub Strategies)

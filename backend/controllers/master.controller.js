@@ -351,13 +351,65 @@ const deleteBudgetSource = async (req, res) => {
 };
 
 // ==========================================
-// STRATEGIES CRUD
+// LOCAL DEVELOPMENT ISSUES CRUD (ประเด็นการพัฒนาท้องถิ่น)
+// ==========================================
+const getLocalIssues = async (req, res) => {
+  try {
+    const list = await prisma.localIssue.findMany({
+      orderBy: { code: 'asc' },
+      include: { _count: { select: { strategies: true } } }
+    });
+    res.json(list);
+  } catch (error) {
+    handleError(res, error, 'Failed to fetch local development issues');
+  }
+};
+
+const createLocalIssue = async (req, res) => {
+  try {
+    const { name, code } = req.body;
+    const item = await prisma.localIssue.create({ data: { name, code } });
+    res.status(201).json(item);
+  } catch (error) {
+    handleError(res, error, 'Failed to create local development issue');
+  }
+};
+
+const updateLocalIssue = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, code } = req.body;
+    const item = await prisma.localIssue.update({
+      where: { id: parseInt(id) },
+      data: { name, code }
+    });
+    res.json(item);
+  } catch (error) {
+    handleError(res, error, 'Failed to update local development issue');
+  }
+};
+
+const deleteLocalIssue = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.localIssue.delete({ where: { id: parseInt(id) } });
+    res.json({ message: 'Local development issue deleted successfully' });
+  } catch (error) {
+    handleError(res, error, 'Failed to delete local development issue');
+  }
+};
+
+// ==========================================
+// STRATEGIES CRUD (แผนงานหลัก)
 // ==========================================
 const getStrategies = async (req, res) => {
   try {
     const list = await prisma.strategy.findMany({
       orderBy: { code: 'asc' },
-      include: { _count: { select: { subStrategies: true } } }
+      include: {
+        localIssue: true,
+        _count: { select: { subStrategies: true } }
+      }
     });
     res.json(list);
   } catch (error) {
@@ -367,8 +419,14 @@ const getStrategies = async (req, res) => {
 
 const createStrategy = async (req, res) => {
   try {
-    const { name, code } = req.body;
-    const item = await prisma.strategy.create({ data: { name, code } });
+    const { name, code, localIssueId } = req.body;
+    const item = await prisma.strategy.create({
+      data: {
+        name,
+        code,
+        localIssueId: localIssueId ? parseInt(localIssueId) : null
+      }
+    });
     res.status(201).json(item);
   } catch (error) {
     handleError(res, error, 'Failed to create strategy');
@@ -378,10 +436,14 @@ const createStrategy = async (req, res) => {
 const updateStrategy = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, code } = req.body;
+    const { name, code, localIssueId } = req.body;
     const item = await prisma.strategy.update({
       where: { id: parseInt(id) },
-      data: { name, code }
+      data: {
+        name,
+        code,
+        localIssueId: localIssueId ? parseInt(localIssueId) : null
+      }
     });
     res.json(item);
   } catch (error) {
@@ -716,7 +778,12 @@ module.exports = {
   createBudgetSource,
   updateBudgetSource,
   deleteBudgetSource,
-  // Strategies
+  // Local Issues (ประเด็นการพัฒนาท้องถิ่น)
+  getLocalIssues,
+  createLocalIssue,
+  updateLocalIssue,
+  deleteLocalIssue,
+  // Strategies (แผนงานหลัก)
   getStrategies,
   createStrategy,
   updateStrategy,
