@@ -282,7 +282,7 @@ const Login = () => {
                       }}
                       className="p-2 rounded-xl bg-white hover:bg-violet-50 text-violet-700 font-bold border border-slate-200/90 hover:border-violet-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
                     >
-                      <span className="text-[9.5px] text-violet-500 uppercase tracking-wider">👑 ผู้ดูแลระบบ</span>
+                      <span className="text-[9.5px] text-violet-500 uppercase tracking-wider">ผู้ดูแลระบบ</span>
                       <span className="text-[11px] truncate font-medium">admin@bru.ac.th</span>
                     </button>
                     <button
@@ -293,7 +293,7 @@ const Login = () => {
                       }}
                       className="p-2 rounded-xl bg-white hover:bg-purple-50 text-purple-700 font-bold border border-slate-200/90 hover:border-purple-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
                     >
-                      <span className="text-[9.5px] text-purple-500 uppercase tracking-wider">🏛️ อธิการบดี</span>
+                      <span className="text-[9.5px] text-purple-500 uppercase tracking-wider">อธิการบดี</span>
                       <span className="text-[11px] truncate font-medium">president@bru.ac.th</span>
                     </button>
                     <button
@@ -304,7 +304,7 @@ const Login = () => {
                       }}
                       className="p-2 rounded-xl bg-white hover:bg-blue-50 text-blue-700 font-bold border border-slate-200/90 hover:border-blue-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
                     >
-                      <span className="text-[9.5px] text-blue-500 uppercase tracking-wider">🏫 คณบดี</span>
+                      <span className="text-[9.5px] text-blue-500 uppercase tracking-wider">คณบดีวิทยาศาสตร์</span>
                       <span className="text-[11px] truncate font-medium">dean@bru.ac.th</span>
                     </button>
                     <button
@@ -315,7 +315,7 @@ const Login = () => {
                       }}
                       className="p-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-700 font-bold border border-slate-200/90 hover:border-emerald-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
                     >
-                      <span className="text-[9.5px] text-emerald-500 uppercase tracking-wider">👨‍🏫 อาจารย์ผู้รับผิดชอบ (วิทคอม)</span>
+                      <span className="text-[9.5px] text-emerald-500 uppercase tracking-wider">อาจารย์ผู้รับผิดชอบ (วิทคอม)</span>
                       <span className="text-[11px] truncate font-medium">csbru / csbru1</span>
                     </button>
                   </div>
