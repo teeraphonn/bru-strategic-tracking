@@ -32,6 +32,7 @@ import {
   FiX,
   FiAlertTriangle
 } from 'react-icons/fi';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -812,7 +813,7 @@ const ProjectDetails = () => {
                                     className="group relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 cursor-pointer shadow-2xs hover:shadow-md transition-all"
                                     onClick={() => openPhotoViewer(act.images.map(i => ({ filePath: i.filePath, projectName: project.name, activityName: act.name })), idx)}
                                   >
-                                    <img src={`http://localhost:5000${img.filePath}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="thumbnail" />
+                                    <img src={getImageUrl(img.filePath)} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="thumbnail" />
                                     <div className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 text-white transition-opacity">
                                       <button
                                         type="button"
@@ -988,7 +989,7 @@ const ProjectDetails = () => {
                         onClick={() => openPhotoViewer(act.images.map(i => ({ filePath: i.filePath, projectName: project.name, activityName: act.name })), idx)}
                         className="group relative aspect-square rounded-xl overflow-hidden bg-slate-200/80 border border-slate-200/80 cursor-pointer shadow-2xs hover:shadow-md transition-all hover:-translate-y-0.5"
                       >
-                        <img src={`http://localhost:5000${img.filePath}`} alt="photo" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                        <img src={getImageUrl(img.filePath)} alt="photo" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
                           <FiEye className="w-4 h-4" />
                         </div>
@@ -1217,7 +1218,7 @@ const ProjectDetails = () => {
             )}
 
             <img
-              src={`http://localhost:5000${viewerImages[activeViewerIndex]?.filePath || viewerImages[activeViewerIndex]?.url}`}
+              src={getImageUrl(viewerImages[activeViewerIndex]?.filePath || viewerImages[activeViewerIndex]?.url)}
               alt="Activity Photo"
               className="max-w-full max-h-[78vh] object-contain rounded-xl shadow-2xl transition-all duration-200"
             />

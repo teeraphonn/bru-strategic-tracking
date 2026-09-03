@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import api from '../services/api';
 import ReportIssueModal from './ReportIssueModal';
 import ProfileModal from './ProfileModal';
+import { getImageUrl } from '../utils/imageUrl';
 
 const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
   const { user, setUser, logout, changePassword } = useContext(AuthContext);
@@ -672,7 +673,7 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
         >
           <div className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-xs overflow-hidden shrink-0 border border-slate-200/80">
             {user?.avatar ? (
-              <img src={`http://localhost:5000${user.avatar}`} alt={user.name} className="w-full h-full object-cover" />
+              <img src={getImageUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
             ) : (
               <span>{user?.name?.charAt(0) || 'U'}</span>
             )}

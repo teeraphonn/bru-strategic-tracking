@@ -25,13 +25,14 @@ import {
   FiTrendingUp,
   FiTarget,
   FiPlus,
-  FiChevronRight,
   FiEye,
+  FiChevronRight,
   FiChevronLeft,
   FiBarChart2,
   FiUser
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../../utils/imageUrl';
 
 // Register Chart.js components
 ChartJS.register(
@@ -480,7 +481,7 @@ const TeacherDashboard = () => {
                 (() => {
                   const allImages = latestImages.map(img => ({
                     id: img.id,
-                    url: `http://localhost:5000${img.filePath}`,
+                    url: getImageUrl(img.filePath),
                     title: img.activity?.name || 'รูปกิจกรรม',
                     subtitle: img.activity?.project?.name || ''
                   }));

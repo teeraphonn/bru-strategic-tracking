@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FiX, FiUser, FiKey, FiBriefcase, FiLayers, FiBookmark, FiCamera } from 'react-icons/fi';
+import { getImageUrl } from '../utils/imageUrl';
 
 const ProfileModal = ({ 
   isOpen, 
@@ -26,7 +27,7 @@ const ProfileModal = ({
 
   const getAvatarSrc = (avatarPath) => {
     if (!avatarPath || typeof avatarPath !== 'string') return null;
-    return avatarPath.startsWith('http') ? avatarPath : `http://localhost:5000${avatarPath}`;
+    return getImageUrl(avatarPath);
   };
 
   const getRoleTitle = (role) => {

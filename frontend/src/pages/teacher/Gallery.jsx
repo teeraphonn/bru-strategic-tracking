@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { AuthContext } from '../../contexts/AuthContext';
 import CustomSelect from '../../components/CustomSelect';
+import { getImageUrl } from '../../utils/imageUrl';
 import {
   FiImage,
   FiFolder,
@@ -228,7 +229,7 @@ const Gallery = () => {
                               className="group relative aspect-square rounded-xl overflow-hidden bg-slate-200/80 border border-slate-200/80 cursor-pointer shadow-2xs hover:shadow-md transition-all hover:-translate-y-0.5"
                             >
                               <img
-                                src={`http://localhost:5000${img.filePath}`}
+                                src={getImageUrl(img.filePath)}
                                 alt={img.originalName || activity.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=BRU+Image'; }}
@@ -343,7 +344,7 @@ const Gallery = () => {
                               className="group relative aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200/80 cursor-pointer shadow-2xs hover:shadow-md transition-all hover:-translate-y-0.5"
                             >
                               <img
-                                src={`http://localhost:5000${img.filePath}`}
+                                src={getImageUrl(img.filePath)}
                                 alt={img.originalName || act.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=BRU+Image'; }}
@@ -424,7 +425,7 @@ const Gallery = () => {
             )}
 
             <img
-              src={`http://localhost:5000${lightboxImages[lightboxIndex]?.filePath}`}
+              src={getImageUrl(lightboxImages[lightboxIndex]?.filePath)}
               alt="Activity Photo"
               className="max-w-full max-h-[68vh] object-contain rounded-xl shadow-2xl transition-all duration-200"
             />
@@ -449,7 +450,7 @@ const Gallery = () => {
                         isActive ? 'border-primary scale-105 shadow-md shadow-primary/40' : 'border-white/20 opacity-50 hover:opacity-100 hover:border-white/50'
                       }`}
                     >
-                      <img src={`http://localhost:5000${img.filePath}`} alt="thumbnail" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(img.filePath)} alt="thumbnail" className="w-full h-full object-cover" />
                     </button>
                   );
                 })}

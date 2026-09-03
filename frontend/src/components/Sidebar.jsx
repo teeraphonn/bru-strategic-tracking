@@ -20,6 +20,7 @@ import {
   FiChevronDown,
   FiX
 } from 'react-icons/fi';
+import { getImageUrl } from '../utils/imageUrl';
 
 // Role label helper
 const getRoleLabel = (role) => {
@@ -135,7 +136,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/15 text-white text-xs font-bold overflow-hidden">
                 {user?.avatar ? (
                   <img 
-                    src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`} 
+                    src={getImageUrl(user.avatar)} 
                     alt={user?.name || 'User'} 
                     className="w-full h-full object-cover" 
                   />

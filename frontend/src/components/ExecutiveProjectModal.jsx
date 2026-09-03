@@ -19,6 +19,7 @@ import {
   FiChevronRight,
   FiSend
 } from 'react-icons/fi';
+import { getImageUrl } from '../utils/imageUrl';
 
 const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
         a.images.forEach(img => {
           projectPhotos.push({
             id: img.id,
-            imageUrl: img.filePath ? `http://localhost:5000${img.filePath.replace(/\\/g, '/')}` : '',
+            imageUrl: getImageUrl(img.filePath),
             activityName: a.name,
             createdAt: img.createdAt
           });

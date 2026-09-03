@@ -52,6 +52,7 @@ import { Link } from 'react-router-dom';
 import CustomSelect from '../../components/CustomSelect';
 import PresidentDashboard from '../president/Dashboard';
 import DeanDashboard from '../dean/Dashboard';
+import { getImageUrl } from '../../utils/imageUrl';
 
 ChartJS.register(
   CategoryScale,
@@ -901,7 +902,7 @@ const AdminDashboard = () => {
                     (() => {
                       const allImages = latestImages.map(img => ({
                         id: img.id,
-                        url: `http://localhost:5000${img.filePath}`,
+                        url: getImageUrl(img.filePath),
                         title: img.activity?.name || 'รูปกิจกรรม',
                         subtitle: img.activity?.project?.name || ''
                       }));
