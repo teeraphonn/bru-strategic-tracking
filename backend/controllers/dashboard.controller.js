@@ -11,9 +11,24 @@ const extractRecentPhotos = (projects, req, targetFacultyId = null) => {
     p.activities.forEach(a => {
       if (a.images && a.images.length > 0) {
         a.images.forEach(img => {
+          if (!img.filePath) return;
+          // If filePath is already a full URL (Cloudinary, http, https, data:), use as-is
+          // Otherwise prepend the backend host (legacy local /uploads/... paths)
+          let imageUrl;
+          if (
+            img.filePath.startsWith('http://') ||
+            img.filePath.startsWith('https://') ||
+            img.filePath.startsWith('data:')
+          ) {
+            imageUrl = img.filePath;
+          } else {
+            const cleanPath = img.filePath.replace(/\\/g, '/');
+            const normalized = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
+            imageUrl = `${req.protocol}://${req.get('host')}${normalized}`;
+          }
           photos.push({
             id: img.id,
-            imageUrl: `${req.protocol}://${req.get('host')}${img.filePath.replace(/\\/g, '/')}`,
+            imageUrl,
             activityName: a.name,
             description: a.description || '',
             projectName: p.name,
@@ -72,7 +87,11 @@ const getDashboardStats = async (req, res) => {
         const matchedFaculty = await prisma.faculty.findFirst();
         userFacultyId = matchedFaculty ? matchedFaculty.id : 1;
       }
-      projectWhere.facultyId = userFacultyId; // override/force dean's faculty
+      // Match projects that directly set facultyId OR belong to a dept in this faculty
+      projectWhere.OR = [
+        { facultyId: userFacultyId },
+        { department: { facultyId: userFacultyId } }
+      ];
     } else if (user.role === 'TEACHER') {
       projectWhere.OR = [
         { creatorId: user.id },

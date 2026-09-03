@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const prisma = require('../config/prisma');
-const cloudinary = require('../config/cloudinary');
 const { updateProjectProgress } = require('./project.controller');
 
 // Add a new activity (Plan Phase - Locks automatically upon creation)
@@ -130,32 +129,16 @@ const updateActivity = async (req, res) => {
     if (remark !== undefined) dataUpdate.remark = remark;
 
     // Handle files upload - upload to Cloudinary for persistent cloud storage
-    const images = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         try {
-          // Upload to Cloudinary from temp file path
           const uploadResult = await cloudinary.uploader.upload(file.path, {
             folder: 'bru-strategic/activities',
             resource_type: 'image',
-            quality: 'auto:good',
-            fetch_format: 'auto'
-          });
-          images.push({
-            filePath: uploadResult.secure_url
-          });
-        } catch (uploadErr) {
           console.error('Cloudinary upload error:', uploadErr);
           // Fallback: store as local path if Cloudinary fails
-          images.push({ filePath: `/uploads/${file.filename}` });
         } finally {
           // Always clean up temp file from disk
-          fs.unlink(file.path, () => {});
-        }
-      }
-    }
-
-    // Perform update and progress recalculation inside single transaction
     const updated = await prisma.$transaction(async (tx) => {
       const act = await tx.activity.update({
         where: { id: activityId },
@@ -164,7 +147,6 @@ const updateActivity = async (req, res) => {
           images: images.length > 0 ? { create: images } : undefined
         },
         include: { images: true }
-      });
 
       await updateProjectProgress(activity.projectId, tx);
       return act;
@@ -218,21 +200,6 @@ const deleteActivityImage = async (req, res) => {
         console.error('Cloudinary delete error (non-fatal):', cdnErr);
       }
     } else if (image.filePath && !image.filePath.startsWith('data:') && !image.filePath.startsWith('http')) {
-      // Delete from local disk if local path
-      const absolutePath = path.join(__dirname, '..', image.filePath);
-      if (fs.existsSync(absolutePath)) {
-        fs.unlinkSync(absolutePath);
-      }
-    }
-
-    // Delete record from database
-    await prisma.activityImage.delete({ where: { id: imgId } });
-
-    res.json({ message: 'Image deleted successfully' });
-  } catch (error) {
-    console.error('Delete image error:', error);
-    res.status(500).json({ message: 'Failed to delete image', error: error.message });
-  }
 };
 
 // Delete activity
