@@ -680,14 +680,15 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5">
               {strategicPillars.map((sp, idx) => {
                 const colors = [
                   { bg: 'from-violet-500/10 to-violet-500/5', border: 'border-violet-200/80', badge: 'bg-violet-100 text-violet-800', bar: 'bg-violet-600' },
                   { bg: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-200/80', badge: 'bg-purple-100 text-purple-800', bar: 'bg-purple-600' },
                   { bg: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-200/80', badge: 'bg-blue-100 text-blue-800', bar: 'bg-blue-600' },
                   { bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-200/80', badge: 'bg-emerald-100 text-emerald-800', bar: 'bg-emerald-600' },
-                  { bg: 'from-amber-500/10 to-amber-500/5', border: 'border-amber-200/80', badge: 'bg-amber-100 text-amber-800', bar: 'bg-amber-600' }
+                  { bg: 'from-amber-500/10 to-amber-500/5', border: 'border-amber-200/80', badge: 'bg-amber-100 text-amber-800', bar: 'bg-amber-600' },
+                  { bg: 'from-rose-500/10 to-rose-500/5', border: 'border-rose-200/80', badge: 'bg-rose-100 text-rose-800', bar: 'bg-rose-600' }
                 ];
                 const c = colors[idx % colors.length];
 
