@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi';
 import Swal from 'sweetalert2';
 import api from '../../services/api';
+import CustomSelect from '../../components/CustomSelect';
 
 const AdminIssues = () => {
   const [issues, setIssues] = useState([]);
@@ -248,29 +249,33 @@ const AdminIssues = () => {
 
         {/* Filters */}
         <div className="flex items-center gap-3">
-          <select
+          <CustomSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500"
-          >
-            <option value="">ทุกสถานะ</option>
-            <option value="PENDING">รอดำเนินการ</option>
-            <option value="IN_PROGRESS">กำลังแก้ไข</option>
-            <option value="RESOLVED">แก้ไขเรียบร้อย</option>
-            <option value="REJECTED">ยกเลิก/ปฏิเสธ</option>
-          </select>
+            onChange={(val) => setStatusFilter(val)}
+            placeholder="ทุกสถานะ"
+            className="w-40"
+            options={[
+              { value: '', label: 'ทุกสถานะ' },
+              { value: 'PENDING', label: 'รอดำเนินการ', badge: 'PENDING' },
+              { value: 'IN_PROGRESS', label: 'กำลังแก้ไข', badge: 'PROGRESS' },
+              { value: 'RESOLVED', label: 'แก้ไขเรียบร้อย', badge: 'DONE' },
+              { value: 'REJECTED', label: 'ยกเลิก/ปฏิเสธ', badge: 'REJECT' }
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500"
-          >
-            <option value="">ทุกระดับความเร่งด่วน</option>
-            <option value="URGENT">เร่งด่วนที่สุด</option>
-            <option value="HIGH">ความสำคัญสูง</option>
-            <option value="MEDIUM">ความสำคัญปานกลาง</option>
-            <option value="LOW">ทั่วไป</option>
-          </select>
+            onChange={(val) => setPriorityFilter(val)}
+            placeholder="ทุกระดับความเร่งด่วน"
+            className="w-44"
+            options={[
+              { value: '', label: 'ทุกระดับความเร่งด่วน' },
+              { value: 'URGENT', label: 'เร่งด่วนที่สุด', badge: 'URGENT' },
+              { value: 'HIGH', label: 'ความสำคัญสูง', badge: 'HIGH' },
+              { value: 'MEDIUM', label: 'ความสำคัญปานกลาง', badge: 'MED' },
+              { value: 'LOW', label: 'ทั่วไป', badge: 'LOW' }
+            ]}
+          />
         </div>
       </div>
 
@@ -381,16 +386,17 @@ const AdminIssues = () => {
                 <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
                   เปลี่ยนสถานะการดำเนินการ
                 </label>
-                <select
+                <CustomSelect
                   value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500"
-                >
-                  <option value="PENDING">รอดำเนินการ (PENDING)</option>
-                  <option value="IN_PROGRESS">กำลังแก้ไข (IN_PROGRESS)</option>
-                  <option value="RESOLVED">แก้ไขเรียบร้อยแล้ว (RESOLVED)</option>
-                  <option value="REJECTED">ยกเลิก / ไม่ดำเนินการ (REJECTED)</option>
-                </select>
+                  onChange={(val) => setNewStatus(val)}
+                  placeholder="เลือกสถานะ..."
+                  options={[
+                    { value: 'PENDING', label: 'รอดำเนินการ (PENDING)', badge: 'PENDING' },
+                    { value: 'IN_PROGRESS', label: 'กำลังแก้ไข (IN_PROGRESS)', badge: 'PROGRESS' },
+                    { value: 'RESOLVED', label: 'แก้ไขเรียบร้อยแล้ว (RESOLVED)', badge: 'DONE' },
+                    { value: 'REJECTED', label: 'ยกเลิก / ไม่ดำเนินการ (REJECTED)', badge: 'REJECT' }
+                  ]}
+                />
               </div>
 
               <div>

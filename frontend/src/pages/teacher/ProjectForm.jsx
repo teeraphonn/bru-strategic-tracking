@@ -450,30 +450,38 @@ const ProjectForm = () => {
         {/* Budget Sources and Year */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Fiscal Year */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">ปีงบประมาณ <span className="text-red-500">*</span></label>
-            <select
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-              {...register('fiscalYearId', { required: 'กรุณาเลือกปีงบประมาณ' })}
-            >
-              {fiscalYears.map(fy => (
-                <option key={fy.id} value={fy.id}>ปี พ.ศ. {fy.year} {fy.active ? '(ปีงบปัจจุบัน)' : ''}</option>
-              ))}
-            </select>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-gray-500">ปีงบประมาณ <span className="text-red-500">*</span></label>
+            <input type="hidden" {...register('fiscalYearId', { required: 'กรุณาเลือกปีงบประมาณ' })} />
+            <CustomSelect
+              value={watch('fiscalYearId') || ''}
+              onChange={(val) => setValue('fiscalYearId', val, { shouldValidate: true })}
+              placeholder="-- เลือกปีงบประมาณ --"
+              className={errors.fiscalYearId ? 'ring-2 ring-red-400 rounded-xl' : ''}
+              options={fiscalYears.map(fy => ({
+                value: String(fy.id),
+                label: `ปี พ.ศ. ${fy.year} ${fy.active ? '(ปีงบปัจจุบัน)' : ''}`,
+                badge: fy.active ? 'ปัจจุบัน' : undefined
+              }))}
+            />
+            {errors.fiscalYearId && <span className="text-xs text-red-500 mt-1 block font-semibold">{errors.fiscalYearId.message}</span>}
           </div>
 
           {/* Budget Source */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">แหล่งที่มางบประมาณ <span className="text-red-500">*</span></label>
-            <select
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-              {...register('budgetSourceId', { required: 'กรุณาเลือกแหล่งงบประมาณ' })}
-            >
-              <option value="">-- เลือกแหล่งงบประมาณ --</option>
-              {budgetSources.map(bs => (
-                <option key={bs.id} value={bs.id}>{bs.name}</option>
-              ))}
-            </select>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-gray-500">แหล่งที่มางบประมาณ <span className="text-red-500">*</span></label>
+            <input type="hidden" {...register('budgetSourceId', { required: 'กรุณาเลือกแหล่งงบประมาณ' })} />
+            <CustomSelect
+              value={watch('budgetSourceId') || ''}
+              onChange={(val) => setValue('budgetSourceId', val, { shouldValidate: true })}
+              placeholder="-- เลือกแหล่งงบประมาณ --"
+              className={errors.budgetSourceId ? 'ring-2 ring-red-400 rounded-xl' : ''}
+              options={budgetSources.map(bs => ({
+                value: String(bs.id),
+                label: bs.name
+              }))}
+            />
+            {errors.budgetSourceId && <span className="text-xs text-red-500 mt-1 block font-semibold">{errors.budgetSourceId.message}</span>}
           </div>
 
           {/* Total Budget */}
