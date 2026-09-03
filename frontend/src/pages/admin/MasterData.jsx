@@ -857,17 +857,17 @@ const MasterData = () => {
 
                       {activeTab === 'sub-strategy' && (
                         <>
-                          <td className="px-4 py-3 font-semibold text-gray-700 truncate">{item.code}</td>
-                          <td className="px-4 py-3 text-gray-700 font-semibold truncate">{item.name}</td>
-                          <td className="px-4 py-3 text-gray-500 font-medium truncate">{item.strategy?.name || '—'}</td>
+                          <td className="px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">{item.code}</td>
+                          <td className="px-4 py-3 text-gray-700 font-semibold max-w-xs md:max-w-md break-words" title={item.name}>{item.name}</td>
+                          <td className="px-4 py-3 text-gray-500 font-medium max-w-xs break-words" title={item.strategy?.name}>{item.strategy?.name || '—'}</td>
                         </>
                       )}
 
                       {activeTab === 'indicator' && (
                         <>
-                          <td className="px-4 py-3 font-semibold text-gray-700 truncate">{item.code}</td>
-                          <td className="px-4 py-3 text-gray-700 font-semibold truncate">{item.name}</td>
-                          <td className="px-4 py-3 text-gray-500 font-medium truncate">{item.subStrategy?.name || '—'}</td>
+                          <td className="px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">{item.code}</td>
+                          <td className="px-4 py-3 text-gray-700 font-semibold max-w-xs md:max-w-md break-words" title={item.name}>{item.name}</td>
+                          <td className="px-4 py-3 text-gray-500 font-medium max-w-xs break-words" title={item.subStrategy?.name}>{item.subStrategy?.name || '—'}</td>
                         </>
                       )}
 

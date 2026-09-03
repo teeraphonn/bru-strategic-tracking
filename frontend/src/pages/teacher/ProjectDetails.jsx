@@ -932,32 +932,44 @@ const ProjectDetails = () => {
             <div className="space-y-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
               {project.subStrategy?.strategy?.localIssue && (
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ประเด็นการพัฒนาท้องถิ่น</label>
-                  <p className="text-slate-800 font-bold mt-1">{project.subStrategy.strategy.localIssue.name}</p>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">1. ประเด็นการพัฒนาท้องถิ่น</label>
+                  <p className="text-slate-800 font-bold mt-1 leading-relaxed break-words text-sm">
+                    {project.subStrategy.strategy.localIssue.code ? `${project.subStrategy.strategy.localIssue.code}: ` : ''}
+                    {project.subStrategy.strategy.localIssue.name}
+                  </p>
                 </div>
               )}
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">แผนงานหลัก</label>
-                <p className="text-slate-800 font-bold mt-1">{project.subStrategy?.strategy?.name}</p>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">2. แผนงานหลัก</label>
+                <p className="text-slate-800 font-bold mt-1 leading-relaxed break-words text-sm">
+                  {project.subStrategy?.strategy?.code ? `${project.subStrategy.strategy.code}: ` : ''}
+                  {project.subStrategy?.strategy?.name || 'ไม่ระบุ'}
+                </p>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">แผนงานย่อย</label>
-                <p className="text-slate-800 font-bold mt-1">{project.subStrategy?.name}</p>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">3. แผนงานย่อย</label>
+                <p className="text-slate-800 font-bold mt-1 leading-relaxed break-words text-sm">
+                  {project.subStrategy?.code ? `${project.subStrategy.code}: ` : ''}
+                  {project.subStrategy?.name || 'ไม่ระบุ'}
+                </p>
               </div>
 
               {project.indicator && (
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">โครงการหลัก</label>
-                  <p className="text-slate-800 font-bold mt-1">{project.indicator?.name}</p>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">4. โครงการหลัก</label>
+                  <p className="text-slate-800 font-bold mt-1 leading-relaxed break-words text-sm">
+                    {project.indicator?.code ? `${project.indicator.code}: ` : ''}
+                    {project.indicator?.name || 'ไม่ระบุ'}
+                  </p>
                 </div>
               )}
 
               {project.budgetSource && (
                 <div>
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">แหล่งงบประมาณ</label>
-                  <p className="text-slate-800 font-bold mt-1">{project.budgetSource?.name}</p>
+                  <p className="text-slate-800 font-bold mt-1 leading-relaxed break-words text-sm">{project.budgetSource?.name}</p>
                 </div>
               )}
             </div>
