@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
-import { FiEye, FiEyeOff, FiUser, FiLock, FiInfo } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiUser, FiLock, FiInfo, FiChevronDown } from 'react-icons/fi';
 
 const slideshowImages = ['/login1.jpg', '/login2.jpg', '/login3.jpg'];
 
@@ -12,6 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showDemoAccounts, setShowDemoAccounts] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
@@ -255,57 +256,71 @@ const Login = () => {
               )}
             </button>
 
-            {/* Quick Login Helper Pills */}
-            <div className="pt-3 border-t border-slate-100 space-y-2">
-              <div className="text-[11px] font-bold text-slate-400 text-center">
-                🔑 บัญชีทดสอบระบบ (คลิกเพื่อกรอกอัตโนมัติ):
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setValue('username', 'admin@bru.ac.th');
-                    setValue('password', 'admin1234');
-                  }}
-                  className="p-2 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold border border-violet-200 transition-all text-left flex flex-col cursor-pointer"
-                >
-                  <span className="text-[9.5px] text-violet-500 uppercase tracking-wider">👑 ผู้ดูแลระบบ</span>
-                  <span className="text-[11px] truncate">admin@bru.ac.th</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setValue('username', 'president@bru.ac.th');
-                    setValue('password', 'admin1234');
-                  }}
-                  className="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold border border-purple-200 transition-all text-left flex flex-col cursor-pointer"
-                >
-                  <span className="text-[9.5px] text-purple-500 uppercase tracking-wider">🏛️ อธิการบดี</span>
-                  <span className="text-[11px] truncate">president@bru.ac.th</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setValue('username', 'dean@bru.ac.th');
-                    setValue('password', 'admin1234');
-                  }}
-                  className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold border border-blue-200 transition-all text-left flex flex-col cursor-pointer"
-                >
-                  <span className="text-[9.5px] text-blue-500 uppercase tracking-wider">🏫 คณบดี</span>
-                  <span className="text-[11px] truncate">dean@bru.ac.th</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setValue('username', 'teacher1@bru.ac.th');
-                    setValue('password', 'admin1234');
-                  }}
-                  className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold border border-emerald-200 transition-all text-left flex flex-col cursor-pointer"
-                >
-                  <span className="text-[9.5px] text-emerald-500 uppercase tracking-wider">👨‍🏫 อาจารย์ผู้รับผิดชอบ</span>
-                  <span className="text-[11px] truncate">teacher1@bru.ac.th</span>
-                </button>
-              </div>
+            {/* Collapsible Demo Accounts Toggle */}
+            <div className="pt-2.5 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowDemoAccounts(!showDemoAccounts)}
+                className="w-full flex items-center justify-center gap-1.5 py-1 text-[11px] font-bold text-slate-500 hover:text-primary transition-colors cursor-pointer group"
+              >
+                <span>🔑 {showDemoAccounts ? 'ซ่อนบัญชีทดสอบระบบ' : 'แสดงบัญชีทดสอบระบบ (Demo Accounts)'}</span>
+                <FiChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover:text-primary transition-transform duration-200 ${showDemoAccounts ? 'rotate-180 text-primary' : ''}`} />
+              </button>
+
+              {/* Collapsible Demo Accounts Grid */}
+              {showDemoAccounts && (
+                <div className="mt-2.5 p-3 bg-slate-50/90 rounded-2xl border border-slate-200/80 space-y-2 animate-fadeIn">
+                  <div className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-wider">
+                    คลิกบทบาทที่ต้องการ เพื่อกรอกข้อมูลอัตโนมัติ:
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue('username', 'admin@bru.ac.th');
+                        setValue('password', 'admin1234');
+                      }}
+                      className="p-2 rounded-xl bg-white hover:bg-violet-50 text-violet-700 font-bold border border-slate-200/90 hover:border-violet-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
+                    >
+                      <span className="text-[9.5px] text-violet-500 uppercase tracking-wider">👑 ผู้ดูแลระบบ</span>
+                      <span className="text-[11px] truncate font-medium">admin@bru.ac.th</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue('username', 'president@bru.ac.th');
+                        setValue('password', 'admin1234');
+                      }}
+                      className="p-2 rounded-xl bg-white hover:bg-purple-50 text-purple-700 font-bold border border-slate-200/90 hover:border-purple-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
+                    >
+                      <span className="text-[9.5px] text-purple-500 uppercase tracking-wider">🏛️ อธิการบดี</span>
+                      <span className="text-[11px] truncate font-medium">president@bru.ac.th</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue('username', 'dean@bru.ac.th');
+                        setValue('password', 'admin1234');
+                      }}
+                      className="p-2 rounded-xl bg-white hover:bg-blue-50 text-blue-700 font-bold border border-slate-200/90 hover:border-blue-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
+                    >
+                      <span className="text-[9.5px] text-blue-500 uppercase tracking-wider">🏫 คณบดี</span>
+                      <span className="text-[11px] truncate font-medium">dean@bru.ac.th</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue('username', 'teacher1@bru.ac.th');
+                        setValue('password', 'admin1234');
+                      }}
+                      className="p-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-700 font-bold border border-slate-200/90 hover:border-emerald-300 shadow-2xs transition-all text-left flex flex-col cursor-pointer"
+                    >
+                      <span className="text-[9.5px] text-emerald-500 uppercase tracking-wider">👨‍🏫 อาจารย์ผู้รับผิดชอบ</span>
+                      <span className="text-[11px] truncate font-medium">teacher1@bru.ac.th</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </form>
         </div>
