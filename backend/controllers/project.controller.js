@@ -275,7 +275,9 @@ const getProject = async (req, res) => {
         return res.status(403).json({ message: 'Access denied to this project' });
       }
     } else if (userRole === 'DEAN') {
-      if (project.facultyId !== req.user.department?.facultyId) {
+      const userFacultyId = req.user.department?.facultyId;
+      const projFacultyId = project.facultyId || project.department?.facultyId;
+      if (!userFacultyId || projFacultyId !== userFacultyId) {
         return res.status(403).json({ message: 'Access denied: project is outside your faculty' });
       }
     }
@@ -506,7 +508,8 @@ const updateExecutiveDirective = async (req, res) => {
     // IDOR Check: DEAN can only issue directive to projects belonging to their faculty
     if (userRole === 'DEAN') {
       const userFacultyId = req.user.department?.facultyId;
-      if (!userFacultyId || project.facultyId !== userFacultyId) {
+      const projFacultyId = project.facultyId || (await prisma.department.findUnique({ where: { id: project.departmentId } }))?.facultyId;
+      if (!userFacultyId || projFacultyId !== userFacultyId) {
         return res.status(403).json({ message: 'Access denied: Cannot issue directive to project outside your faculty' });
       }
     }
