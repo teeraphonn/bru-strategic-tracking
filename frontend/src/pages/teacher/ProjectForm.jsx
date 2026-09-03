@@ -403,46 +403,128 @@ const ProjectForm = () => {
             </div>
           </div>
 
-          {/* Active Hierarchy Path Visual Summary */}
+          {/* Active Hierarchy Path Visual Summary - Stepper Card Flow */}
           {(selectedLocalIssueId || selectedStrategyId) && (
-            <div className="mt-4 p-3.5 bg-white/95 rounded-2xl border border-purple-100/90 shadow-2xs flex items-center flex-wrap gap-2 text-[11.5px]">
-              <span className="font-extrabold text-primary flex items-center gap-1.5 shrink-0">
-                <FiLayers className="w-3.5 h-3.5" />
-                <span>เส้นทางยุทธศาสตร์:</span>
-              </span>
-              {currentLocalIssue && (
-                <span className="inline-flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70 font-semibold text-slate-700">
-                  <span className="text-[10px] font-mono font-black text-violet-700 bg-violet-100/80 px-1 py-0.5 rounded">{currentLocalIssue.code}</span>
-                  <span className="max-w-[200px] sm:max-w-[320px] truncate">{currentLocalIssue.name}</span>
+            <div className="mt-5 bg-white/95 rounded-2xl border border-purple-100/90 shadow-sm p-4 sm:p-5 space-y-3.5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-wider">
+                  <FiLayers className="w-4 h-4 text-primary" />
+                  <span>เส้นทางยุทธศาสตร์ที่เลือก (Strategic Alignment Pipeline)</span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                  สายสัมพันธ์ 4 ระดับ
                 </span>
-              )}
-              {currentStrategy && (
-                <>
-                  <span className="text-slate-300 font-bold">➔</span>
-                  <span className="inline-flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70 font-semibold text-slate-700">
-                    <span className="text-[10px] font-mono font-black text-purple-700 bg-purple-100/80 px-1 py-0.5 rounded">{currentStrategy.code}</span>
-                    <span className="max-w-[200px] sm:max-w-[320px] truncate">{currentStrategy.name}</span>
-                  </span>
-                </>
-              )}
-              {currentSubStrategy && (
-                <>
-                  <span className="text-slate-300 font-bold">➔</span>
-                  <span className="inline-flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70 font-semibold text-slate-700">
-                    <span className="text-[10px] font-mono font-black text-blue-700 bg-blue-100/80 px-1 py-0.5 rounded">{currentSubStrategy.code}</span>
-                    <span className="max-w-[200px] sm:max-w-[320px] truncate">{currentSubStrategy.name}</span>
-                  </span>
-                </>
-              )}
-              {currentIndicator && (
-                <>
-                  <span className="text-slate-300 font-bold">➔</span>
-                  <span className="inline-flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70 font-semibold text-slate-700">
-                    <span className="text-[10px] font-mono font-black text-emerald-700 bg-emerald-100/80 px-1 py-0.5 rounded">{currentIndicator.code}</span>
-                    <span className="max-w-[200px] sm:max-w-[320px] truncate">{currentIndicator.name}</span>
-                  </span>
-                </>
-              )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative">
+                {/* Step 1: ประเด็นการพัฒนาท้องถิ่น */}
+                <div className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
+                  currentLocalIssue 
+                    ? 'bg-violet-50/50 border-violet-200/80 shadow-2xs' 
+                    : 'bg-slate-50/40 border-dashed border-slate-200 opacity-60'
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between gap-1.5 mb-2">
+                      <span className="text-[10px] font-black text-violet-700 tracking-wider uppercase flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-violet-200/80 text-violet-800 flex items-center justify-center text-[9px] font-black">1</span>
+                        ประเด็นการพัฒนา
+                      </span>
+                      {currentLocalIssue && (
+                        <span className="text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md bg-violet-600 text-white shadow-xs">
+                          {currentLocalIssue.code}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-bold text-slate-800 leading-snug break-words">
+                      {currentLocalIssue ? currentLocalIssue.name : 'ทุกประเด็นการพัฒนา'}
+                    </div>
+                  </div>
+                  <div className="mt-2 text-[10px] font-semibold text-violet-500 flex items-center gap-1">
+                    <span>ระดับยุทธศาสตร์ที่ 1</span>
+                  </div>
+                </div>
+
+                {/* Step 2: แผนงานหลัก */}
+                <div className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
+                  currentStrategy 
+                    ? 'bg-purple-50/50 border-purple-200/80 shadow-2xs' 
+                    : 'bg-slate-50/40 border-dashed border-slate-200 opacity-60'
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between gap-1.5 mb-2">
+                      <span className="text-[10px] font-black text-purple-700 tracking-wider uppercase flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-purple-200/80 text-purple-800 flex items-center justify-center text-[9px] font-black">2</span>
+                        แผนงานหลัก
+                      </span>
+                      {currentStrategy && (
+                        <span className="text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md bg-purple-600 text-white shadow-xs">
+                          {currentStrategy.code}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-bold text-slate-800 leading-snug break-words">
+                      {currentStrategy ? currentStrategy.name : 'ยังไม่ได้เลือก'}
+                    </div>
+                  </div>
+                  <div className="mt-2 text-[10px] font-semibold text-purple-500 flex items-center gap-1">
+                    <span>ระดับยุทธศาสตร์ที่ 2</span>
+                  </div>
+                </div>
+
+                {/* Step 3: แผนงานย่อย */}
+                <div className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
+                  currentSubStrategy 
+                    ? 'bg-blue-50/50 border-blue-200/80 shadow-2xs' 
+                    : 'bg-slate-50/40 border-dashed border-slate-200 opacity-60'
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between gap-1.5 mb-2">
+                      <span className="text-[10px] font-black text-blue-700 tracking-wider uppercase flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-blue-200/80 text-blue-800 flex items-center justify-center text-[9px] font-black">3</span>
+                        แผนงานย่อย
+                      </span>
+                      {currentSubStrategy && (
+                        <span className="text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md bg-blue-600 text-white shadow-xs">
+                          {currentSubStrategy.code}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-bold text-slate-800 leading-snug break-words">
+                      {currentSubStrategy ? currentSubStrategy.name : 'ยังไม่ได้เลือก'}
+                    </div>
+                  </div>
+                  <div className="mt-2 text-[10px] font-semibold text-blue-500 flex items-center gap-1">
+                    <span>ระดับยุทธศาสตร์ที่ 3</span>
+                  </div>
+                </div>
+
+                {/* Step 4: โครงการหลัก */}
+                <div className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
+                  currentIndicator 
+                    ? 'bg-emerald-50/50 border-emerald-200/80 shadow-2xs' 
+                    : 'bg-slate-50/40 border-dashed border-slate-200 opacity-60'
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between gap-1.5 mb-2">
+                      <span className="text-[10px] font-black text-emerald-700 tracking-wider uppercase flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-emerald-200/80 text-emerald-800 flex items-center justify-center text-[9px] font-black">4</span>
+                        โครงการหลัก
+                      </span>
+                      {currentIndicator && (
+                        <span className="text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md bg-emerald-600 text-white shadow-xs">
+                          {currentIndicator.code}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-bold text-slate-800 leading-snug break-words">
+                      {currentIndicator ? currentIndicator.name : '(ยังไม่ระบุ/ไม่เลือก)'}
+                    </div>
+                  </div>
+                  <div className="mt-2 text-[10px] font-semibold text-emerald-500 flex items-center gap-1">
+                    <span>ระดับยุทธศาสตร์ที่ 4</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
