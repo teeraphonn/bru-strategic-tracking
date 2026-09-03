@@ -27,20 +27,62 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
 
   const [directiveText, setDirectiveText] = useState('');
   const [savingDirective, setSavingDirective] = useState(false);
+  const [liveProject, setLiveProject] = useState(null);
+  const [loadingLive, setLoadingLive] = useState(false);
+
+  useEffect(() => {
+    if (!project?.id) return;
+    let isMounted = true;
+    const fetchFullDetails = async () => {
+      try {
+        setLoadingLive(true);
+        const res = await api.get(`/projects/${project.id}`);
+        if (isMounted && res.data) {
+          setLiveProject(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch full project details in modal:', err);
+      } finally {
+        if (isMounted) setLoadingLive(false);
+      }
+    };
+    fetchFullDetails();
+    return () => { isMounted = false; };
+  }, [project?.id]);
 
   if (!project) return null;
 
-  const budgetNum = parseFloat(project.totalBudget || 0);
-  const spentNum = project.totalSpent || 0;
-  const progressPct = project.progressPct || 0;
-  const burnRatePct = project.burnRatePct || 0;
-  const rag = project.rag || { status: 'GREEN', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  const activeProject = liveProject ? { ...project, ...liveProject } : project;
+
+  const budgetNum = parseFloat(activeProject.totalBudget || 0);
+  const spentNum = activeProject.totalSpent !== undefined 
+    ? activeProject.totalSpent 
+    : (activeProject.activities || []).reduce((sum, a) => sum + parseFloat(a.actualBudget || 0), 0);
+
+  const targetVal = activeProject.targetCount || 0;
+  const completedVal = activeProject.completedCount || 0;
+  const progressPct = activeProject.progressPct !== undefined
+    ? activeProject.progressPct
+    : (targetVal > 0 ? parseFloat(((completedVal / targetVal) * 100).toFixed(2)) : (activeProject.progress || 0));
+
+  const burnRatePct = activeProject.burnRatePct !== undefined
+    ? activeProject.burnRatePct
+    : (budgetNum > 0 ? parseFloat(((spentNum / budgetNum) * 100).toFixed(2)) : 0);
+
+  const rag = activeProject.rag || {
+    status: progressPct < 40 ? 'RED' : progressPct < 75 ? 'YELLOW' : 'GREEN',
+    badgeColor: progressPct < 40 
+      ? 'bg-rose-50 text-rose-700 border-rose-200' 
+      : progressPct < 75 
+        ? 'bg-amber-50 text-amber-700 border-amber-200' 
+        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+  };
 
   const handleSaveDirective = async () => {
     if (!directiveText.trim()) return;
     try {
       setSavingDirective(true);
-      const res = await api.post(`/projects/${project.id}/directive`, {
+      const res = await api.post(`/projects/${activeProject.id}/directive`, {
         directive: directiveText.trim()
       });
       Swal.fire({
@@ -50,10 +92,14 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
         timer: 2000,
         showConfirmButton: false
       });
-      project.presidentDirective = directiveText.trim();
-      project.executiveDirective = directiveText.trim();
-      project.directiveIssuerName = user?.name || user?.username;
-      project.directiveUpdatedAt = new Date().toISOString();
+      const updated = {
+        ...activeProject,
+        presidentDirective: directiveText.trim(),
+        executiveDirective: directiveText.trim(),
+        directiveIssuerName: user?.name || user?.username,
+        directiveUpdatedAt: new Date().toISOString()
+      };
+      setLiveProject(updated);
       setDirectiveText('');
       if (onProjectUpdated) onProjectUpdated(res.data);
     } catch (err) {
@@ -69,10 +115,11 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
   };
 
   const projectPhotos = [];
-  if (project.activities) {
-    project.activities.forEach(a => {
+  if (activeProject.activities) {
+    activeProject.activities.forEach(a => {
       if (a.images && a.images.length > 0) {
         a.images.forEach(img => {
+          if (!img.filePath) return;
           projectPhotos.push({
             id: img.id,
             imageUrl: getImageUrl(img.filePath),
@@ -117,7 +164,7 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
 
   const handleOpenLayer3 = () => {
     onClose();
-    navigate(`/executive-projects/${project.id}`);
+    navigate(`/executive-projects/${activeProject.id}`);
   };
 
   return createPortal(
@@ -130,20 +177,26 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
               <span className={`text-[10px] font-black px-3 py-1 rounded-full border shadow-2xs ${rag.badgeColor}`}>
                 {rag.status === 'RED' ? '🔴 RED FLAG - วิกฤต' : rag.status === 'YELLOW' ? '🟡 WARN - เฝ้าระวัง' : '🟢 GREEN - ปกติ'}
               </span>
-              <span className="text-xs font-bold text-slate-400">รหัสโครงการ #{project.id}</span>
+              <span className="text-xs font-bold text-slate-400">รหัสโครงการ #{activeProject.id}</span>
+              {loadingLive && (
+                <span className="text-[10px] text-slate-400 font-semibold animate-pulse flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                  กำลังอัปเดตข้อมูล...
+                </span>
+              )}
             </div>
-            <h2 className="text-lg font-black text-slate-800 leading-snug">{project.name}</h2>
+            <h2 className="text-lg font-black text-slate-800 leading-snug">{activeProject.name}</h2>
             <div className="text-xs text-slate-500 font-semibold flex items-center gap-2">
-              <span>{project.faculty?.name || 'ส่วนกลาง'}</span>
+              <span>{activeProject.faculty?.name || 'ส่วนกลาง'}</span>
               <span>•</span>
-              <span>{project.department?.name || 'ไม่ระบุภาควิชา'}</span>
+              <span>{activeProject.department?.name || 'ไม่ระบุภาควิชา'}</span>
             </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-700 transition-colors"
+            className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
           >
             <FiX className="w-5 h-5" />
           </button>
@@ -169,48 +222,48 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
             {/* Tier 1: Local Issue */}
             <div 
               className="p-3 rounded-xl bg-white border border-violet-100 shadow-3xs space-y-1.5 flex flex-col justify-between"
-              title={project.subStrategy?.strategy?.localIssue ? `${project.subStrategy.strategy.localIssue.code}: ${project.subStrategy.strategy.localIssue.name}` : ''}
+              title={activeProject.subStrategy?.strategy?.localIssue ? `${activeProject.subStrategy.strategy.localIssue.code}: ${activeProject.subStrategy.strategy.localIssue.name}` : ''}
             >
               <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-violet-50 text-violet-700 w-fit">1. ประเด็นการพัฒนา</span>
               <div className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
-                {project.subStrategy?.strategy?.localIssue?.code ? `${project.subStrategy.strategy.localIssue.code}: ` : ''}
-                {project.subStrategy?.strategy?.localIssue?.name || 'ไม่ระบุ'}
+                {activeProject.subStrategy?.strategy?.localIssue?.code ? `${activeProject.subStrategy.strategy.localIssue.code}: ` : ''}
+                {activeProject.subStrategy?.strategy?.localIssue?.name || 'ไม่ระบุ'}
               </div>
             </div>
 
             {/* Tier 2: Strategy */}
             <div 
               className="p-3 rounded-xl bg-white border border-purple-100 shadow-3xs space-y-1.5 flex flex-col justify-between"
-              title={project.subStrategy?.strategy ? `${project.subStrategy.strategy.code}: ${project.subStrategy.strategy.name}` : ''}
+              title={activeProject.subStrategy?.strategy ? `${activeProject.subStrategy.strategy.code}: ${activeProject.subStrategy.strategy.name}` : ''}
             >
               <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 w-fit">2. แผนงานหลัก</span>
               <div className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
-                {project.subStrategy?.strategy?.code ? `${project.subStrategy.strategy.code}: ` : ''}
-                {project.subStrategy?.strategy?.name || 'ไม่ระบุ'}
+                {activeProject.subStrategy?.strategy?.code ? `${activeProject.subStrategy.strategy.code}: ` : ''}
+                {activeProject.subStrategy?.strategy?.name || 'ไม่ระบุ'}
               </div>
             </div>
 
             {/* Tier 3: Sub-Strategy */}
             <div 
               className="p-3 rounded-xl bg-white border border-blue-100 shadow-3xs space-y-1.5 flex flex-col justify-between"
-              title={project.subStrategy ? `${project.subStrategy.code}: ${project.subStrategy.name}` : ''}
+              title={activeProject.subStrategy ? `${activeProject.subStrategy.code}: ${activeProject.subStrategy.name}` : ''}
             >
               <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 w-fit">3. แผนงานย่อย</span>
               <div className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
-                {project.subStrategy?.code ? `${project.subStrategy.code}: ` : ''}
-                {project.subStrategy?.name || 'ไม่ระบุ'}
+                {activeProject.subStrategy?.code ? `${activeProject.subStrategy.code}: ` : ''}
+                {activeProject.subStrategy?.name || 'ไม่ระบุ'}
               </div>
             </div>
 
             {/* Tier 4: Indicator / Main Project */}
             <div 
               className="p-3 rounded-xl bg-white border border-emerald-100 shadow-3xs space-y-1.5 flex flex-col justify-between"
-              title={project.indicator ? `${project.indicator.code}: ${project.indicator.name}` : ''}
+              title={activeProject.indicator ? `${activeProject.indicator.code}: ${activeProject.indicator.name}` : ''}
             >
               <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 w-fit">4. โครงการหลัก</span>
               <div className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
-                {project.indicator?.code ? `${project.indicator.code}: ` : ''}
-                {project.indicator?.name || 'ไม่ระบุ'}
+                {activeProject.indicator?.code ? `${activeProject.indicator.code}: ` : ''}
+                {activeProject.indicator?.name || 'ไม่ระบุ'}
               </div>
             </div>
           </div>
@@ -230,7 +283,7 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
 
           <div>
             <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">ผลสัมฤทธิ์ KPI</div>
-            <div className="font-black text-primary text-sm mt-0.5">{project.completedCount || 0} / {project.targetCount || 0} ({progressPct}%)</div>
+            <div className="font-black text-primary text-sm mt-0.5">{completedVal} / {targetVal} {activeProject.unit ? `(${activeProject.unit})` : ''} ({progressPct}%)</div>
           </div>
         </div>
 
@@ -241,13 +294,13 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
               <FiUser className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-extrabold text-slate-800">{project.creator?.name || 'ไม่ระบุผู้รับผิดชอบ'}</div>
+              <div className="font-extrabold text-slate-800">{activeProject.creator?.name || 'ไม่ระบุผู้รับผิดชอบ'}</div>
               <div className="text-[10px] text-slate-400">หัวหน้าผู้รับผิดชอบโครงการ</div>
             </div>
           </div>
 
           <div className="text-right text-[11px] font-bold text-slate-500">
-            ปีงบประมาณ พ.ศ. {project.fiscalYear?.year}
+            {activeProject.fiscalYear?.year ? `ปีงบประมาณ พ.ศ. ${activeProject.fiscalYear.year}` : ''}
           </div>
         </div>
 
@@ -287,21 +340,21 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
               <FiSend className="w-3.5 h-3.5 text-primary" />
               <span>ข้อสั่งการเชิงยุทธศาสตร์ของผู้บริหาร (Executive Directives)</span>
             </h4>
-            {project.directiveUpdatedAt && (
+            {activeProject.directiveUpdatedAt && (
               <span className="text-[10px] text-violet-600 font-bold">
-                อัปเดตล่าสุด: {new Date(project.directiveUpdatedAt).toLocaleDateString('th-TH')}
+                อัปเดตล่าสุด: {new Date(activeProject.directiveUpdatedAt).toLocaleDateString('th-TH')}
               </span>
             )}
           </div>
 
           {/* Current Active Directive Banner */}
-          {(project.presidentDirective || project.deanDirective || project.executiveDirective) ? (
+          {(activeProject.presidentDirective || activeProject.deanDirective || activeProject.executiveDirective) ? (
             <div className="p-3 bg-white rounded-xl border border-violet-200 text-xs text-slate-800 shadow-2xs space-y-1">
               <div className="flex items-center gap-1.5 text-[10px] font-black text-primary">
-                <span>🏛️ ข้อสั่งการโดย: {project.presidentDirectiveIssuerName || project.deanDirectiveIssuerName || project.directiveIssuerName || 'ผู้บริหาร'}</span>
+                <span>🏛️ ข้อสั่งการโดย: {activeProject.presidentDirectiveIssuerName || activeProject.deanDirectiveIssuerName || activeProject.directiveIssuerName || 'ผู้บริหาร'}</span>
               </div>
               <div className="font-medium text-slate-700 leading-relaxed">
-                "{project.presidentDirective || project.deanDirective || project.executiveDirective}"
+                "{activeProject.presidentDirective || activeProject.deanDirective || activeProject.executiveDirective}"
               </div>
             </div>
           ) : (
@@ -449,11 +502,11 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
             <div className="md:w-2/5 p-8 flex flex-col justify-between text-white space-y-6 md:h-full md:overflow-y-auto">
               <div className="space-y-5">
                 <div>
-                  <span className="text-[10px] font-black bg-primary/30 text-primary-200 px-3 py-1 rounded-full border border-primary/20 uppercase tracking-wider">{project.department?.name || 'ส่วนกลาง'}</span>
+                  <span className="text-[10px] font-black bg-primary/30 text-primary-200 px-3 py-1 rounded-full border border-primary/20 uppercase tracking-wider">{activeProject.department?.name || 'ส่วนกลาง'}</span>
                 </div>
                 <div className="space-y-2.5">
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider">โครงการหลัก</h4>
-                  <p className="text-xs font-semibold text-slate-200 leading-relaxed">{project.name}</p>
+                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider">ชื่อโครงการ</h4>
+                  <p className="text-xs font-semibold text-slate-200 leading-relaxed">{activeProject.name}</p>
                 </div>
                 {projectPhotos[activePhotoIndex].createdAt && (
                   <div className="space-y-2.5">
@@ -463,7 +516,7 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
                 )}
               </div>
               <div className="border-t border-slate-800 pt-5 flex items-center justify-between text-slate-450 text-[10px] font-black tracking-wide">
-                <span>{project.faculty?.name || 'ส่วนกลาง'}</span>
+                <span>{activeProject.faculty?.name || 'ส่วนกลาง'}</span>
               </div>
             </div>
           </div>

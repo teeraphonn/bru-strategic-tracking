@@ -625,8 +625,7 @@ const getDeanDashboardStats = async (req, res) => {
         else indGreen++;
 
         return {
-          id: p.id,
-          name: p.name,
+          ...p,
           departmentName: p.department?.name || 'ส่วนกลาง',
           creatorName: p.creator?.name || 'ไม่ระบุ',
           totalBudget: b,
@@ -936,8 +935,7 @@ const getPresidentDashboardStats = async (req, res) => {
         else indGreen++;
 
         return {
-          id: p.id,
-          name: p.name,
+          ...p,
           facultyName: p.faculty?.name || p.department?.faculty?.name || 'ส่วนกลาง',
           departmentName: p.department?.name || 'ส่วนกลาง',
           creatorName: p.creator?.name || 'ไม่ระบุ',
