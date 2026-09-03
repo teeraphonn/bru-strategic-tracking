@@ -1041,7 +1041,7 @@ const MasterData = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสแผนงานหลัก (เช่น S1, S2)</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสแผนงานหลัก (เช่น S1)</label>
                     <input
                       type="text"
                       value={formData.code || ''}
