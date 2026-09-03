@@ -33,7 +33,7 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
         'user': 'จัดการข้อมูลผู้ใช้งาน',
         'strategy': 'แผนงานหลัก (Program Name) / ประเด็นการพัฒนาท้องถิ่น',
         'sub-strategy': 'แผนงานย่อย (Sub-Program Name)',
-        'indicator': 'โครงการหลัก (Main project Name) / ตัวชี้วัด',
+        'indicator': 'โครงการหลัก (Main project Name)',
         'fiscal-year': 'จัดการปีงบประมาณ',
         'budget-source': 'จัดการแหล่งงบประมาณ',
         'faculty': 'จัดการข้อมูลคณะ',

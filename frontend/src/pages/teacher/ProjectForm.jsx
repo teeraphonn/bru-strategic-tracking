@@ -265,13 +265,13 @@ const ProjectForm = () => {
 
           {/* Indicator */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">โครงการหลัก (Main project Name) / ตัวชี้วัด</label>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">โครงการหลัก (Main project Name)</label>
             <select
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               {...register('indicatorId')}
               disabled={!selectedSubStrategyId}
             >
-              <option value="">-- เลือกโครงการหลัก / ตัวชี้วัด --</option>
+              <option value="">-- เลือกโครงการหลัก (Main Project) --</option>
               {filteredIndicators.map(ind => (
                 <option key={ind.id} value={ind.id}>{ind.code} - {ind.name}</option>
               ))}

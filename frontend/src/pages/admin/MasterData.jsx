@@ -687,7 +687,7 @@ const MasterData = () => {
                   {activeTab === 'indicator' && (
                     <>
                       <th className="w-24 px-4 py-3.5">รหัส</th>
-                      <th className="min-w-[280px] px-4 py-3.5">โครงการหลัก (Main project Name) / ตัวชี้วัด</th>
+                      <th className="min-w-[280px] px-4 py-3.5">โครงการหลัก (Main project Name)</th>
                       <th className="min-w-[260px] px-4 py-3.5">แผนงานย่อย (Sub-Program Name)</th>
                       <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
@@ -1035,24 +1035,24 @@ const MasterData = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสโครงการหลัก / ตัวชี้วัด (เช่น IND1.1.1)</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสโครงการหลัก (เช่น MP1.1)</label>
                     <input
                       type="text"
                       value={formData.code || ''}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all hover:border-slate-300 text-slate-700 font-semibold"
-                      placeholder="เช่น IND1.1.1"
+                      placeholder="เช่น MP1.1"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อโครงการหลัก (Main project Name) / ตัวชี้วัดความสำเร็จ</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อโครงการหลัก (Main project Name)</label>
                     <input
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all hover:border-slate-300 text-slate-700 font-semibold"
-                      placeholder="กรอกชื่อโครงการหลัก หรือคำอธิบายตัวชี้วัดสำเร็จ"
+                      placeholder="กรอกชื่อโครงการหลัก (Main Project)"
                       required
                     />
                   </div>

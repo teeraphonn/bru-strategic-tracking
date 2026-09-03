@@ -4,7 +4,7 @@
  * 2.1 ประเด็นการพัฒนาท้องถิ่น
  * 2.2 แผนงานหลัก (Program Name)
  * 2.3 แผนงานย่อย (Sub-Program Name)
- * 2.4 โครงการหลัก (Main Project Name & Indicators)
+ * 2.4 โครงการหลัก (Main Project Name: รหัส MP)
  */
 
 const { PrismaClient } = require('@prisma/client');
@@ -12,10 +12,9 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('====================================================');
-  console.log('🌱 Starting BRU Strategic Plan Master Data Seeding...');
+  console.log('🌱 Updating BRU Main Projects to Clean MP Codes...');
   console.log('====================================================');
 
-  // 1. Strategies (ประเด็นการพัฒนาท้องถิ่น & แผนงานหลัก)
   const strategiesData = [
     {
       code: 'S1',
@@ -24,24 +23,24 @@ async function main() {
         {
           code: 'SS1.1',
           name: 'การใช้ BCG MODEL ในการยกระดับเศรษฐกิจของคนในชุมชนท้องถิ่น',
-          indicators: [
+          projects: [
             {
-              code: 'IND1.1.1',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการพัฒนาคุณภาพชีวิต ผ่านโมเดลเศรษฐกิจทฤษฎีใหม่เพื่อยกระดับรายได้ครัวเรือนของชุมชน ท้องถิ่นอย่างยั่งยืน'
+              code: 'MP1.1',
+              name: 'โครงการพัฒนาคุณภาพชีวิต ผ่านโมเดลเศรษฐกิจทฤษฎีใหม่เพื่อยกระดับรายได้ครัวเรือนของชุมชน ท้องถิ่นอย่างยั่งยืน'
             }
           ]
         },
         {
           code: 'SS1.2',
           name: 'การใช้แนวคิดเศรษฐกิจสร้างสรรค์ในการยกระดับเศรษฐกิจของคนในชุมชน รวมถึงการนำประเด็น Soft power มาปรับใช้',
-          indicators: [
+          projects: [
             {
-              code: 'IND1.2.1',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการยกระดับเศรษฐกิจชุมชนเชิงสร้างสรรค์เพื่อสร้างมูลค่าผลิตภัณฑ์ทางภูมิปัญญาของชุมชนท้องถิ่น'
+              code: 'MP1.2',
+              name: 'โครงการยกระดับเศรษฐกิจชุมชนเชิงสร้างสรรค์เพื่อสร้างมูลค่าผลิตภัณฑ์ทางภูมิปัญญาของชุมชนท้องถิ่น'
             },
             {
-              code: 'IND1.2.2',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการยกระดับผลิตภัณฑ์ผ้าพื้นเมืองของกลุ่มอารยธรรมท้องถิ่นสู่เชิงพานิชย์'
+              code: 'MP1.3',
+              name: 'โครงการยกระดับผลิตภัณฑ์ผ้าพื้นเมืองของกลุ่มอารยธรรมท้องถิ่นสู่เชิงพานิชย์'
             }
           ]
         }
@@ -54,20 +53,20 @@ async function main() {
         {
           code: 'SS2.1',
           name: 'การทำนุบำรุงศิลปวัฒนธรรมและภูมิปัญญาท้องถิ่น สร้างความภาคภูมิใจให้คนในชุมชน ยึดโยงกับรากเหง้าเกิดความสามัคคีและมั่นคงในสถาบันหลักของชาติ',
-          indicators: [
+          projects: [
             {
-              code: 'IND2.1.1',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการอนุรักษ์ และเผยแพร่รากอารยะของกลุ่มชาติพันธุ์ในชุมชนท้องถิ่นสู่มรดกทางวัฒนธรรม'
+              code: 'MP2.1',
+              name: 'โครงการอนุรักษ์ และเผยแพร่รากอารยะของกลุ่มชาติพันธุ์ในชุมชนท้องถิ่นสู่มรดกทางวัฒนธรรม'
             }
           ]
         },
         {
           code: 'SS2.2',
           name: 'การเสริมสร้างสุขภาวะทางร่างกาย ทางจิตใจ และทางจิตวิญญาณหรือปัญญาให้กับคนในชุมชนท้องถิ่น',
-          indicators: [
+          projects: [
             {
-              code: 'IND2.2.1',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างคุณภาพชีวิตเพื่อพัฒนาสุขภาวะที่ดีให้กับประชาชนในชุมชนท้องถิ่นอย่างยั่งยืน'
+              code: 'MP2.2',
+              name: 'โครงการเสริมสร้างคุณภาพชีวิตเพื่อพัฒนาสุขภาวะที่ดีให้กับประชาชนในชุมชนท้องถิ่นอย่างยั่งยืน'
             }
           ]
         }
@@ -80,20 +79,20 @@ async function main() {
         {
           code: 'SS3.1',
           name: 'การสร้างการมีส่วนร่วมในการบริหารจัดการ บำรุงรักษาและใช้ประโยชน์ทรัพยากรธรรมชาติและสิ่งแวดล้อมของคนในชุมชนท้องถิ่นอย่างสมดุลและยั่งยืน',
-          indicators: [
+          projects: [
             {
-              code: 'IND3.1.1',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการส่งเสริมการมีส่วนร่วมเพื่อบริหารจัดการทรัพยากรธรรมชาติและสิ่งแวดล้อมในชุมชนท้องถิ่นอย่างเป็นระบบที่ยั่งยืน'
+              code: 'MP3.1',
+              name: 'โครงการส่งเสริมการมีส่วนร่วมเพื่อบริหารจัดการทรัพยากรธรรมชาติและสิ่งแวดล้อมในชุมชนท้องถิ่นอย่างเป็นระบบที่ยั่งยืน'
             }
           ]
         },
         {
           code: 'SS3.2',
           name: 'การสร้างความตระหนักรู้ และแนวทางการรองรับปรับตัวต่อผลกระทบด้านการเปลี่ยนแปลงสภาพภูมิอากาศของคนในชุมชนท้องถิ่น',
-          indicators: [
+          projects: [
             {
-              code: 'IND3.2.1',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะการปรับตัวและสร้างภูมิต้านทานให้กับประชาชนในชุมชนท้องถิ่นเพื่อรองรับการเปลี่ยนแปลงทางสภาพภูมิอากาศ'
+              code: 'MP3.2',
+              name: 'โครงการเสริมสร้างทักษะการปรับตัวและสร้างภูมิต้านทานให้กับประชาชนในชุมชนท้องถิ่นเพื่อรองรับการเปลี่ยนแปลงทางสภาพภูมิอากาศ'
             }
           ]
         }
@@ -106,24 +105,24 @@ async function main() {
         {
           code: 'SS4.1',
           name: 'การเสริมสร้างทักษะ/ความสามารถที่จำเป็นสาหรับการจัดการเรียนการสอนของครูในพื้นที่ ซึ่งต้องสามารถวัดประเมินผลได้อย่างเป็นรูปธรรม',
-          indicators: [
+          projects: [
             {
-              code: 'IND4.1.1',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะการจัดการเรียนการสอนของครูเพื่อยกระดับการศึกษาในชุมชนท้องถิ่น อย่างยั่งยืน'
+              code: 'MP4.1',
+              name: 'โครงการเสริมสร้างทักษะการจัดการเรียนการสอนของครูเพื่อยกระดับการศึกษาในชุมชนท้องถิ่น อย่างยั่งยืน'
             },
             {
-              code: 'IND4.1.2',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการพัฒนามาตรฐานโรงเรียนสาธิต'
+              code: 'MP4.2',
+              name: 'โครงการพัฒนามาตรฐานโรงเรียนสาธิต'
             }
           ]
         },
         {
           code: 'SS4.2',
           name: 'การเสริมสร้างทักษะ/ความสามารถที่จำเป็นในการใช้ชีวิตในสังคมให้กับคนในชุมชนท้องถิ่นด้วยกระบวนการวิศวกรสังคม',
-          indicators: [
+          projects: [
             {
-              code: 'IND4.2.1',
-              name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะความสามารถเชิงสมรรถนะด้วยกระบวนการวิศวกรสังคมโดยใช้ชุมชนท้องถิ่นเป็นฐาน'
+              code: 'MP4.3',
+              name: 'โครงการเสริมสร้างทักษะความสามารถเชิงสมรรถนะด้วยกระบวนการวิศวกรสังคมโดยใช้ชุมชนท้องถิ่นเป็นฐาน'
             }
           ]
         }
@@ -136,10 +135,10 @@ async function main() {
         {
           code: 'SS5.1',
           name: 'แผนงานความร่วมมือขับเคลื่อนโครงการร่วมระดับภูมิภาค',
-          indicators: [
+          projects: [
             {
-              code: 'IND5.1.1',
-              name: 'ตัวชี้วัดความสำเร็จ: ความก้าวหน้าโครงการร่วมระดับภูมิภาค'
+              code: 'MP5.1',
+              name: 'โครงการความร่วมมือขับเคลื่อนการพัฒนาเชิงพื้นที่ระดับภูมิภาค'
             }
           ]
         }
@@ -152,10 +151,10 @@ async function main() {
         {
           code: 'SS6.1',
           name: 'แผนงานความร่วมมือขับเคลื่อนโครงการร่วมระดับประเทศ',
-          indicators: [
+          projects: [
             {
-              code: 'IND6.1.1',
-              name: 'ตัวชี้วัดความสำเร็จ: ความก้าวหน้าโครงการร่วมระดับประเทศ'
+              code: 'MP6.1',
+              name: 'โครงการความร่วมมือขับเคลื่อนการพัฒนาเชิงพื้นที่ระดับประเทศ'
             }
           ]
         }
@@ -169,7 +168,6 @@ async function main() {
       update: { name: s.name },
       create: { code: s.code, name: s.name }
     });
-    console.log(`✅ ยุทธศาสตร์หลัก/แผนงาน: [${strat.code}] ${strat.name}`);
 
     for (const ss of s.subStrategies) {
       const subStrat = await prisma.subStrategy.upsert({
@@ -177,30 +175,48 @@ async function main() {
         update: { name: ss.name, strategyId: strat.id },
         create: { code: ss.code, name: ss.name, strategyId: strat.id }
       });
-      console.log(`   ↳ 🔹 แผนงานย่อย: [${subStrat.code}] ${subStrat.name}`);
 
-      for (const ind of ss.indicators) {
-        const indicator = await prisma.indicator.upsert({
-          where: { code: ind.code },
-          update: { name: ind.name, subStrategyId: subStrat.id },
-          create: { code: ind.code, name: ind.name, subStrategyId: subStrat.id }
+      for (const p of ss.projects) {
+        // Upsert into indicators table using MP code and pure Main Project Name
+        const record = await prisma.indicator.upsert({
+          where: { code: p.code },
+          update: { name: p.name, subStrategyId: subStrat.id },
+          create: { code: p.code, name: p.name, subStrategyId: subStrat.id }
         });
-        console.log(`      ↳ 📌 ตัวชี้วัด/โครงการหลัก: [${indicator.code}] ${indicator.name}`);
+        console.log(`✅ [${record.code}] ${record.name}`);
       }
     }
   }
 
+  // Check if any old IND% indicators exist and remove or migrate them if safe
+  const oldIndicators = await prisma.indicator.findMany({
+    where: {
+      code: {
+        startsWith: 'IND'
+      }
+    },
+    include: {
+      projects: true
+    }
+  });
+
+  for (const oldInd of oldIndicators) {
+    if (oldInd.projects.length === 0) {
+      await prisma.indicator.delete({ where: { id: oldInd.id } });
+      console.log(`🧹 Cleaned up unused old record: ${oldInd.code}`);
+    }
+  }
+
   console.log('\n====================================================');
-  console.log('🎉 BRU Strategic Architecture seed script ready!');
+  console.log('🎉 Main Projects updated with MP codes successfully!');
   console.log('====================================================');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seeding Error:', e);
+    console.error('❌ Error updating main projects:', e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
   });
-

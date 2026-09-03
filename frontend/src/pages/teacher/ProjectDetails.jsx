@@ -937,7 +937,7 @@ const ProjectDetails = () => {
 
               {project.indicator && (
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">โครงการหลัก (Main project Name) / ตัวชี้วัด</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">โครงการหลัก (Main project Name)</label>
                   <p className="text-slate-800 font-bold mt-1">{project.indicator?.name}</p>
                 </div>
               )}
