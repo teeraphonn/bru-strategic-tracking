@@ -295,8 +295,56 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6 pb-12 animate-fadeIn">
-      {/* 1. Dashboard View Switcher (Top-level Navigation) */}
-      <div className="bg-white p-2 rounded-3xl border border-slate-100 shadow-soft flex flex-wrap items-center justify-between gap-3">
+      {/* 🖨️ Print Styles specifically scoped for Admin Official Document */}
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 8mm 10mm 10mm 10mm;
+          }
+          body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .screen-only, header, nav, aside, #topbar, button, input {
+            display: none !important;
+          }
+          .official-print-document {
+            display: block !important;
+            width: 100% !important;
+          }
+          .official-print-document table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 10px !important;
+          }
+          .official-print-document th, .official-print-document td {
+            border: 1px solid #cbd5e1 !important;
+            padding: 5px 8px !important;
+          }
+          .official-print-document th {
+            background-color: #f1f5f9 !important;
+            font-weight: bold !important;
+            color: #1e293b !important;
+          }
+          .avoid-break {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+        }
+        @media screen {
+          .official-print-document {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      {/* 🖥️ 1. Screen Interactive Dashboard UI (Hidden on Print) */}
+      <div className="screen-only space-y-6">
+        {/* 1. Dashboard View Switcher (Top-level Navigation) */}
+        <div className="bg-white p-2 rounded-3xl border border-slate-100 shadow-soft flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             type="button"
@@ -944,25 +992,26 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+      </div>
 
       {/* 📄 Official Executive Admin Strategic Performance Report Document (Official A4 PDF / Print Format) */}
-      <div className="official-print-document font-prompt text-slate-900 bg-white space-y-2.5 mt-0 pt-0">
+      <div className="official-print-document font-prompt text-slate-900 bg-white space-y-3 mt-0 pt-0">
         {/* Official Document Header */}
-        <div className="border-b-2 border-slate-900 pb-1.5">
+        <div className="border-b-2 border-slate-900 pb-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-11 h-11 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-base tracking-wider shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-base tracking-wider shrink-0">
                 BRU
               </div>
               <div>
                 <h1 className="text-sm font-black text-slate-900 tracking-tight leading-tight">มหาวิทยาลัยราชภัฏบุรีรัมย์</h1>
-                <h2 className="text-[11px] font-bold text-slate-700">
+                <h2 className="text-xs font-bold text-slate-800">
                   รายงานสรุปผลการบริหารจัดการระบบและสุขภาพยุทธศาสตร์ภาพรวม (Admin Strategic & System Performance Report)
                 </h2>
                 <div className="text-[9px] text-slate-500 font-medium">ระบบติดตามและประเมินผลเชิงยุทธศาสตร์มหาวิทยาลัย (BRU Strategic Tracking System)</div>
               </div>
             </div>
-            <div className="text-right text-[9px] text-slate-700 space-y-0.5 font-medium border-l border-slate-300 pl-2.5">
+            <div className="text-right text-[9px] text-slate-700 space-y-0.5 font-medium border-l border-slate-300 pl-3">
               <div><span className="font-bold">ปีงบประมาณ:</span> {selectedFiscalYear ? `พ.ศ. ${fiscalYears.find(f => String(f.id) === selectedFiscalYear)?.year || selectedFiscalYear}` : 'ทุกปีงบประมาณ'}</div>
               <div><span className="font-bold">แหล่งงบประมาณ:</span> {selectedBudgetSource ? budgetSources.find(b => String(b.id) === selectedBudgetSource)?.name : 'ทุกแหล่งเงินทุน'}</div>
               <div><span className="font-bold">วันที่ออกเอกสาร:</span> {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })} น.</div>
@@ -971,28 +1020,28 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Section 1: สรุปภาพรวมตัวชี้วัดยุทธศาสตร์และการเงิน (Institutional Health & Financial Summary) */}
+        {/* Section 1: สรุปภาพรวมตัวชี้วัดยุทธศาสตร์และการเงิน */}
         <div className="space-y-1 print-section avoid-break">
           <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-wider">
             1. สรุปภาพรวมเป้าหมายยุทธศาสตร์และการเบิกจ่ายงบประมาณ (Strategic KPI & Burn Rate Summary)
           </h3>
-          <table className="w-full text-[10px]">
+          <table className="w-full text-[10px] border-collapse border border-slate-300">
             <tbody>
               <tr>
-                <td className="w-1/4 bg-slate-50 font-bold py-1 px-2">ความก้าวหน้าเป้าหมายตัวชี้วัด</td>
-                <td className="w-1/4 font-black text-slate-900 text-sm py-1 px-2">{summary.targetProgressPercentage}% <span className="text-[9px] font-normal text-slate-500">(ของเป้าหมายรวม)</span></td>
-                <td className="w-1/4 bg-slate-50 font-bold py-1 px-2">งบประมาณจัดสรรตามแผนรวม</td>
-                <td className="w-1/4 font-black text-slate-900 text-sm py-1 px-2">{parseFloat(summary.totalBudget || 0).toLocaleString()} <span className="text-[10px] font-normal">บาท</span></td>
+                <td className="w-1/4 bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">ความก้าวหน้าเป้าหมายตัวชี้วัด</td>
+                <td className="w-1/4 font-black text-slate-900 text-sm py-1.5 px-2.5 border border-slate-300">{summary.targetProgressPercentage}% <span className="text-[9px] font-normal text-slate-500">(ของเป้าหมายรวม)</span></td>
+                <td className="w-1/4 bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">งบประมาณจัดสรรตามแผนรวม</td>
+                <td className="w-1/4 font-black text-slate-900 text-sm py-1.5 px-2.5 border border-slate-300">{parseFloat(summary.totalBudget || 0).toLocaleString()} <span className="text-[10px] font-normal">บาท</span></td>
               </tr>
               <tr>
-                <td className="bg-slate-50 font-bold py-1 px-2">การเบิกจ่ายจริงสะสม (Burn Rate)</td>
-                <td className="font-bold text-slate-900 py-1 px-2">{parseFloat(summary.totalActualBudget || 0).toLocaleString()} บาท <span className="text-emerald-700 font-black">({summary.budgetPercentage}%)</span></td>
-                <td className="bg-slate-50 font-bold py-1 px-2">งบประมาณคงเหลือสุทธิ</td>
-                <td className="font-bold text-slate-900 py-1 px-2">{parseFloat((summary.totalBudget || 0) - (summary.totalActualBudget || 0)).toLocaleString()} บาท</td>
+                <td className="bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">การเบิกจ่ายจริงสะสม (Burn Rate)</td>
+                <td className="font-bold text-slate-900 py-1.5 px-2.5 border border-slate-300">{parseFloat(summary.totalActualBudget || 0).toLocaleString()} บาท <span className="text-emerald-700 font-black">({summary.budgetPercentage}%)</span></td>
+                <td className="bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">งบประมาณคงเหลือสุทธิ</td>
+                <td className="font-bold text-slate-900 py-1.5 px-2.5 border border-slate-300">{parseFloat((summary.totalBudget || 0) - (summary.totalActualBudget || 0)).toLocaleString()} บาท</td>
               </tr>
               <tr>
-                <td className="bg-slate-50 font-bold py-1 px-2">สรุปจำนวนโครงการและกิจกรรม</td>
-                <td colSpan="3" className="py-1 px-2">
+                <td className="bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">สรุปจำนวนโครงการและกิจกรรม</td>
+                <td colSpan="3" className="py-1.5 px-2.5 border border-slate-300">
                   <div className="flex items-center gap-3 font-bold text-[10px]">
                     <span>รวมโครงการทั้งหมด: <strong className="text-slate-900 font-black">{summary.totalProjects}</strong> โครงการ</span>
                     <span className="text-indigo-700">กิจกรรมเสร็จสิ้น: {summary.completedActivities} / {summary.totalActivities} ({summary.successActivityPercentage}%)</span>
@@ -1003,49 +1052,49 @@ const AdminDashboard = () => {
           </table>
         </div>
 
-        {/* Section 2: สถานะข้อมูลหลักและโครงสร้างระบบ (Master Data & System Health) */}
+        {/* Section 2: สถานะข้อมูลหลักและโครงสร้างระบบ */}
         <div className="space-y-1 print-section avoid-break">
           <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-wider">
             2. สถานะโครงสร้างข้อมูลหลักและทรัพยากรระบบ (Master Data & Infrastructure Status)
           </h3>
-          <table className="w-full text-[10px]">
+          <table className="w-full text-[10px] border-collapse border border-slate-300">
             <tbody>
               <tr>
-                <td className="w-1/4 bg-slate-50 font-bold py-1 px-2">สถานะฐานข้อมูล (Database)</td>
-                <td className="w-1/4 font-black text-emerald-700 py-1 px-2">{systemHealth?.database || 'CONNECTED'}</td>
-                <td className="w-1/4 bg-slate-50 font-bold py-1 px-2">จำนวนบัญชีผู้ใช้งานในระบบ</td>
-                <td className="w-1/4 font-black text-slate-900 py-1 px-2">{systemHealth?.counts?.users || 0} บัญชี</td>
+                <td className="w-1/4 bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">สถานะฐานข้อมูล (Database)</td>
+                <td className="w-1/4 font-black text-emerald-700 py-1.5 px-2.5 border border-slate-300">{systemHealth?.database || 'CONNECTED'}</td>
+                <td className="w-1/4 bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">จำนวนบัญชีผู้ใช้งานในระบบ</td>
+                <td className="w-1/4 font-black text-slate-900 py-1.5 px-2.5 border border-slate-300">{systemHealth?.counts?.users || 0} บัญชี</td>
               </tr>
               <tr>
-                <td className="bg-slate-50 font-bold py-1 px-2">โครงสร้างคณะและหน่วยงาน</td>
-                <td className="font-bold text-slate-900 py-1 px-2">{systemHealth?.counts?.faculties || 0} คณะ</td>
-                <td className="bg-slate-50 font-bold py-1 px-2">โครงสร้างภาควิชา/สาขาวิชา</td>
-                <td className="font-bold text-slate-900 py-1 px-2">{systemHealth?.counts?.departments || 0} ภาควิชา</td>
+                <td className="bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">โครงสร้างคณะและหน่วยงาน</td>
+                <td className="font-bold text-slate-900 py-1.5 px-2.5 border border-slate-300">{systemHealth?.counts?.faculties || 0} คณะ</td>
+                <td className="bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">โครงสร้างภาควิชา/สาขาวิชา</td>
+                <td className="font-bold text-slate-900 py-1.5 px-2.5 border border-slate-300">{systemHealth?.counts?.departments || 0} ภาควิชา</td>
               </tr>
               <tr>
-                <td className="bg-slate-50 font-bold py-1 px-2">ศูนย์รับแจ้งปัญหาระบบ</td>
-                <td colSpan="3" className="font-bold text-slate-900 py-1 px-2">
+                <td className="bg-slate-50 font-bold py-1.5 px-2.5 border border-slate-300">ศูนย์รับแจ้งปัญหาระบบ</td>
+                <td colSpan="3" className="font-bold text-slate-900 py-1.5 px-2.5 border border-slate-300">
                   <span>คำร้องทั้งหมด: {systemHealth?.counts?.issues || 0} รายการ</span>
-                  <span className="text-rose-700 ml-3">รอดำเนินการ (Pending): {pendingIssues.length} รายการ</span>
+                  <span className="text-rose-700 ml-3 font-black">รอดำเนินการ (Pending): {pendingIssues.length} รายการ</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        {/* Section 3: สถิติงบประมาณและการใช้จ่ายแยกตามหน่วยงาน (Cross-Unit Budget Distribution) */}
+        {/* Section 3: สถิติงบประมาณและการใช้จ่ายแยกตามหน่วยงาน */}
         <div className="space-y-1 print-section avoid-break">
           <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-wider">
             3. สรุปงบประมาณตามแผนและการเบิกจ่ายจริง จำแนกตามหน่วยงาน (Cross-Unit Budget Distribution)
           </h3>
-          <table className="w-full text-[10px]">
+          <table className="w-full text-[10px] border-collapse border border-slate-300">
             <thead>
               <tr className="bg-slate-100 font-bold">
-                <th className="w-10 text-center py-1 px-2">ลำดับ</th>
-                <th className="text-left py-1 px-2">ชื่อหน่วยงาน / คณะ</th>
-                <th className="w-36 text-right py-1 px-2">งบประมาณตามแผน (บาท)</th>
-                <th className="w-36 text-right py-1 px-2">งบประมาณเบิกจ่ายจริง (บาท)</th>
-                <th className="w-24 text-center py-1 px-2">% Burn Rate</th>
+                <th className="w-12 text-center py-1.5 px-2 border border-slate-300">ลำดับ</th>
+                <th className="text-left py-1.5 px-2.5 border border-slate-300">ชื่อหน่วยงาน / คณะ</th>
+                <th className="w-36 text-right py-1.5 px-2.5 border border-slate-300">งบประมาณตามแผน (บาท)</th>
+                <th className="w-36 text-right py-1.5 px-2.5 border border-slate-300">งบประมาณเบิกจ่ายจริง (บาท)</th>
+                <th className="w-24 text-center py-1.5 px-2 border border-slate-300">% Burn Rate</th>
               </tr>
             </thead>
             <tbody>
@@ -1054,52 +1103,54 @@ const AdminDashboard = () => {
                   const bRate = b.budget > 0 ? ((b.actual / b.budget) * 100).toFixed(1) : '0.0';
                   return (
                     <tr key={b.unit || idx}>
-                      <td className="text-center font-bold py-1 px-2">{idx + 1}</td>
-                      <td className="font-semibold text-slate-800 text-left py-1 px-2">{b.unit}</td>
-                      <td className="text-right font-medium py-1 px-2">{parseFloat(b.budget || 0).toLocaleString()}</td>
-                      <td className="text-right font-medium text-emerald-700 py-1 px-2">{parseFloat(b.actual || 0).toLocaleString()}</td>
-                      <td className="text-center font-black py-1 px-2">{bRate}%</td>
+                      <td className="text-center font-bold py-1.5 px-2 border border-slate-300">{idx + 1}</td>
+                      <td className="font-semibold text-slate-800 text-left py-1.5 px-2.5 border border-slate-300">{b.unit}</td>
+                      <td className="text-right font-medium py-1.5 px-2.5 border border-slate-300">{parseFloat(b.budget || 0).toLocaleString()}</td>
+                      <td className="text-right font-medium text-emerald-700 py-1.5 px-2.5 border border-slate-300">{parseFloat(b.actual || 0).toLocaleString()}</td>
+                      <td className="text-center font-black py-1.5 px-2 border border-slate-300">{bRate}%</td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center py-1.5 text-slate-400 italic">ไม่พบข้อมูลเปรียบเทียบงบประมาณ</td>
+                  <td colSpan="5" className="text-center py-2 text-slate-400 italic border border-slate-300">ไม่พบข้อมูลเปรียบเทียบงบประมาณ</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Section 4: สรุปสถานะโครงการล่าสุด (Recent Projects Record) */}
+        {/* Section 4: สรุปสถานะโครงการล่าสุด */}
         <div className="space-y-1 print-section avoid-break">
           <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-wider">
             4. สรุปรายการโครงการล่าสุดในระบบ (Recent Projects Record)
           </h3>
-          <table className="w-full text-[10px]">
+          <table className="w-full text-[10px] border-collapse border border-slate-300">
             <thead>
               <tr className="bg-slate-100 font-bold">
-                <th className="w-10 text-center py-1 px-2">ลำดับ</th>
-                <th className="text-left py-1 px-2">ชื่อโครงการ</th>
-                <th className="w-40 text-left py-1 px-2">ผู้รับผิดชอบ / หน่วยงาน</th>
-                <th className="w-24 text-center py-1 px-2">ปีงบประมาณ</th>
-                <th className="w-24 text-center py-1 px-2">% ความก้าวหน้า</th>
+                <th className="w-12 text-center py-1.5 px-2 border border-slate-300">ลำดับ</th>
+                <th className="text-left py-1.5 px-2.5 border border-slate-300">ชื่อโครงการ</th>
+                <th className="w-48 text-left py-1.5 px-2.5 border border-slate-300">ผู้รับผิดชอบ / สังกัด</th>
+                <th className="w-20 text-center py-1.5 px-2 border border-slate-300">ปีงบประมาณ</th>
+                <th className="w-24 text-center py-1.5 px-2 border border-slate-300">% ความก้าวหน้า</th>
               </tr>
             </thead>
             <tbody>
               {recentProjects && recentProjects.length > 0 ? (
                 recentProjects.map((proj, idx) => (
                   <tr key={proj.id || idx}>
-                    <td className="text-center font-bold py-1 px-2">{idx + 1}</td>
-                    <td className="font-semibold text-slate-800 text-left py-1 px-2">{proj.name}</td>
-                    <td className="font-medium text-slate-700 text-left py-1 px-2">{proj.creator?.name || 'ไม่ระบุ'}</td>
-                    <td className="text-center font-medium py-1 px-2">{proj.fiscalYear?.year || '-'}</td>
-                    <td className="text-center font-black text-indigo-700 py-1 px-2">{proj.progress}%</td>
+                    <td className="text-center font-bold py-1.5 px-2 border border-slate-300">{idx + 1}</td>
+                    <td className="font-semibold text-slate-800 text-left py-1.5 px-2.5 border border-slate-300 break-words">{proj.name}</td>
+                    <td className="font-medium text-slate-700 text-left py-1.5 px-2.5 border border-slate-300 break-words">
+                      {proj.creator?.name || 'ไม่ระบุ'}{proj.department?.name ? ` (${proj.department.name})` : ''}
+                    </td>
+                    <td className="text-center font-medium py-1.5 px-2 border border-slate-300">{proj.fiscalYear?.year || '-'}</td>
+                    <td className="text-center font-black text-indigo-700 py-1.5 px-2 border border-slate-300">{proj.progress}%</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center py-1.5 text-slate-400 italic">ไม่มีข้อมูลโครงการใหม่</td>
+                  <td colSpan="5" className="text-center py-2 text-slate-400 italic border border-slate-300">ไม่มีข้อมูลโครงการใหม่</td>
                 </tr>
               )}
             </tbody>
@@ -1107,7 +1158,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Document Clean Footer */}
-        <div className="text-right text-[8px] text-slate-400 pt-1.5 border-t border-slate-200">
+        <div className="text-right text-[8px] text-slate-400 pt-2 border-t border-slate-200">
           เอกสารนี้สร้างขึ้นโดยระบบติดตามการทำงานโครงการยุทธศาสตร์ มหาวิทยาลัยราชภัฏบุรีรัมย์ (BRU Strategic Tracking System)
         </div>
       </div>
