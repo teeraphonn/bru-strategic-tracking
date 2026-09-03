@@ -671,22 +671,23 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
               <div>
                 <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
                   <FiLayers className="w-4 h-4 text-violet-600 shrink-0" />
-                  <span>ผลสัมฤทธิ์ตาม 4 ประเด็นยุทธศาสตร์ระดับคณะ (Faculty Strategic Alignment)</span>
+                  <span>ผลสัมฤทธิ์ตาม {strategicPillars.length} แผนงานยุทธศาสตร์ระดับคณะ (Faculty Strategic Alignment)</span>
                 </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">การติดตามผลสัมฤทธิ์และการเบิกจ่ายงบประมาณจำแนกตามแผนงานยุทธศาสตร์หลัก (S1 - S4)</p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">การติดตามผลสัมฤทธิ์และการเบิกจ่ายงบประมาณจำแนกตามแผนงานยุทธศาสตร์หลัก (S1 - S{strategicPillars.length})</p>
               </div>
               <span className="text-[11px] font-bold px-3 py-1 bg-violet-50 text-violet-700 rounded-full border border-violet-200 self-start sm:self-auto">
-                4 แผนงานยุทธศาสตร์
+                {strategicPillars.length} แผนงานหลัก
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
               {strategicPillars.map((sp, idx) => {
                 const colors = [
                   { bg: 'from-violet-500/10 to-violet-500/5', border: 'border-violet-200/80', badge: 'bg-violet-100 text-violet-800', bar: 'bg-violet-600' },
                   { bg: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-200/80', badge: 'bg-purple-100 text-purple-800', bar: 'bg-purple-600' },
                   { bg: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-200/80', badge: 'bg-blue-100 text-blue-800', bar: 'bg-blue-600' },
-                  { bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-200/80', badge: 'bg-emerald-100 text-emerald-800', bar: 'bg-emerald-600' }
+                  { bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-200/80', badge: 'bg-emerald-100 text-emerald-800', bar: 'bg-emerald-600' },
+                  { bg: 'from-amber-500/10 to-amber-500/5', border: 'border-amber-200/80', badge: 'bg-amber-100 text-amber-800', bar: 'bg-amber-600' }
                 ];
                 const c = colors[idx % colors.length];
 
