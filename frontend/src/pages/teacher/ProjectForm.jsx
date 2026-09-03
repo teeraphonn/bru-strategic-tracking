@@ -3,8 +3,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import api from '../../services/api';
 import { AuthContext } from '../../contexts/AuthContext';
+import CustomSelect from '../../components/CustomSelect';
 import Swal from 'sweetalert2';
-import { FiArrowLeft, FiSave } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiCompass, FiLayers, FiTarget, FiAward } from 'react-icons/fi';
 
 const ProjectForm = () => {
   const { user } = useContext(AuthContext);
@@ -34,7 +35,7 @@ const ProjectForm = () => {
   // Project details if edit mode
   const [project, setProject] = useState(null);
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
 
   // Load masters and users
   useEffect(() => {
@@ -113,9 +114,8 @@ const ProjectForm = () => {
   }, [id, isEdit, setValue]);
 
   // When Local Issue changes, reset downstream selections
-  const handleLocalIssueChange = (e) => {
-    const liId = e.target.value;
-    setSelectedLocalIssueId(liId);
+  const handleLocalIssueChange = (val) => {
+    setSelectedLocalIssueId(val);
     setSelectedStrategyId('');
     setSelectedSubStrategyId('');
     setValue('strategyId', '');
@@ -124,10 +124,10 @@ const ProjectForm = () => {
   };
 
   // When Strategy changes, auto-sync Local Issue if applicable and reset downstream
-  const handleStrategyChange = (e) => {
-    const sId = e.target.value;
-    setSelectedStrategyId(sId);
-    const chosenStrat = strategies.find(s => String(s.id) === String(sId));
+  const handleStrategyChange = (val) => {
+    setSelectedStrategyId(val);
+    setValue('strategyId', val, { shouldValidate: true });
+    const chosenStrat = strategies.find(s => String(s.id) === String(val));
     if (chosenStrat && chosenStrat.localIssueId) {
       setSelectedLocalIssueId(String(chosenStrat.localIssueId));
     }
@@ -137,10 +137,14 @@ const ProjectForm = () => {
   };
 
   // When Sub-strategy changes, reset indicator
-  const handleSubStrategyChange = (e) => {
-    const ssId = e.target.value;
-    setSelectedSubStrategyId(ssId);
+  const handleSubStrategyChange = (val) => {
+    setSelectedSubStrategyId(val);
+    setValue('subStrategyId', val, { shouldValidate: true });
     setValue('indicatorId', '');
+  };
+
+  const handleIndicatorChange = (val) => {
+    setValue('indicatorId', val);
   };
 
   // Submit Handler
@@ -202,6 +206,12 @@ const ProjectForm = () => {
   const filteredSubStrategies = subStrategies.filter(ss => ss.strategyId === parseInt(selectedStrategyId));
   const filteredIndicators = indicators.filter(ind => ind.subStrategyId === parseInt(selectedSubStrategyId));
 
+  // Active hierarchy path labels
+  const currentLocalIssue = localIssues.find(li => String(li.id) === String(selectedLocalIssueId));
+  const currentStrategy = strategies.find(s => String(s.id) === String(selectedStrategyId));
+  const currentSubStrategy = subStrategies.find(ss => String(ss.id) === String(selectedSubStrategyId));
+  const currentIndicator = indicators.find(ind => String(ind.id) === String(watch('indicatorId')));
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -252,72 +262,189 @@ const ProjectForm = () => {
           />
         </div>
 
-        {/* Dynamic Cascading Dropdowns: 4 Levels */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50/60 p-4 rounded-2xl border border-slate-100">
-          {/* 1. Local Development Issue */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">ประเด็นการพัฒนาท้องถิ่น</label>
-            <select
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white"
-              value={selectedLocalIssueId}
-              onChange={handleLocalIssueChange}
-            >
-              <option value="">-- ทุกประเด็นการพัฒนา --</option>
-              {localIssues.map(li => (
-                <option key={li.id} value={li.id}>{li.code} - {li.name}</option>
-              ))}
-            </select>
+        {/* Dynamic Cascading Dropdowns: 4 Levels with Stepper Badges */}
+        <div className="bg-gradient-to-b from-slate-50/90 via-purple-50/20 to-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-soft space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/60 pb-3.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                <FiCompass className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-slate-800 tracking-wide">
+                  ความเชื่อมโยงตามยุทธศาสตร์มหาวิทยาลัย
+                </h3>
+                <p className="text-[11px] font-medium text-slate-500">
+                  เลือกความสอดคล้องตามลำดับชั้น 4 ระดับ (แสดงชื่อเต็ม 2 บรรทัด อ่านง่าย พร้อมระบบค้นหาอัตโนมัติ)
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-full w-fit">
+              <span>โครงสร้าง 4 ระดับ</span>
+            </span>
           </div>
 
-          {/* 2. Strategy (แผนงานหลัก) */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">แผนงานหลัก <span className="text-red-500">*</span></label>
-            <select
-              className={`w-full px-3 py-2 border ${errors.strategyId ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white`}
-              {...register('strategyId', { required: 'กรุณาเลือกแผนงานหลัก' })}
-              onChange={handleStrategyChange}
-              value={selectedStrategyId}
-            >
-              <option value="">-- เลือกแผนงานหลัก --</option>
-              {filteredStrategies.map(s => (
-                <option key={s.id} value={s.id}>{s.code} - {s.name}</option>
-              ))}
-            </select>
-            {errors.strategyId && <span className="text-xs text-red-500 mt-1 block">{errors.strategyId.message}</span>}
+          {/* Hidden inputs for React Hook Form validation */}
+          <input type="hidden" {...register('strategyId', { required: 'กรุณาเลือกแผนงานหลัก' })} />
+          <input type="hidden" {...register('subStrategyId', { required: 'กรุณาเลือกแผนงานย่อย' })} />
+          <input type="hidden" {...register('indicatorId')} />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* 1. Local Development Issue */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  <span className="w-5 h-5 rounded-md bg-violet-100 text-violet-700 text-[10px] font-black flex items-center justify-center">1</span>
+                  <span>ประเด็นการพัฒนาท้องถิ่น</span>
+                </label>
+                <span className="text-[10px] font-semibold text-slate-400">4 ด้าน</span>
+              </div>
+              <CustomSelect
+                value={selectedLocalIssueId}
+                onChange={handleLocalIssueChange}
+                placeholder="-- ทุกประเด็นการพัฒนาท้องถิ่น --"
+                multiline={true}
+                options={[
+                  { value: '', label: 'ทุกประเด็นการพัฒนาท้องถิ่น (แสดงทั้งหมด)', badge: 'ALL' },
+                  ...localIssues.map(li => ({
+                    value: String(li.id),
+                    label: li.name,
+                    badge: li.code
+                  }))
+                ]}
+              />
+            </div>
+
+            {/* 2. Strategy (แผนงานหลัก) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  <span className="w-5 h-5 rounded-md bg-purple-100 text-purple-700 text-[10px] font-black flex items-center justify-center">2</span>
+                  <span>แผนงานหลัก</span>
+                  <span className="text-red-500 font-bold">*</span>
+                </label>
+                <span className="text-[10px] font-semibold text-slate-400">
+                  {filteredStrategies.length} แผนงาน
+                </span>
+              </div>
+              <CustomSelect
+                value={selectedStrategyId}
+                onChange={handleStrategyChange}
+                placeholder="-- เลือกแผนงานหลัก --"
+                multiline={true}
+                className={errors.strategyId ? 'ring-2 ring-red-400 rounded-xl' : ''}
+                options={filteredStrategies.map(s => ({
+                  value: String(s.id),
+                  label: s.name,
+                  badge: s.code
+                }))}
+              />
+              {errors.strategyId && (
+                <span className="text-xs font-semibold text-red-500 mt-1 block">
+                  {errors.strategyId.message}
+                </span>
+              )}
+            </div>
+
+            {/* 3. Sub Strategy (แผนงานย่อย) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  <span className="w-5 h-5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-black flex items-center justify-center">3</span>
+                  <span>แผนงานย่อย</span>
+                  <span className="text-red-500 font-bold">*</span>
+                </label>
+                <span className="text-[10px] font-semibold text-slate-400">
+                  {selectedStrategyId ? `${filteredSubStrategies.length} แผนงานย่อย` : 'ต้องเลือกข้อ 2 ก่อน'}
+                </span>
+              </div>
+              <CustomSelect
+                value={selectedSubStrategyId}
+                onChange={handleSubStrategyChange}
+                disabled={!selectedStrategyId}
+                placeholder={selectedStrategyId ? '-- เลือกแผนงานย่อย --' : 'กรุณาเลือกแผนงานหลักก่อน'}
+                multiline={true}
+                className={errors.subStrategyId ? 'ring-2 ring-red-400 rounded-xl' : ''}
+                options={filteredSubStrategies.map(ss => ({
+                  value: String(ss.id),
+                  label: ss.name,
+                  badge: ss.code
+                }))}
+              />
+              {errors.subStrategyId && (
+                <span className="text-xs font-semibold text-red-500 mt-1 block">
+                  {errors.subStrategyId.message}
+                </span>
+              )}
+            </div>
+
+            {/* 4. Indicator (โครงการหลัก) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  <span className="w-5 h-5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-black flex items-center justify-center">4</span>
+                  <span>โครงการหลัก</span>
+                </label>
+                <span className="text-[10px] font-semibold text-slate-400">
+                  {selectedSubStrategyId ? `${filteredIndicators.length} โครงการหลัก` : 'ต้องเลือกข้อ 3 ก่อน'}
+                </span>
+              </div>
+              <CustomSelect
+                value={watch('indicatorId') || ''}
+                onChange={handleIndicatorChange}
+                disabled={!selectedSubStrategyId}
+                placeholder={selectedSubStrategyId ? '-- เลือกโครงการหลัก --' : 'กรุณาเลือกแผนงานย่อยก่อน'}
+                multiline={true}
+                options={filteredIndicators.map(ind => ({
+                  value: String(ind.id),
+                  label: ind.name,
+                  badge: ind.code
+                }))}
+              />
+            </div>
           </div>
 
-          {/* 3. Sub Strategy (แผนงานย่อย) */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">แผนงานย่อย <span className="text-red-500">*</span></label>
-            <select
-              className={`w-full px-3 py-2 border ${errors.subStrategyId ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white`}
-              {...register('subStrategyId', { required: 'กรุณาเลือกแผนงานย่อย' })}
-              onChange={handleSubStrategyChange}
-              disabled={!selectedStrategyId}
-              value={selectedSubStrategyId}
-            >
-              <option value="">-- เลือกแผนงานย่อย --</option>
-              {filteredSubStrategies.map(ss => (
-                <option key={ss.id} value={ss.id}>{ss.code} - {ss.name}</option>
-              ))}
-            </select>
-            {errors.subStrategyId && <span className="text-xs text-red-500 mt-1 block">{errors.subStrategyId.message}</span>}
-          </div>
-
-          {/* 4. Indicator (โครงการหลัก) */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">โครงการหลัก</label>
-            <select
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white"
-              {...register('indicatorId')}
-              disabled={!selectedSubStrategyId}
-            >
-              <option value="">-- เลือกโครงการหลัก --</option>
-              {filteredIndicators.map(ind => (
-                <option key={ind.id} value={ind.id}>{ind.code} - {ind.name}</option>
-              ))}
-            </select>
-          </div>
+          {/* Active Hierarchy Path Visual Summary */}
+          {(selectedLocalIssueId || selectedStrategyId) && (
+            <div className="mt-4 p-3.5 bg-white/95 rounded-2xl border border-purple-100/90 shadow-2xs flex items-center flex-wrap gap-2 text-[11.5px]">
+              <span className="font-extrabold text-primary flex items-center gap-1.5 shrink-0">
+                <FiLayers className="w-3.5 h-3.5" />
+                <span>เส้นทางยุทธศาสตร์:</span>
+              </span>
+              {currentLocalIssue && (
+                <span className="inline-flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70 font-semibold text-slate-700">
+                  <span className="text-[10px] font-mono font-black text-violet-700 bg-violet-100/80 px-1 py-0.5 rounded">{currentLocalIssue.code}</span>
+                  <span className="max-w-[200px] sm:max-w-[320px] truncate">{currentLocalIssue.name}</span>
+                </span>
+              )}
+              {currentStrategy && (
+                <>
+                  <span className="text-slate-300 font-bold">➔</span>
+                  <span className="inline-flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70 font-semibold text-slate-700">
+                    <span className="text-[10px] font-mono font-black text-purple-700 bg-purple-100/80 px-1 py-0.5 rounded">{currentStrategy.code}</span>
+                    <span className="max-w-[200px] sm:max-w-[320px] truncate">{currentStrategy.name}</span>
+                  </span>
+                </>
+              )}
+              {currentSubStrategy && (
+                <>
+                  <span className="text-slate-300 font-bold">➔</span>
+                  <span className="inline-flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70 font-semibold text-slate-700">
+                    <span className="text-[10px] font-mono font-black text-blue-700 bg-blue-100/80 px-1 py-0.5 rounded">{currentSubStrategy.code}</span>
+                    <span className="max-w-[200px] sm:max-w-[320px] truncate">{currentSubStrategy.name}</span>
+                  </span>
+                </>
+              )}
+              {currentIndicator && (
+                <>
+                  <span className="text-slate-300 font-bold">➔</span>
+                  <span className="inline-flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70 font-semibold text-slate-700">
+                    <span className="text-[10px] font-mono font-black text-emerald-700 bg-emerald-100/80 px-1 py-0.5 rounded">{currentIndicator.code}</span>
+                    <span className="max-w-[200px] sm:max-w-[320px] truncate">{currentIndicator.name}</span>
+                  </span>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Budget Sources and Year */}

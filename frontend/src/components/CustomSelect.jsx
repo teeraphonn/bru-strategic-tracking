@@ -18,6 +18,7 @@ const CustomSelect = ({
   icon = null,
   className = '',
   disabled = false,
+  multiline = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,23 +115,28 @@ const CustomSelect = ({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         className={`${triggerBase} ${dark ? triggerDark : triggerLight}`}
       >
-        <span className="flex items-center gap-2 min-w-0 flex-1">
+        <span className="flex items-start gap-2 min-w-0 flex-1 py-0.5 text-left">
           {icon && (
-            <span className={`shrink-0 ${dark ? 'text-white/60' : 'text-slate-400'}`}>
+            <span className={`shrink-0 mt-0.5 ${dark ? 'text-white/60' : 'text-slate-400'}`}>
               {icon}
             </span>
           )}
           {selectedOption?.icon && !icon && (
-            <span className={`shrink-0 ${dark ? 'text-white/60' : 'text-slate-400'}`}>
+            <span className={`shrink-0 mt-0.5 ${dark ? 'text-white/60' : 'text-slate-400'}`}>
               {selectedOption.icon}
             </span>
           )}
-          <span className={`truncate ${hasValue ? '' : dark ? 'text-white/40' : 'text-slate-400'}`}>
+          {selectedOption?.badge && (
+            <span className="shrink-0 font-mono text-[10px] font-black px-1.5 py-0.5 rounded-md bg-purple-50 text-primary border border-purple-200/70 mt-0.5">
+              {selectedOption.badge}
+            </span>
+          )}
+          <span className={`leading-snug ${multiline ? 'line-clamp-2 break-words text-xs' : 'truncate'} ${hasValue ? (dark ? 'text-white font-bold' : 'text-slate-800 font-bold') : dark ? 'text-white/40' : 'text-slate-400'}`}>
             {displayLabel}
           </span>
         </span>
         <FiChevronDown
-          className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
+          className={`w-4 h-4 shrink-0 mt-1 transition-transform duration-200 ${
             isOpen ? 'rotate-180 text-primary' : ''
           } ${dark ? 'text-white/50' : 'text-slate-400'}`}
         />
@@ -213,12 +219,21 @@ const CustomSelect = ({
                             : 'text-slate-700 hover:bg-slate-50/90 hover:text-slate-900'}
                       `}
                     >
-                      <span className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="flex items-start gap-2.5 min-w-0 flex-1">
                         {opt.icon && (
-                          <span className={`shrink-0 ${isSelected
+                          <span className={`shrink-0 mt-0.5 ${isSelected
                             ? dark ? 'text-white' : 'text-primary'
                             : dark ? 'text-white/40' : 'text-slate-400'}`}>
                             {opt.icon}
+                          </span>
+                        )}
+                        {opt.badge && (
+                          <span className={`shrink-0 font-mono text-[10px] font-black px-1.5 py-0.5 rounded-md mt-0.5 border ${
+                            isSelected
+                              ? 'bg-primary text-white border-primary'
+                              : 'bg-slate-100 text-slate-700 border-slate-200'
+                          }`}>
+                            {opt.badge}
                           </span>
                         )}
                         <span className="leading-snug break-words">{opt.label}</span>
