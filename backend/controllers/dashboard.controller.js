@@ -499,6 +499,74 @@ const getDeanDashboardStats = async (req, res) => {
       d.overallStatus = overallStatus;
     });
 
+    const strategies = await prisma.strategy.findMany({
+      include: { subStrategies: true, localIssue: true },
+      orderBy: { code: 'asc' }
+    });
+
+    const localIssues = await prisma.localIssue.findMany({
+      orderBy: { code: 'asc' }
+    });
+
+    // 1. Local Issues for this Faculty (Level 1: 4 ด้าน)
+    const localIssueStats = localIssues.map(li => {
+      const liProjects = processedProjects.filter(p => p.subStrategy?.strategy?.localIssueId === li.id);
+      let liBudget = 0;
+      let liSpent = 0;
+      let liTarget = 0;
+      let liCompleted = 0;
+
+      liProjects.forEach(p => {
+        liBudget += parseFloat(p.totalBudget || 0);
+        liSpent += (p.totalSpent || 0);
+        liTarget += (p.targetCount || 0);
+        liCompleted += (p.completedCount || 0);
+      });
+
+      const progressPct = liTarget > 0 ? parseFloat(((liCompleted / liTarget) * 100).toFixed(2)) : 0;
+
+      return {
+        localIssueId: li.id,
+        localIssueCode: li.code,
+        localIssueName: li.name,
+        totalProjects: liProjects.length,
+        totalBudget: parseFloat(liBudget.toFixed(2)),
+        totalSpent: parseFloat(liSpent.toFixed(2)),
+        progressPct
+      };
+    });
+
+    // 2. Strategic Pillars for this Faculty (Level 2: 4 แผนงานหลัก)
+    const pillarStats = strategies.map(s => {
+      const sProjects = processedProjects.filter(p => p.subStrategy?.strategyId === s.id);
+      let sBudget = 0;
+      let sSpent = 0;
+      let sTarget = 0;
+      let sCompleted = 0;
+
+      sProjects.forEach(p => {
+        sBudget += parseFloat(p.totalBudget || 0);
+        sSpent += (p.totalSpent || 0);
+        sTarget += (p.targetCount || 0);
+        sCompleted += (p.completedCount || 0);
+      });
+
+      const progressPct = sTarget > 0 ? parseFloat(((sCompleted / sTarget) * 100).toFixed(2)) : 0;
+
+      return {
+        strategyId: s.id,
+        strategyCode: s.code,
+        strategyName: s.name,
+        localIssueId: s.localIssueId,
+        localIssueCode: s.localIssue?.code,
+        localIssueName: s.localIssue?.name,
+        totalProjects: sProjects.length,
+        totalBudget: parseFloat(sBudget.toFixed(2)),
+        totalSpent: parseFloat(sSpent.toFixed(2)),
+        progressPct
+      };
+    });
+
     res.json({
       facultyName: faculty?.name || 'คณะวิทยาศาสตร์',
       healthCheck: {
@@ -512,6 +580,8 @@ const getDeanDashboardStats = async (req, res) => {
         yellowCount,
         greenCount
       },
+      localIssues: localIssueStats,
+      strategicPillars: pillarStats,
       redFlagProjects,
       departmentPerformance: Object.values(departmentStats),
       allProjects: processedProjects,

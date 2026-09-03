@@ -247,6 +247,8 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
   const {
     facultyName = '',
     healthCheck = { overallProgress: 0, overallBurnRate: 0, totalSpent: 0, totalBudget: 0, redCount: 0, greenCount: 0, yellowCount: 0, totalProjects: 0 },
+    localIssues = [],
+    strategicPillars = [],
     redFlagProjects = [],
     departmentPerformance = [],
     allProjects = []
@@ -661,6 +663,79 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
             })()}
           </div>
         </div>
+
+        {/* 2.5 4-Tier Strategic Accomplishment Panel (4 ประเด็นยุทธศาสตร์ตามข้อมูลหลัก) */}
+        {strategicPillars && strategicPillars.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                  <FiLayers className="w-4 h-4 text-violet-600 shrink-0" />
+                  <span>ผลสัมฤทธิ์ตาม 4 ประเด็นยุทธศาสตร์ระดับคณะ (Faculty Strategic Alignment)</span>
+                </h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">การติดตามผลสัมฤทธิ์และการเบิกจ่ายงบประมาณจำแนกตามแผนงานยุทธศาสตร์หลัก (S1 - S4)</p>
+              </div>
+              <span className="text-[11px] font-bold px-3 py-1 bg-violet-50 text-violet-700 rounded-full border border-violet-200 self-start sm:self-auto">
+                4 แผนงานยุทธศาสตร์
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {strategicPillars.map((sp, idx) => {
+                const colors = [
+                  { bg: 'from-violet-500/10 to-violet-500/5', border: 'border-violet-200/80', badge: 'bg-violet-100 text-violet-800', bar: 'bg-violet-600' },
+                  { bg: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-200/80', badge: 'bg-purple-100 text-purple-800', bar: 'bg-purple-600' },
+                  { bg: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-200/80', badge: 'bg-blue-100 text-blue-800', bar: 'bg-blue-600' },
+                  { bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-200/80', badge: 'bg-emerald-100 text-emerald-800', bar: 'bg-emerald-600' }
+                ];
+                const c = colors[idx % colors.length];
+
+                return (
+                  <div
+                    key={sp.strategyId || idx}
+                    className={`bg-gradient-to-br ${c.bg} p-4 rounded-2xl border ${c.border} space-y-3 flex flex-col justify-between`}
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${c.badge}`}>
+                          {sp.strategyCode || `S${idx + 1}`}
+                        </span>
+                        {sp.localIssueCode && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-white/90 text-slate-600 border border-slate-200/60 shadow-3xs">
+                            {sp.localIssueCode}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-xs font-black text-slate-800 leading-snug line-clamp-2" title={sp.strategyName}>
+                        {sp.strategyName}
+                      </h4>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-slate-200/50 text-[11px]">
+                      <div className="flex items-center justify-between text-slate-600 font-bold">
+                        <span>จำนวนโครงการ</span>
+                        <span className="text-slate-900 font-black">{sp.totalProjects} โครงการ</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-600 font-bold">
+                        <span>งบประมาณคณะ</span>
+                        <span className="text-slate-900 font-black">{parseFloat(sp.totalBudget || 0).toLocaleString()} ฿</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px] font-black">
+                          <span className="text-slate-500">ความก้าวหน้ารวม</span>
+                          <span className="text-emerald-700">{sp.progressPct}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-200/70 rounded-full overflow-hidden">
+                          <div className={`h-full ${c.bar} rounded-full transition-all duration-500`} style={{ width: `${Math.min(sp.progressPct, 100)}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 3. Management by Exception: Red Flags & Critical Bottlenecks Panel */}
