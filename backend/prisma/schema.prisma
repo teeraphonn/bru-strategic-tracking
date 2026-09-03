@@ -212,7 +212,7 @@ model ActivityImage {
   id         Int      @id @default(autoincrement())
   activityId Int      @map("activity_id")
   activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  filePath   String   @db.LongText @map("file_path")
+  filePath   String   @db.Text @map("file_path")
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("activity_images")

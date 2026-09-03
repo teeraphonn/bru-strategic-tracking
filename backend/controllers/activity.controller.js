@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const prisma = require('../config/prisma');
+const cloudinary = require('../config/cloudinary');
 const { updateProjectProgress } = require('./project.controller');
 
 // Add a new activity (Plan Phase - Locks automatically upon creation)
@@ -128,25 +129,30 @@ const updateActivity = async (req, res) => {
     }
     if (remark !== undefined) dataUpdate.remark = remark;
 
-    // Handle files upload if present (Store as Base64 Data URL so cloud redeploys never lose files)
+    // Handle files upload - upload to Cloudinary for persistent cloud storage
     const images = [];
     if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
+      for (const file of req.files) {
         try {
-          const fileBuffer = fs.readFileSync(file.path);
-          const base64Data = `data:${file.mimetype || 'image/jpeg'};base64,${fileBuffer.toString('base64')}`;
-          images.push({
-            filePath: base64Data
+          // Upload to Cloudinary from temp file path
+          const uploadResult = await cloudinary.uploader.upload(file.path, {
+            folder: 'bru-strategic/activities',
+            resource_type: 'image',
+            quality: 'auto:good',
+            fetch_format: 'auto'
           });
-          // Remove temp file from local disk
+          images.push({
+            filePath: uploadResult.secure_url
+          });
+        } catch (uploadErr) {
+          console.error('Cloudinary upload error:', uploadErr);
+          // Fallback: store as local path if Cloudinary fails
+          images.push({ filePath: `/uploads/${file.filename}` });
+        } finally {
+          // Always clean up temp file from disk
           fs.unlink(file.path, () => {});
-        } catch (readErr) {
-          console.error('Error converting uploaded file to base64:', readErr);
-          images.push({
-            filePath: `/uploads/${file.filename}`
-          });
         }
-      });
+      }
     }
 
     // Perform update and progress recalculation inside single transaction
@@ -198,8 +204,21 @@ const deleteActivityImage = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to delete this image' });
     }
 
-    // Delete file from disk if local path
-    if (image.filePath && !image.filePath.startsWith('data:')) {
+    // Delete from Cloudinary if it's a Cloudinary URL
+    if (image.filePath && image.filePath.includes('cloudinary.com')) {
+      try {
+        // Extract public_id from Cloudinary URL (format: .../bru-strategic/activities/filename)
+        const urlParts = image.filePath.split('/');
+        const folderIdx = urlParts.findIndex(p => p === 'bru-strategic');
+        if (folderIdx !== -1) {
+          const publicId = urlParts.slice(folderIdx).join('/').replace(/\.[^.]+$/, '');
+          await cloudinary.uploader.destroy(publicId);
+        }
+      } catch (cdnErr) {
+        console.error('Cloudinary delete error (non-fatal):', cdnErr);
+      }
+    } else if (image.filePath && !image.filePath.startsWith('data:') && !image.filePath.startsWith('http')) {
+      // Delete from local disk if local path
       const absolutePath = path.join(__dirname, '..', image.filePath);
       if (fs.existsSync(absolutePath)) {
         fs.unlinkSync(absolutePath);
