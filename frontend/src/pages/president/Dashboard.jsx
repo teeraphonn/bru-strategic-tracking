@@ -384,7 +384,7 @@ const PresidentDashboard = () => {
               <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
                 <div className="bg-gradient-to-r from-violet-400 to-emerald-400 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, universityHealth.overallProgress)}%` }} />
               </div>
-              <div className="text-[10px] text-violet-300/70 mt-1.5 truncate">ครอบคลุม 5 ประเด็นยุทธศาสตร์มหาวิทยาลัย</div>
+              <div className="text-[10px] text-violet-300/70 mt-1.5 truncate">ครอบคลุม 4 ประเด็นการพัฒนาท้องถิ่น (6 แผนงานหลัก)</div>
             </div>
           </div>
 

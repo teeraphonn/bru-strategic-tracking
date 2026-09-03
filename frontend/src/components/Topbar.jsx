@@ -437,14 +437,14 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
 
   return (
     <header 
-      className="sticky top-0 z-40 flex items-center justify-between h-16 py-2 px-6 md:px-8 text-slate-800 border-b border-purple-200/70 shadow-xs transition-all duration-200 no-print print:hidden"
+      className="sticky top-0 z-40 flex items-center justify-between h-16 py-2 px-3.5 sm:px-6 md:px-8 text-slate-800 border-b border-purple-200/70 shadow-xs transition-all duration-200 no-print print:hidden"
       style={{ background: 'linear-gradient(90deg, #EDE9FE 0%, #F5F3FF 100%)' }}
     >
       <div className="flex items-center gap-2">
         {/* Mobile menu toggle */}
         <button 
           onClick={toggleSidebar} 
-          className="p-2 -ml-2 text-primary bg-white hover:bg-white/80 border border-purple-200/80 rounded-xl lg:hidden focus:outline-none transition-all shadow-2xs cursor-pointer"
+          className="p-2 -ml-1 sm:-ml-2 text-primary bg-white hover:bg-white/80 border border-purple-200/80 rounded-xl lg:hidden focus:outline-none transition-all shadow-2xs cursor-pointer"
           title="ซ่อน/แสดง เมนู"
         >
           <FiMenu className="w-5 h-5" />
@@ -458,6 +458,13 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
         >
           <FiMenu className="w-5 h-5" />
         </button>
+      </div>
+
+      {/* Mobile Page Title (Truncated, Clear) */}
+      <div className="sm:hidden flex items-center min-w-0 flex-1 px-2">
+        <span className="px-2.5 py-1 rounded-lg bg-primary text-white text-[11px] font-black truncate shadow-xs">
+          {pageTitle}
+        </span>
       </div>
 
       {/* Center: Single line layout with prominent page title badge */}
@@ -511,7 +518,7 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
             {notifOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
-                <div className="absolute top-full right-0 mt-2 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-100 py-3 overflow-hidden origin-top-right">
+                <div className="absolute top-full right-0 mt-2 z-50 w-[calc(100vw-28px)] max-w-sm sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-100 py-3 overflow-hidden origin-top-right">
                   <div className="px-4 pb-2 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                       <FiBell className="w-4 h-4 text-primary" />
