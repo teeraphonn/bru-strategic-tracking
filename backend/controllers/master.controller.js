@@ -10,11 +10,41 @@ const handleError = (res, error, customMessage = 'Internal server error') => {
   res.status(500).json({ message: customMessage, error: error.message });
 };
 
+// In-memory cache for ultra-fast master data queries (sub-millisecond response)
+const masterCache = new Map();
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+const getCached = (key) => {
+  const item = masterCache.get(key);
+  if (item && Date.now() - item.timestamp < CACHE_TTL_MS) {
+    return item.data;
+  }
+  masterCache.delete(key);
+  return null;
+};
+
+const setCached = (key, data) => {
+  masterCache.set(key, { data, timestamp: Date.now() });
+};
+
+const invalidateMasterCache = (prefix) => {
+  if (prefix) {
+    for (const key of masterCache.keys()) {
+      if (key.startsWith(prefix)) masterCache.delete(key);
+    }
+  } else {
+    masterCache.clear();
+  }
+};
+
 // ==========================================
 // FACULTIES CRUD
 // ==========================================
 const getFaculties = async (req, res) => {
   try {
+    const cached = getCached('faculties');
+    if (cached) return res.json(cached);
+
     const list = await prisma.faculty.findMany({
       orderBy: { name: 'asc' },
       include: {
@@ -66,6 +96,7 @@ const getFaculties = async (req, res) => {
       };
     });
 
+    setCached('faculties', formattedList);
     res.json(formattedList);
   } catch (error) {
     handleError(res, error, 'Failed to fetch faculties');
@@ -76,6 +107,7 @@ const createFaculty = async (req, res) => {
   try {
     const { name } = req.body;
     const item = await prisma.faculty.create({ data: { name } });
+    invalidateMasterCache();
     res.status(201).json(item);
   } catch (error) {
     handleError(res, error, 'Failed to create faculty');
@@ -90,6 +122,7 @@ const updateFaculty = async (req, res) => {
       where: { id: parseInt(id) },
       data: { name }
     });
+    invalidateMasterCache();
     res.json(item);
   } catch (error) {
     handleError(res, error, 'Failed to update faculty');
@@ -100,6 +133,7 @@ const deleteFaculty = async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.faculty.delete({ where: { id: parseInt(id) } });
+    invalidateMasterCache();
     res.json({ message: 'Faculty deleted successfully' });
   } catch (error) {
     handleError(res, error, 'Failed to delete faculty');
@@ -112,6 +146,10 @@ const deleteFaculty = async (req, res) => {
 const getDepartments = async (req, res) => {
   try {
     const facultyId = req.query.facultyId ? parseInt(req.query.facultyId) : undefined;
+    const cacheKey = `departments_${facultyId || 'all'}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
     const where = {};
     if (facultyId) {
       where.facultyId = facultyId;
@@ -145,6 +183,7 @@ const getDepartments = async (req, res) => {
       };
     });
 
+    setCached(cacheKey, formatted);
     res.json(formatted);
   } catch (error) {
     handleError(res, error, 'Failed to fetch departments');
@@ -161,6 +200,7 @@ const createDepartment = async (req, res) => {
       },
       include: { faculty: true }
     });
+    invalidateMasterCache();
     res.status(201).json(item);
   } catch (error) {
     handleError(res, error, 'Failed to create department');

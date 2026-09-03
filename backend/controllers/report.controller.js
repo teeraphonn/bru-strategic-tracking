@@ -1,37 +1,6 @@
-const path = require('path');
-const fs = require('fs');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 const prisma = require('../config/prisma');
-
-const registerThaiFonts = (doc) => {
-  const localRegular = path.join(__dirname, '../fonts/Thai-Regular.ttf');
-  const localBold = path.join(__dirname, '../fonts/Thai-Bold.ttf');
-  const winRegular = 'C:\\Windows\\Fonts\\tahoma.ttf';
-  const winBold = 'C:\\Windows\\Fonts\\tahomabd.ttf';
-
-  if (fs.existsSync(localRegular)) {
-    doc.registerFont('ThaiRegular', localRegular);
-  } else if (fs.existsSync(winRegular)) {
-    doc.registerFont('ThaiRegular', winRegular);
-  } else {
-    doc.registerFont('ThaiRegular', 'Helvetica');
-  }
-
-  if (fs.existsSync(localBold)) {
-    doc.registerFont('ThaiBold', localBold);
-  } else if (fs.existsSync(winBold)) {
-    doc.registerFont('ThaiBold', winBold);
-  } else {
-    doc.registerFont('ThaiBold', 'Helvetica-Bold');
-  }
-
-  try {
-    doc.font('ThaiRegular');
-  } catch (e) {
-    doc.font('Helvetica');
-  }
-};
 
 const getProjectWarningState = (budget, spent, target, completed, progress, endDate) => {
   const budgetRatio = budget > 0 ? (spent / budget) * 100 : 0;
@@ -475,7 +444,6 @@ const exportPDF = async (req, res) => {
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const margin = 36;
-    const contentWidth = pageWidth - (margin * 2); // 523.28 pt
 
     const getReportTitleTh = (t) => {
       switch (t) {
@@ -683,7 +651,6 @@ const exportMasterDataPDF = async (req, res) => {
     const contentWidth = pageWidth - (margin * 2);
 
     let tabName = 'ผู้ใช้งาน';
-    let headers = [];
     let colWidths = [];
     let rows = [];
 
