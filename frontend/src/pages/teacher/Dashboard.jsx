@@ -130,12 +130,26 @@ const TeacherDashboard = () => {
 
   const totalPieCount = pieList.reduce((sum, c) => sum + (c.count || 0), 0) || summary.totalProjects || 0;
 
+  const getProgressStatusColor = (status, idx) => {
+    if (status === '76-100%') return { hex: '#10B981', dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' };
+    if (status === '51-75%') return { hex: '#3B82F6', dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' };
+    if (status === '26-50%') return { hex: '#F59E0B', dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' };
+    if (status === '0-25%') return { hex: '#EF4444', dot: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50' };
+    const fallbacks = [
+      { hex: '#EF4444', dot: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50' },
+      { hex: '#F59E0B', dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
+      { hex: '#3B82F6', dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
+      { hex: '#10B981', dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' }
+    ];
+    return fallbacks[idx % fallbacks.length];
+  };
+
   // Chart configuration: Doughnut (Progress Categories)
   const doughnutData = {
     labels: pieList.map(c => c.status),
     datasets: [{
       data: pieList.map(c => c.count),
-      backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'],
+      backgroundColor: pieList.map((c, idx) => getProgressStatusColor(c.status, idx).hex),
       borderWidth: 3,
       borderColor: '#ffffff',
       hoverOffset: 6
@@ -402,14 +416,7 @@ const TeacherDashboard = () => {
           <div className="pt-3 border-t border-slate-100">
             <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">
               {pieList.map((c, idx) => {
-                const colors = [
-                  { dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' },
-                  { dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
-                  { dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
-                  { dot: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50' },
-                  { dot: 'bg-purple-500', text: 'text-purple-700', bg: 'bg-purple-50' }
-                ];
-                const clr = colors[idx % colors.length];
+                const clr = getProgressStatusColor(c.status, idx);
                 const total = totalPieCount || 1;
                 const pct = ((c.count / total) * 100).toFixed(0);
                 return (
