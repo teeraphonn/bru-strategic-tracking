@@ -974,40 +974,40 @@ const PresidentDashboard = () => {
       </div>
 
       {/* 3. 10 Main Projects Strategic Tracking & Drill-down */}
-      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
+      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-5 space-y-3.5 print:border-slate-300 print-break-inside-avoid">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100 print:border-slate-300">
           <div>
-            <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+            <h2 className="text-sm md:text-[15px] font-extrabold text-slate-800 flex items-center gap-2">
               <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
-                <FiLayers className="w-5 h-5 shrink-0" />
+                <FiLayers className="w-4 h-4 shrink-0" />
               </span>
               <span>ตารางกำกับติดตาม 10 โครงการหลักระดับมหาวิทยาลัย (10 Main Projects Strategic Tracking)</span>
             </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
               ติดตามความก้าวหน้าและการเบิกจ่ายงบประมาณของ 10 โครงการหลักตามกรอบยุทธศาสตร์ พร้อมเจาะลึกโครงการปฏิบัติการย่อยของแต่ละคณะ (Drill-down)
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0 no-print">
-            <span className="text-xs font-black text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl shadow-3xs">
+            <span className="text-[11px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl shadow-3xs">
               🎯 ทั้งหมด {(mainProjects || []).length} โครงการหลัก
             </span>
           </div>
         </div>
 
         {/* Standard Column Header Bar for Desktop */}
-        <div className="hidden lg:flex items-center justify-between px-5 py-2.5 bg-slate-100/80 rounded-2xl text-[11px] font-black text-slate-500 uppercase tracking-wider">
+        <div className="hidden lg:flex items-center justify-between px-4 py-2 bg-slate-100/80 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-wider">
           <div className="flex-1 min-w-0 pr-4">รหัส & ชื่อโครงการหลัก (Main Project - MP)</div>
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3.5 shrink-0">
             <div className="w-24 text-center">โครงการย่อย</div>
-            <div className="w-44 text-right">งบประมาณ / เบิกจ่าย</div>
-            <div className="w-28 text-center">% ความก้าวหน้า</div>
-            <div className="w-24 text-center">สถานะ RAG</div>
-            <div className="w-8 text-center"></div>
+            <div className="w-40 text-right">งบประมาณ / เบิกจ่าย</div>
+            <div className="w-24 text-center">% ความก้าวหน้า</div>
+            <div className="w-20 text-center">สถานะ RAG</div>
+            <div className="w-7 text-center"></div>
           </div>
         </div>
 
         {/* List of 10 Main Projects */}
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {(mainProjects || []).map((mp) => {
             const isExpanded = expandedMainProjectId === mp.id;
             const statusConfig = {
@@ -1020,32 +1020,32 @@ const PresidentDashboard = () => {
             return (
               <div 
                 key={mp.id}
-                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
-                  isExpanded ? 'border-primary/40 shadow-md bg-white' : 'border-slate-100 hover:border-slate-200 bg-slate-50/40'
+                className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+                  isExpanded ? 'border-primary/40 shadow-sm bg-white' : 'border-slate-100 hover:border-slate-200 bg-slate-50/40'
                 }`}
               >
                 {/* Main Project Header Row */}
                 <div 
                   onClick={() => setExpandedMainProjectId(isExpanded ? null : mp.id)}
-                  className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/80 transition-colors select-none"
+                  className="px-3.5 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/80 transition-colors select-none"
                 >
                   {/* Left: Code, Title, Strategic Tiers */}
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <span className="font-mono text-xs font-black px-2.5 py-1 rounded-xl bg-purple-600 text-white shadow-xs shrink-0 mt-0.5">
+                  <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                    <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-lg bg-purple-600 text-white shadow-3xs shrink-0 mt-0.5">
                       {mp.code}
                     </span>
-                    <div className="min-w-0 space-y-1.5 flex-1">
-                      <div className="font-extrabold text-sm text-slate-800 leading-snug break-words">
+                    <div className="min-w-0 space-y-1 flex-1">
+                      <div className="font-bold text-[12.5px] text-slate-800 leading-snug break-words">
                         {mp.name}
                       </div>
-                      <div className="flex flex-wrap items-center gap-1.5 text-[10.5px]">
+                      <div className="flex flex-wrap items-center gap-1 text-[9.5px]">
                         {mp.localIssueCode && (
-                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 font-semibold leading-relaxed">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/60 font-medium leading-relaxed">
                             {mp.localIssueCode}: {mp.localIssueName}
                           </span>
                         )}
                         {mp.subStrategyCode && (
-                          <span className="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100 font-semibold leading-relaxed">
+                          <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-100 font-medium leading-relaxed">
                             {mp.subStrategyCode}: {mp.subStrategyName}
                           </span>
                         )}
@@ -1054,29 +1054,29 @@ const PresidentDashboard = () => {
                   </div>
 
                   {/* Right: Uniform Fixed-Width Columns */}
-                  <div className="flex items-center gap-4 shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-100">
+                  <div className="flex items-center gap-3.5 shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-2.5 lg:pt-0 border-slate-100">
                     {/* Projects Count */}
                     <div className="w-24 text-left lg:text-center">
-                      <div className="text-[10px] font-bold text-slate-400 uppercase lg:hidden">โครงการปฏิบัติการ</div>
-                      <div className="text-xs font-extrabold text-slate-800">{mp.totalProjects} โครงการ</div>
+                      <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">โครงการปฏิบัติการ</div>
+                      <div className="text-[11.5px] font-bold text-slate-700">{mp.totalProjects} โครงการ</div>
                     </div>
 
                     {/* Budget & Spent */}
-                    <div className="w-44 text-left lg:text-right">
-                      <div className="text-[10px] font-bold text-slate-400 uppercase lg:hidden">งบประมาณ / เบิกจ่าย</div>
-                      <div className="text-xs font-black text-slate-900">{mp.totalBudget.toLocaleString()} ฿</div>
-                      <div className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                    <div className="w-40 text-left lg:text-right">
+                      <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">งบประมาณ / เบิกจ่าย</div>
+                      <div className="text-[11.5px] font-extrabold text-slate-800">{mp.totalBudget.toLocaleString()} ฿</div>
+                      <div className="text-[9.5px] text-slate-500 font-medium">
                         จ่าย {mp.totalSpent.toLocaleString()} ฿ <span className="text-emerald-600 font-bold">({mp.burnRatePct}%)</span>
                       </div>
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="w-28 text-center">
-                      <div className="flex items-center justify-between text-[10px] font-black mb-1">
-                        <span className="text-slate-500">ก้าวหน้า</span>
-                        <span className="text-primary">{mp.progressPct}%</span>
+                    <div className="w-24 text-center">
+                      <div className="flex items-center justify-between text-[9.5px] font-bold mb-0.5">
+                        <span className="text-slate-400">ก้าวหน้า</span>
+                        <span className="text-primary font-black">{mp.progressPct}%</span>
                       </div>
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                         <div 
                           className={`h-full rounded-full transition-all duration-300 ${mp.progressPct < 40 ? 'bg-rose-500' : mp.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
                           style={{ width: `${Math.min(100, mp.progressPct)}%` }}
@@ -1085,17 +1085,17 @@ const PresidentDashboard = () => {
                     </div>
 
                     {/* Status Badge */}
-                    <div className="w-24 flex justify-center">
-                      <span className={`inline-flex items-center justify-center gap-1.5 w-full py-1 rounded-xl text-[10.5px] font-extrabold border shadow-3xs ${statusConfig.badge}`}>
+                    <div className="w-20 flex justify-center">
+                      <span className={`inline-flex items-center justify-center gap-1 w-full py-0.5 rounded-lg text-[9.5px] font-bold border ${statusConfig.badge}`}>
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusConfig.dot}`} />
                         <span className="truncate">{statusConfig.label}</span>
                       </span>
                     </div>
 
                     {/* Toggle Icon */}
-                    <div className="w-8 flex justify-center">
-                      <div className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
-                        {isExpanded ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
+                    <div className="w-7 flex justify-center">
+                      <div className="p-1 rounded-md text-slate-400 hover:text-slate-600">
+                        {isExpanded ? <FiChevronUp className="w-3.5 h-3.5" /> : <FiChevronDown className="w-3.5 h-3.5" />}
                       </div>
                     </div>
                   </div>
@@ -1103,63 +1103,63 @@ const PresidentDashboard = () => {
 
                 {/* Collapsible Inner Projects Table (Drill-down) */}
                 {isExpanded && (
-                  <div className="border-t border-slate-100 bg-white p-4">
+                  <div className="border-t border-slate-100 bg-white p-3">
                     {mp.projects && mp.projects.length > 0 ? (
                       <div className="rounded-xl border border-slate-100 overflow-x-auto shadow-3xs">
-                        <table className="w-full text-xs text-left border-collapse min-w-[720px]">
+                        <table className="w-full text-[11px] text-left border-collapse min-w-[680px]">
                           <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                              <th className="py-3 px-4">ชื่อโครงการปฏิบัติการย่อย (Operational Project)</th>
-                              <th className="py-3 px-4 w-48">คณะ / ภาควิชา</th>
-                              <th className="py-3 px-4 w-36">ผู้รับผิดชอบโครงการ</th>
-                              <th className="py-3 px-4 w-32 text-right">งบประมาณอนุมัติ</th>
-                              <th className="py-3 px-4 w-32 text-right">เบิกจ่ายจริง</th>
-                              <th className="py-3 px-4 w-28 text-center">% ก้าวหน้า</th>
-                              <th className="py-3 px-4 w-20 text-center">ดูข้อมูล</th>
+                            <tr className="bg-slate-50 border-b border-slate-100 text-[9.5px] font-extrabold text-slate-400 uppercase tracking-wider">
+                              <th className="py-2 px-3">ชื่อโครงการปฏิบัติการย่อย (Operational Project)</th>
+                              <th className="py-2 px-3 w-44">คณะ / ภาควิชา</th>
+                              <th className="py-2 px-3 w-32">ผู้รับผิดชอบโครงการ</th>
+                              <th className="py-2 px-3 w-28 text-right">งบประมาณ</th>
+                              <th className="py-2 px-3 w-28 text-right">เบิกจ่ายจริง</th>
+                              <th className="py-2 px-3 w-24 text-center">% ก้าวหน้า</th>
+                              <th className="py-2 px-3 w-16 text-center">ดูข้อมูล</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {mp.projects.map((subP) => (
                               <tr key={subP.id} className="hover:bg-slate-50/70 transition-colors">
-                                <td className="py-3 px-4 font-bold text-slate-800 leading-relaxed break-words">
+                                <td className="py-2.5 px-3 font-semibold text-slate-800 leading-normal break-words">
                                   {subP.name}
                                 </td>
-                                <td className="py-3 px-4">
-                                  <div className="font-extrabold text-slate-700 text-xs">{subP.facultyName}</div>
-                                  <div className="text-[10px] text-slate-400 font-semibold mt-0.5">{subP.departmentName}</div>
+                                <td className="py-2.5 px-3">
+                                  <div className="font-bold text-slate-700 text-[11px]">{subP.facultyName}</div>
+                                  <div className="text-[9.5px] text-slate-400 font-medium">{subP.departmentName}</div>
                                 </td>
-                                <td className="py-3 px-4">
-                                  <div className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                                <td className="py-2.5 px-3">
+                                  <div className="text-[10.5px] font-medium text-slate-600 flex items-center gap-1">
                                     <FiUser className="w-3 h-3 text-slate-400 shrink-0" />
                                     <span>{subP.creatorName}</span>
                                   </div>
                                 </td>
-                                <td className="py-3 px-4 text-right font-extrabold text-slate-800 whitespace-nowrap">
+                                <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">
                                   {subP.totalBudget.toLocaleString()} ฿
                                 </td>
-                                <td className="py-3 px-4 text-right font-extrabold text-emerald-600 whitespace-nowrap">
+                                <td className="py-2.5 px-3 text-right font-bold text-emerald-600 whitespace-nowrap">
                                   {subP.actualSpent.toLocaleString()} ฿
                                 </td>
-                                <td className="py-3 px-4 text-center whitespace-nowrap">
-                                  <div className="font-black text-primary text-xs">{subP.progress}%</div>
-                                  <div className="w-16 bg-slate-100 h-1.5 rounded-full mx-auto mt-1 overflow-hidden">
+                                <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                                  <div className="font-extrabold text-primary text-[11px]">{subP.progress}%</div>
+                                  <div className="w-14 bg-slate-100 h-1 rounded-full mx-auto mt-0.5 overflow-hidden">
                                     <div 
                                       className={`h-full rounded-full ${subP.progress < 40 ? 'bg-rose-500' : subP.progress < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
                                       style={{ width: `${Math.min(100, subP.progress)}%` }}
                                     />
                                   </div>
                                 </td>
-                                <td className="py-3 px-4 text-center whitespace-nowrap">
+                                <td className="py-2.5 px-3 text-center whitespace-nowrap">
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleOpenDetailModal(subP);
                                     }}
-                                    className="p-2 rounded-xl bg-slate-100 hover:bg-primary hover:text-white text-slate-600 transition-all cursor-pointer shadow-3xs active:scale-95"
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-600 transition-all cursor-pointer shadow-3xs active:scale-95"
                                     title="ดูรายละเอียดโครงการและออกข้อสั่งการ"
                                   >
-                                    <FiEye className="w-3.5 h-3.5" />
+                                    <FiEye className="w-3 h-3" />
                                   </button>
                                 </td>
                               </tr>
@@ -1168,7 +1168,7 @@ const PresidentDashboard = () => {
                         </table>
                       </div>
                     ) : (
-                      <div className="text-center py-6 text-slate-400 text-xs font-medium bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                      <div className="text-center py-4 text-slate-400 text-[11px] font-medium bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                         ยังไม่มีคณะใดส่งข้อเสนอโครงการปฏิบัติการภายใต้โครงการหลักนี้
                       </div>
                     )}
@@ -1279,96 +1279,58 @@ const PresidentDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
           <div>
             <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-              <FiAlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
-              <span>โครงการสำคัญระดับมหาวิทยาลัยที่ต้องได้รับการแก้ไขด่วน (Top Flagship Red Projects)</span>
+              <span className="p-1.5 rounded-xl bg-rose-100 text-rose-600">
+                <FiAlertTriangle className="w-5 h-5 shrink-0" />
+              </span>
+              <span>โครงการติดธงแดงวิกฤตที่ต้องเร่งรัด (Critical Red Flag Projects)</span>
             </h2>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              รวบรวมโครงการงบประมาณสูงที่ประสบปัญหาหรือมีความก้าวหน้าล่าช้า ซึ่งส่งผลกระทบต่อ KPI รวมของสถาบัน
+              โครงการที่มีความล่าช้ากว่าแผน หรือมีผลการดำเนินงานต่ำกว่าเกณฑ์มาตรฐาน จำเป็นต้องได้รับการสนับสนุนหรือสั่งการแก้ไข
             </p>
           </div>
-
           <div className="flex items-center gap-2 shrink-0 no-print">
             <span className="text-xs font-black text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl shadow-3xs">
-              🔴 วิกฤต {criticalBottlenecks.length} โครงการ
+              🔴 วิกฤต {(criticalProjects || []).length} โครงการ
             </span>
           </div>
         </div>
 
-        {criticalBottlenecks.length > 0 ? (
-          <div className="w-full rounded-2xl border border-slate-100 shadow-2xs overflow-x-auto print:overflow-visible scrollbar-thin print:border-slate-300">
+        {(criticalProjects && criticalProjects.length > 0) ? (
+          <div className="overflow-x-auto print:overflow-visible scrollbar-thin">
             <table className="w-full text-xs text-left border-collapse print:text-[11px] min-w-[700px] print:min-w-full">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px] print:bg-slate-100 print:text-slate-800">
-                  <th className="py-3 px-3 text-center whitespace-nowrap w-[10%]">สถานะ</th>
-                  <th className="py-3 px-3 w-[38%]">ชื่อโครงการวิกฤต</th>
-                  <th className="py-3 px-3 w-[22%]">สังกัด & ผู้รับผิดชอบ</th>
-                  <th className="py-3 px-3 text-right whitespace-nowrap w-[14%]">งบประมาณ / เบิกจ่าย</th>
-                  <th className="py-3 px-3 text-center whitespace-nowrap w-[8%]">ความก้าวหน้า</th>
-                  <th className="py-3 px-3 text-center whitespace-nowrap w-[8%] print:text-left">
-                    <span className="print:hidden">การสั่งการ</span>
-                    <span className="hidden print:inline">ข้อสั่งการอธิการบดี</span>
-                  </th>
+                  <th className="py-3 px-3">ชื่อโครงการ / ผู้รับผิดชอบ</th>
+                  <th className="py-3 px-3 w-40">คณะ / ภาควิชา</th>
+                  <th className="py-3 px-3 w-28 text-right">งบประมาณ</th>
+                  <th className="py-3 px-3 w-28 text-right">เบิกจ่ายจริง</th>
+                  <th className="py-3 px-3 w-24 text-center">% ก้าวหน้า</th>
+                  <th className="py-3 px-3 w-24 text-center">ข้อสั่งการ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white print:divide-slate-300">
-                {criticalBottlenecks.map((p) => {
-                  const facName = p.faculty?.name || 'ส่วนกลาง';
-                  const formattedFac = (!facName || facName === 'ส่วนกลาง' || facName.startsWith('คณะ')) ? facName : `คณะ${facName}`;
-                  const budgetNum = parseFloat(p.totalBudget || 0);
-                  const spentNum = p.totalSpent || 0;
-                  const cleanCreator = p.creator?.name ? p.creator.name.replace(/\s*\([^)]*\)/g, '').trim() : 'ไม่ระบุผู้รับผิดชอบ';
-                  const hasDirective = p.presidentDirective || p.executiveDirective;
-
+              <tbody className="divide-y divide-slate-100 print:divide-slate-300">
+                {criticalProjects.map((p) => {
+                  const hasDirective = !!(p.presidentDirective || p.executiveDirective);
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50/80 transition-colors group align-middle">
-                      <td className="py-3.5 px-3 text-center whitespace-nowrap">
-                        <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 shadow-3xs inline-flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                          <span>วิกฤต</span>
-                        </span>
-                      </td>
+                    <tr key={p.id} className="hover:bg-slate-50/70 transition-colors group align-middle">
                       <td className="py-3.5 px-3">
-                        <div className="flex items-start gap-2">
-                          <div className="p-1 rounded-md bg-rose-50 text-rose-500 shrink-0 mt-0.5 border border-rose-100 print:hidden">
-                            <FiBriefcase className="w-3 h-3" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-extrabold text-slate-800 group-hover:text-primary transition-colors leading-snug">
-                              {p.name}
-                            </div>
-                            <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                              ปีงบประมาณ พ.ศ. {p.fiscalYear?.year}
-                            </div>
-                          </div>
+                        <div className="font-extrabold text-slate-800 group-hover:text-primary transition-colors leading-snug">
+                          {p.name}
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+                          <FiUser className="w-3 h-3 shrink-0" />
+                          <span>{p.creatorName || 'ไม่ระบุผู้รับผิดชอบ'}</span>
                         </div>
                       </td>
                       <td className="py-3.5 px-3">
-                        <div className="space-y-0.5">
-                          {/* 1. คณะ */}
-                          <div className="font-extrabold text-slate-800 text-xs leading-tight">
-                            {formattedFac}
-                          </div>
-                          {/* 2. ผู้รับผิดชอบหลัก */}
-                          <div className="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5 leading-tight pt-0.5">
-                            <FiUser className="w-3 h-3 text-slate-400 shrink-0 print:hidden" />
-                            <span>{cleanCreator}</span>
-                          </div>
-                          {/* 3. ภาควิชา (ลำดับสุดท้ายเพื่อแบ่งบรรทัด) */}
-                          {p.department?.name && (
-                            <div className="pt-0.5">
-                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md border border-slate-200/60 inline-block leading-none">
-                                {p.department.name}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        <div className="font-bold text-slate-700 text-xs">{p.facultyName || 'ส่วนกลาง'}</div>
+                        <div className="text-[10px] text-slate-400 font-semibold">{p.departmentName || 'ไม่ระบุภาควิชา'}</div>
                       </td>
-                      <td className="py-3.5 px-3 text-right whitespace-nowrap">
-                        <div className="font-black text-slate-900">{budgetNum.toLocaleString()} ฿</div>
-                        <div className="text-[10px] text-slate-500 font-semibold mt-0.5">
-                          จ่าย {spentNum.toLocaleString()} ฿ <span className="text-emerald-600 font-bold">({p.burnRatePct}%)</span>
-                        </div>
+                      <td className="py-3.5 px-3 text-right font-extrabold text-slate-800 whitespace-nowrap">
+                        {p.totalBudget?.toLocaleString()} ฿
+                      </td>
+                      <td className="py-3.5 px-3 text-right font-extrabold text-emerald-600 whitespace-nowrap">
+                        {p.actualSpent?.toLocaleString()} ฿
                       </td>
                       <td className="py-3.5 px-3 text-center whitespace-nowrap">
                         <div className="font-black text-rose-600">{p.progressPct}%</div>
