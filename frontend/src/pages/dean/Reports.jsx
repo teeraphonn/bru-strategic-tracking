@@ -125,7 +125,12 @@ const DeanReports = () => {
       });
 
       // Create local file URL and trigger browser download
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const mimeType = format === 'pdf'
+        ? 'application/pdf'
+        : format === 'excel'
+          ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          : 'text/csv;charset=utf-8;';
+      const blob = new Blob([response.data], { type: mimeType });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
