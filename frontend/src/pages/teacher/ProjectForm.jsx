@@ -22,10 +22,12 @@ const ProjectForm = () => {
 
   // Cascading Strategies Options
   const [strategies, setStrategies] = useState([]);
+  const [localIssues, setLocalIssues] = useState([]);
   const [subStrategies, setSubStrategies] = useState([]);
   const [indicators, setIndicators] = useState([]);
 
-  // Selected Strategy and Sub-strategy state for filtering dropdowns
+  // Selected cascade states for filtering dropdowns
+  const [selectedLocalIssueId, setSelectedLocalIssueId] = useState('');
   const [selectedStrategyId, setSelectedStrategyId] = useState('');
   const [selectedSubStrategyId, setSelectedSubStrategyId] = useState('');
 
@@ -39,13 +41,14 @@ const ProjectForm = () => {
     const loadMasters = async () => {
       setLoading(true);
       try {
-        const [years, sources, usrList, strats, subStrats, inds] = await Promise.all([
+        const [years, sources, usrList, strats, subStrats, inds, lIssues] = await Promise.all([
           api.get('/master/fiscal-years'),
           api.get('/master/budget-sources'),
           api.get('/master/users'),
           api.get('/master/strategies'),
           api.get('/master/sub-strategies'),
-          api.get('/master/indicators')
+          api.get('/master/indicators'),
+          api.get('/master/local-issues')
         ]);
 
         setFiscalYears(years.data);
@@ -54,6 +57,7 @@ const ProjectForm = () => {
         setStrategies(strats.data);
         setSubStrategies(subStrats.data);
         setIndicators(inds.data);
+        setLocalIssues(lIssues.data);
 
         // Pre-select active fiscal year
         const activeYear = years.data.find(y => y.active);
@@ -81,10 +85,14 @@ const ProjectForm = () => {
           // Set cascading values
           const subStrat = subStrats.data.find(ss => ss.id === proj.subStrategyId);
           if (subStrat) {
-            setSelectedStrategyId(subStrat.strategyId);
+            const strat = strats.data.find(s => s.id === subStrat.strategyId);
+            if (strat && strat.localIssueId) {
+              setSelectedLocalIssueId(String(strat.localIssueId));
+            }
+            setSelectedStrategyId(String(subStrat.strategyId));
             setValue('strategyId', subStrat.strategyId);
           }
-          setSelectedSubStrategyId(proj.subStrategyId);
+          setSelectedSubStrategyId(String(proj.subStrategyId));
           setValue('subStrategyId', proj.subStrategyId);
           setValue('indicatorId', proj.indicatorId || '');
 
@@ -104,10 +112,25 @@ const ProjectForm = () => {
     loadMasters();
   }, [id, isEdit, setValue]);
 
-  // When Strategy changes, reset sub-strategy and indicator
+  // When Local Issue changes, reset downstream selections
+  const handleLocalIssueChange = (e) => {
+    const liId = e.target.value;
+    setSelectedLocalIssueId(liId);
+    setSelectedStrategyId('');
+    setSelectedSubStrategyId('');
+    setValue('strategyId', '');
+    setValue('subStrategyId', '');
+    setValue('indicatorId', '');
+  };
+
+  // When Strategy changes, auto-sync Local Issue if applicable and reset downstream
   const handleStrategyChange = (e) => {
     const sId = e.target.value;
     setSelectedStrategyId(sId);
+    const chosenStrat = strategies.find(s => String(s.id) === String(sId));
+    if (chosenStrat && chosenStrat.localIssueId) {
+      setSelectedLocalIssueId(String(chosenStrat.localIssueId));
+    }
     setSelectedSubStrategyId('');
     setValue('subStrategyId', '');
     setValue('indicatorId', '');
@@ -173,6 +196,9 @@ const ProjectForm = () => {
   };
 
   // Filter lists based on selections
+  const filteredStrategies = selectedLocalIssueId
+    ? strategies.filter(s => s.localIssueId === parseInt(selectedLocalIssueId))
+    : strategies;
   const filteredSubStrategies = subStrategies.filter(ss => ss.strategyId === parseInt(selectedStrategyId));
   const filteredIndicators = indicators.filter(ind => ind.subStrategyId === parseInt(selectedSubStrategyId));
 
@@ -226,30 +252,45 @@ const ProjectForm = () => {
           />
         </div>
 
-        {/* Dynamic Cascading Dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Strategy */}
+        {/* Dynamic Cascading Dropdowns: 4 Levels */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50/60 p-4 rounded-2xl border border-slate-100">
+          {/* 1. Local Development Issue */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">ประเด็นการพัฒนาท้องถิ่น</label>
+            <select
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white"
+              value={selectedLocalIssueId}
+              onChange={handleLocalIssueChange}
+            >
+              <option value="">-- ทุกประเด็นการพัฒนา --</option>
+              {localIssues.map(li => (
+                <option key={li.id} value={li.id}>{li.code} - {li.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 2. Strategy (แผนงานหลัก) */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">แผนงานหลัก <span className="text-red-500">*</span></label>
             <select
-              className={`w-full px-3 py-2 border ${errors.strategyId ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm`}
+              className={`w-full px-3 py-2 border ${errors.strategyId ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white`}
               {...register('strategyId', { required: 'กรุณาเลือกแผนงานหลัก' })}
               onChange={handleStrategyChange}
               value={selectedStrategyId}
             >
               <option value="">-- เลือกแผนงานหลัก --</option>
-              {strategies.map(s => (
+              {filteredStrategies.map(s => (
                 <option key={s.id} value={s.id}>{s.code} - {s.name}</option>
               ))}
             </select>
             {errors.strategyId && <span className="text-xs text-red-500 mt-1 block">{errors.strategyId.message}</span>}
           </div>
 
-          {/* Sub Strategy */}
+          {/* 3. Sub Strategy (แผนงานย่อย) */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">แผนงานย่อย <span className="text-red-500">*</span></label>
             <select
-              className={`w-full px-3 py-2 border ${errors.subStrategyId ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm`}
+              className={`w-full px-3 py-2 border ${errors.subStrategyId ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white`}
               {...register('subStrategyId', { required: 'กรุณาเลือกแผนงานย่อย' })}
               onChange={handleSubStrategyChange}
               disabled={!selectedStrategyId}
@@ -263,11 +304,11 @@ const ProjectForm = () => {
             {errors.subStrategyId && <span className="text-xs text-red-500 mt-1 block">{errors.subStrategyId.message}</span>}
           </div>
 
-          {/* Indicator */}
+          {/* 4. Indicator (โครงการหลัก) */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">โครงการหลัก</label>
             <select
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white"
               {...register('indicatorId')}
               disabled={!selectedSubStrategyId}
             >
