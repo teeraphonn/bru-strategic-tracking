@@ -1,3 +1,4 @@
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/prisma');
@@ -180,7 +181,14 @@ const uploadAvatar = async (req, res) => {
     }
 
     const userId = req.user.id;
-    const avatarUrl = `/uploads/${req.file.filename}`;
+    let avatarUrl = `/uploads/${req.file.filename}`;
+    try {
+      const fileBuffer = fs.readFileSync(req.file.path);
+      avatarUrl = `data:${req.file.mimetype || 'image/jpeg'};base64,${fileBuffer.toString('base64')}`;
+      fs.unlink(req.file.path, () => {});
+    } catch (readErr) {
+      console.error('Error reading avatar buffer:', readErr);
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },

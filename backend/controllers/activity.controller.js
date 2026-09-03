@@ -128,13 +128,24 @@ const updateActivity = async (req, res) => {
     }
     if (remark !== undefined) dataUpdate.remark = remark;
 
-    // Handle files upload if present
+    // Handle files upload if present (Store as Base64 Data URL so cloud redeploys never lose files)
     const images = [];
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {
-        images.push({
-          filePath: `/uploads/${file.filename}`
-        });
+        try {
+          const fileBuffer = fs.readFileSync(file.path);
+          const base64Data = `data:${file.mimetype || 'image/jpeg'};base64,${fileBuffer.toString('base64')}`;
+          images.push({
+            filePath: base64Data
+          });
+          // Remove temp file from local disk
+          fs.unlink(file.path, () => {});
+        } catch (readErr) {
+          console.error('Error converting uploaded file to base64:', readErr);
+          images.push({
+            filePath: `/uploads/${file.filename}`
+          });
+        }
       });
     }
 
@@ -187,10 +198,12 @@ const deleteActivityImage = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to delete this image' });
     }
 
-    // Delete file from disk
-    const absolutePath = path.join(__dirname, '..', image.filePath);
-    if (fs.existsSync(absolutePath)) {
-      fs.unlinkSync(absolutePath);
+    // Delete file from disk if local path
+    if (image.filePath && !image.filePath.startsWith('data:')) {
+      const absolutePath = path.join(__dirname, '..', image.filePath);
+      if (fs.existsSync(absolutePath)) {
+        fs.unlinkSync(absolutePath);
+      }
     }
 
     // Delete record from database
@@ -230,11 +243,13 @@ const deleteActivity = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to delete this activity' });
     }
 
-    // Delete images from disk
+    // Delete images from disk if local path
     activity.images.forEach(img => {
-      const absolutePath = path.join(__dirname, '..', img.filePath);
-      if (fs.existsSync(absolutePath)) {
-        fs.unlinkSync(absolutePath);
+      if (img.filePath && !img.filePath.startsWith('data:')) {
+        const absolutePath = path.join(__dirname, '..', img.filePath);
+        if (fs.existsSync(absolutePath)) {
+          fs.unlinkSync(absolutePath);
+        }
       }
     });
 

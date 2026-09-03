@@ -32,7 +32,7 @@ import {
   FiX,
   FiAlertTriangle
 } from 'react-icons/fi';
-import { getImageUrl } from '../../utils/imageUrl';
+import { getImageUrl, compressImage } from '../../utils/imageUrl';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -241,7 +241,11 @@ const ProjectDetails = () => {
       if (actCompletedCount) formData.append('completedCount', actCompletedCount);
       if (actRemark) formData.append('remark', actRemark);
 
-      selectedFiles.forEach(file => {
+      const compressedFiles = await Promise.all(
+        selectedFiles.map(file => compressImage(file))
+      );
+
+      compressedFiles.forEach(file => {
         formData.append('images', file);
       });
 

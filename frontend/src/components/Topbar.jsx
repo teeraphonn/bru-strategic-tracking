@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import api from '../services/api';
 import ReportIssueModal from './ReportIssueModal';
 import ProfileModal from './ProfileModal';
-import { getImageUrl } from '../utils/imageUrl';
+import { getImageUrl, compressImage } from '../utils/imageUrl';
 
 const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
   const { user, setUser, logout, changePassword } = useContext(AuthContext);
@@ -112,8 +112,9 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
       }
 
       setUploadingAvatar(true);
+      const compressed = await compressImage(file, 400, 0.8);
       const formData = new FormData();
-      formData.append('avatar', file);
+      formData.append('avatar', compressed);
 
       const res = await api.post('/auth/avatar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
