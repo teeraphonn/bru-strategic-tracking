@@ -983,9 +983,9 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
         </div>
       </div>
 
-      {/* 3.0 Faculty Main Projects Strategic Tracking & Drill-down */}
-      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      {/* 2.8. Faculty Main Projects Strategic Tracking & Drill-down */}
+      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
           <div>
             <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
               <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
@@ -1001,6 +1001,18 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
             <span className="text-xs font-black text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl shadow-3xs">
               🎯 ทั้งหมด {(mainProjects || []).length} โครงการหลัก
             </span>
+          </div>
+        </div>
+
+        {/* Standard Column Header Bar for Desktop */}
+        <div className="hidden lg:flex items-center justify-between px-5 py-2.5 bg-slate-100/80 rounded-2xl text-[11px] font-black text-slate-500 uppercase tracking-wider">
+          <div className="flex-1 min-w-0 pr-4">รหัส & ชื่อโครงการหลัก (Main Project - MP)</div>
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="w-24 text-center">โครงการคณะ</div>
+            <div className="w-44 text-right">งบประมาณ / เบิกจ่าย</div>
+            <div className="w-28 text-center">% ความก้าวหน้า</div>
+            <div className="w-24 text-center">สถานะ RAG</div>
+            <div className="w-8 text-center"></div>
           </div>
         </div>
 
@@ -1028,22 +1040,23 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
                   onClick={() => setExpandedMainProjectId(isExpanded ? null : mp.id)}
                   className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/80 transition-colors select-none"
                 >
+                  {/* Left: Code, Title, Strategic Tiers */}
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <span className="font-mono text-xs font-black px-2.5 py-1 rounded-xl bg-purple-600 text-white shadow-xs shrink-0 mt-0.5">
                       {mp.code}
                     </span>
-                    <div className="min-w-0 space-y-1">
+                    <div className="min-w-0 space-y-1.5 flex-1">
                       <div className="font-extrabold text-sm text-slate-800 leading-snug break-words">
                         {mp.name}
                       </div>
-                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                      <div className="flex flex-wrap items-center gap-1.5 text-[10.5px]">
                         {mp.localIssueCode && (
-                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 font-semibold">
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 font-semibold leading-relaxed">
                             {mp.localIssueCode}: {mp.localIssueName}
                           </span>
                         )}
                         {mp.subStrategyCode && (
-                          <span className="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100 font-semibold">
+                          <span className="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100 font-semibold leading-relaxed">
                             {mp.subStrategyCode}: {mp.subStrategyName}
                           </span>
                         )}
@@ -1051,52 +1064,62 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
                     </div>
                   </div>
 
-                  {/* Metrics & Expand Trigger */}
+                  {/* Right: Uniform Fixed-Width Columns */}
                   <div className="flex items-center gap-4 shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-100">
                     {/* Projects Count */}
-                    <div className="text-left lg:text-right">
-                      <div className="text-[10px] font-bold text-slate-400 uppercase">โครงการของคณะ</div>
+                    <div className="w-24 text-left lg:text-center">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase lg:hidden">โครงการของคณะ</div>
                       <div className="text-xs font-extrabold text-slate-800">{mp.totalProjects} โครงการ</div>
                     </div>
 
                     {/* Budget & Spent */}
-                    {hasFacultyProjects && (
-                      <div className="text-left lg:text-right">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase">งบประมาณ / เบิกจ่าย</div>
-                        <div className="text-xs font-black text-slate-800">
-                          {mp.totalBudget.toLocaleString()} ฿
-                          <span className="text-[10px] text-slate-400 font-medium block">
-                            จ่าย {mp.totalSpent.toLocaleString()} ฿ ({mp.burnRatePct}%)
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                    <div className="w-44 text-left lg:text-right">
+                      {hasFacultyProjects ? (
+                        <>
+                          <div className="text-[10px] font-bold text-slate-400 uppercase lg:hidden">งบประมาณ / เบิกจ่าย</div>
+                          <div className="text-xs font-black text-slate-900">{mp.totalBudget.toLocaleString()} ฿</div>
+                          <div className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                            จ่าย {mp.totalSpent.toLocaleString()} ฿ <span className="text-emerald-600 font-bold">({mp.burnRatePct}%)</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-[11px] text-slate-400 font-medium italic">ยังไม่มีงบประมาณ</div>
+                      )}
+                    </div>
 
-                    {/* Progress Bar & Status */}
-                    {hasFacultyProjects && (
-                      <div className="w-28 text-center">
-                        <div className="flex items-center justify-between text-[11px] font-black mb-1">
-                          <span className="text-slate-600">ก้าวหน้า</span>
-                          <span className="text-primary">{mp.progressPct}%</span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                          <div 
-                            className="bg-primary h-full rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(100, mp.progressPct)}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
+                    {/* Progress Bar */}
+                    <div className="w-28 text-center">
+                      {hasFacultyProjects ? (
+                        <>
+                          <div className="flex items-center justify-between text-[10px] font-black mb-1">
+                            <span className="text-slate-500">ก้าวหน้า</span>
+                            <span className="text-primary">{mp.progressPct}%</span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-300 ${mp.progressPct < 40 ? 'bg-rose-500' : mp.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                              style={{ width: `${Math.min(100, mp.progressPct)}%` }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-[11px] text-slate-300 font-bold">—</span>
+                      )}
+                    </div>
 
                     {/* Status Badge */}
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-extrabold border shadow-3xs ${statusConfig.badge}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`} />
-                      {statusConfig.label}
-                    </span>
+                    <div className="w-24 flex justify-center">
+                      <span className={`inline-flex items-center justify-center gap-1.5 w-full py-1 rounded-xl text-[10.5px] font-extrabold border shadow-3xs ${statusConfig.badge}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusConfig.dot}`} />
+                        <span className="truncate">{statusConfig.label}</span>
+                      </span>
+                    </div>
 
                     {/* Toggle Icon */}
-                    <div className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
-                      {isExpanded ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
+                    <div className="w-8 flex justify-center">
+                      <div className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+                        {isExpanded ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1106,48 +1129,59 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
                   <div className="border-t border-slate-100 bg-white p-4">
                     {mp.projects && mp.projects.length > 0 ? (
                       <div className="rounded-xl border border-slate-100 overflow-x-auto shadow-3xs">
-                        <table className="w-full text-xs text-left border-collapse min-w-[650px]">
+                        <table className="w-full text-xs text-left border-collapse min-w-[720px]">
                           <thead>
                             <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                              <th className="py-2.5 px-3">ชื่อโครงการปฏิบัติการ (Operational Project)</th>
-                              <th className="py-2.5 px-3 w-44">ภาควิชา / หน่วยงาน</th>
-                              <th className="py-2.5 px-3 w-36">ผู้รับผิดชอบ</th>
-                              <th className="py-2.5 px-3 w-28 text-right">งบประมาณ</th>
-                              <th className="py-2.5 px-3 w-28 text-right">เบิกจ่ายจริง</th>
-                              <th className="py-2.5 px-3 w-24 text-center">% ก้าวหน้า</th>
-                              <th className="py-2.5 px-3 w-20 text-center">ดูข้อมูล</th>
+                              <th className="py-3 px-4">ชื่อโครงการปฏิบัติการ (Operational Project)</th>
+                              <th className="py-3 px-4 w-48">ภาควิชา / หน่วยงาน</th>
+                              <th className="py-3 px-4 w-36">ผู้รับผิดชอบโครงการ</th>
+                              <th className="py-3 px-4 w-32 text-right">งบประมาณอนุมัติ</th>
+                              <th className="py-3 px-4 w-32 text-right">เบิกจ่ายจริง</th>
+                              <th className="py-3 px-4 w-28 text-center">% ก้าวหน้า</th>
+                              <th className="py-3 px-4 w-20 text-center">ดูข้อมูล</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {mp.projects.map((subP) => (
-                              <tr key={subP.id} className="hover:bg-slate-50/60 transition-colors">
-                                <td className="py-2.5 px-3 font-bold text-slate-800 leading-snug">
+                              <tr key={subP.id} className="hover:bg-slate-50/70 transition-colors">
+                                <td className="py-3 px-4 font-bold text-slate-800 leading-relaxed break-words">
                                   {subP.name}
                                 </td>
-                                <td className="py-2.5 px-3 text-slate-600 text-[11px] font-semibold">
-                                  {subP.departmentName}
+                                <td className="py-3 px-4">
+                                  <span className="text-[11px] font-bold text-slate-700 px-2 py-0.5 bg-slate-100 rounded-md border border-slate-200/60">
+                                    {subP.departmentName}
+                                  </span>
                                 </td>
-                                <td className="py-2.5 px-3 text-slate-600 text-[11px]">
-                                  {subP.creatorName}
+                                <td className="py-3 px-4">
+                                  <div className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                                    <FiUser className="w-3 h-3 text-slate-400 shrink-0" />
+                                    <span>{subP.creatorName}</span>
+                                  </div>
                                 </td>
-                                <td className="py-2.5 px-3 text-right font-semibold text-slate-700">
+                                <td className="py-3 px-4 text-right font-extrabold text-slate-800 whitespace-nowrap">
                                   {subP.totalBudget.toLocaleString()} ฿
                                 </td>
-                                <td className="py-2.5 px-3 text-right font-semibold text-slate-700">
+                                <td className="py-3 px-4 text-right font-extrabold text-emerald-600 whitespace-nowrap">
                                   {subP.actualSpent.toLocaleString()} ฿
                                 </td>
-                                <td className="py-2.5 px-3 text-center font-black text-primary">
-                                  {subP.progress}%
+                                <td className="py-3 px-4 text-center whitespace-nowrap">
+                                  <div className="font-black text-primary text-xs">{subP.progress}%</div>
+                                  <div className="w-16 bg-slate-100 h-1.5 rounded-full mx-auto mt-1 overflow-hidden">
+                                    <div 
+                                      className={`h-full rounded-full ${subP.progress < 40 ? 'bg-rose-500' : subP.progress < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                                      style={{ width: `${Math.min(100, subP.progress)}%` }}
+                                    />
+                                  </div>
                                 </td>
-                                <td className="py-2.5 px-3 text-center">
+                                <td className="py-3 px-4 text-center whitespace-nowrap">
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setSelectedProjectModal(subP);
                                     }}
-                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-primary/10 text-slate-600 hover:text-primary transition-all cursor-pointer"
-                                    title="ดูรายละเอียดโครงการ"
+                                    className="p-2 rounded-xl bg-slate-100 hover:bg-primary hover:text-white text-slate-600 transition-all cursor-pointer shadow-3xs active:scale-95"
+                                    title="ดูรายละเอียดโครงการและออกข้อสั่งการ"
                                   >
                                     <FiEye className="w-3.5 h-3.5" />
                                   </button>
