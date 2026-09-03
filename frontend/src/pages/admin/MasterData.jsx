@@ -19,6 +19,7 @@ import {
   FiKey,
   FiDownload,
   FiRefreshCw,
+  FiBriefcase,
   FiX
 } from 'react-icons/fi';
 
@@ -111,13 +112,13 @@ const MasterData = () => {
 
   const tabs = [
     { id: 'user', name: 'ผู้ใช้งาน', icon: <FiUsers /> },
-    { id: 'strategy', name: 'ยุทธศาสตร์หลัก', icon: <FiDatabase /> },
-    { id: 'sub-strategy', name: 'ยุทธศาสตร์ย่อย', icon: <FiGitCommit /> },
-    { id: 'indicator', name: 'ตัวชี้วัด', icon: <FiGitCommit /> },
-    { id: 'fiscal-year', name: 'ปีงบประมาณ', icon: <FiCalendar /> },
-    { id: 'budget-source', name: 'แหล่งงบประมาณ', icon: <FiDollarSign /> },
     { id: 'faculty', name: 'คณะ', icon: <FiBookmark /> },
     { id: 'department', name: 'ภาควิชา/หน่วยงาน', icon: <FiLayers /> },
+    { id: 'strategy', name: 'แผนงานหลัก (Program Name)', icon: <FiDatabase /> },
+    { id: 'sub-strategy', name: 'แผนงานย่อย (Sub-Program Name)', icon: <FiGitCommit /> },
+    { id: 'indicator', name: 'โครงการหลัก (Main project Name)', icon: <FiBriefcase /> },
+    { id: 'fiscal-year', name: 'ปีงบประมาณ', icon: <FiCalendar /> },
+    { id: 'budget-source', name: 'แหล่งงบประมาณ', icon: <FiDollarSign /> },
   ];
 
   const fetchData = async () => {
@@ -410,7 +411,7 @@ const MasterData = () => {
           </div>
           <h1 className="text-xl md:text-2xl font-black tracking-tight text-white">จัดการข้อมูลพื้นฐานระบบ (Master Data)</h1>
           <p className="text-xs md:text-sm text-indigo-200/80 mt-1 font-medium max-w-2xl">
-            ตั้งค่าและจัดการโครงสร้างหลักของมหาวิทยาลัย ได้แก่ คณะ ภาควิชา ยุทธศาสตร์ ตัวชี้วัด ปีงบประมาณ และสิทธิ์ผู้ใช้งาน
+            ตั้งค่าและจัดการโครงสร้างหลักของมหาวิทยาลัย ได้แก่ คณะ ภาควิชา แผนงานหลัก (Program) แผนงานย่อย (Sub-Program) โครงการหลัก (Main Project) ปีงบประมาณ และสิทธิ์ผู้ใช้งาน
           </p>
         </div>
 
@@ -450,9 +451,9 @@ const MasterData = () => {
             { id: 'user', name: 'ผู้ใช้งาน', icon: <FiUsers className="w-4 h-4" /> },
             { id: 'faculty', name: 'คณะ', icon: <FiBookmark className="w-4 h-4" /> },
             { id: 'department', name: 'ภาควิชา/หน่วยงาน', icon: <FiLayers className="w-4 h-4" /> },
-            { id: 'strategy', name: 'ยุทธศาสตร์หลัก', icon: <FiDatabase className="w-4 h-4" /> },
-            { id: 'sub-strategy', name: 'ยุทธศาสตร์ย่อย', icon: <FiGitCommit className="w-4 h-4" /> },
-            { id: 'indicator', name: 'ตัวชี้วัด', icon: <FiGitCommit className="w-4 h-4" /> },
+            { id: 'strategy', name: 'แผนงานหลัก (Program Name)', icon: <FiDatabase className="w-4 h-4" /> },
+            { id: 'sub-strategy', name: 'แผนงานย่อย (Sub-Program Name)', icon: <FiGitCommit className="w-4 h-4" /> },
+            { id: 'indicator', name: 'โครงการหลัก (Main project Name)', icon: <FiBriefcase className="w-4 h-4" /> },
             { id: 'fiscal-year', name: 'ปีงบประมาณ', icon: <FiCalendar className="w-4 h-4" /> },
             { id: 'budget-source', name: 'แหล่งงบประมาณ', icon: <FiDollarSign className="w-4 h-4" /> },
           ].map(tab => {
@@ -671,23 +672,23 @@ const MasterData = () => {
                   {activeTab === 'strategy' && (
                     <>
                       <th className="w-24 px-4 py-3.5">รหัส</th>
-                      <th className="min-w-[340px] px-4 py-3.5">ประเด็นยุทธศาสตร์หลัก</th>
+                      <th className="min-w-[340px] px-4 py-3.5">แผนงานหลัก (Program Name) / ประเด็นการพัฒนาท้องถิ่น</th>
                       <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                   {activeTab === 'sub-strategy' && (
                     <>
                       <th className="w-24 px-4 py-3.5">รหัส</th>
-                      <th className="min-w-[280px] px-4 py-3.5">ยุทธศาสตร์ย่อย</th>
-                      <th className="min-w-[260px] px-4 py-3.5">ยุทธศาสตร์หลัก</th>
+                      <th className="min-w-[280px] px-4 py-3.5">แผนงานย่อย (Sub-Program Name)</th>
+                      <th className="min-w-[260px] px-4 py-3.5">แผนงานหลัก (Program Name)</th>
                       <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
                   {activeTab === 'indicator' && (
                     <>
                       <th className="w-24 px-4 py-3.5">รหัส</th>
-                      <th className="min-w-[280px] px-4 py-3.5">ตัวชี้วัดความสำเร็จ</th>
-                      <th className="min-w-[260px] px-4 py-3.5">ยุทธศาสตร์ย่อย</th>
+                      <th className="min-w-[280px] px-4 py-3.5">โครงการหลัก (Main project Name) / ตัวชี้วัด</th>
+                      <th className="min-w-[260px] px-4 py-3.5">แผนงานย่อย (Sub-Program Name)</th>
                       <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
@@ -956,7 +957,7 @@ const MasterData = () => {
               {activeTab === 'strategy' && (
                 <>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสยุทธศาสตร์ (เช่น S1, S2)</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสแผนงานหลัก (เช่น S1, S2)</label>
                     <input
                       type="text"
                       value={formData.code || ''}
@@ -967,13 +968,13 @@ const MasterData = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อประเด็นยุทธศาสตร์หลัก</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อแผนงานหลัก (Program Name) / ประเด็นการพัฒนาท้องถิ่น</label>
                     <input
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all hover:border-slate-300 text-slate-700 font-semibold"
-                      placeholder="กรอกคำอธิบายยุทธศาสตร์"
+                      placeholder="กรอกชื่อแผนงานหลัก หรือประเด็นการพัฒนาท้องถิ่น"
                       required
                     />
                   </div>
@@ -983,11 +984,11 @@ const MasterData = () => {
               {activeTab === 'sub-strategy' && (
                 <>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ยุทธศาสตร์หลัก</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">แผนงานหลัก (Program Name)</label>
                     <CustomSelect
                       value={formData.strategyId ? String(formData.strategyId) : ''}
                       onChange={(val) => setFormData({ ...formData, strategyId: val })}
-                      placeholder="-- เลือกยุทธศาสตร์หลัก --"
+                      placeholder="-- เลือกแผนงานหลัก (Program) --"
                       options={strategies.map(s => ({
                         value: String(s.id),
                         label: `${s.code} - ${s.name}`
@@ -995,7 +996,7 @@ const MasterData = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสยุทธศาสตร์ย่อย (เช่น SS1.1)</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสแผนงานย่อย (เช่น SS1.1)</label>
                     <input
                       type="text"
                       value={formData.code || ''}
@@ -1006,13 +1007,13 @@ const MasterData = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อยุทธศาสตร์ย่อย</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อแผนงานย่อย (Sub-Program Name)</label>
                     <input
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all hover:border-slate-300 text-slate-700 font-semibold"
-                      placeholder="กรอกยุทธศาสตร์ย่อย"
+                      placeholder="กรอกชื่อแผนงานย่อย (Sub-Program)"
                       required
                     />
                   </div>
@@ -1022,11 +1023,11 @@ const MasterData = () => {
               {activeTab === 'indicator' && (
                 <>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ยุทธศาสตร์ย่อย</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">แผนงานย่อย (Sub-Program Name)</label>
                     <CustomSelect
                       value={formData.subStrategyId ? String(formData.subStrategyId) : ''}
                       onChange={(val) => setFormData({ ...formData, subStrategyId: val })}
-                      placeholder="-- เลือกยุทธศาสตร์ย่อย --"
+                      placeholder="-- เลือกแผนงานย่อย (Sub-Program) --"
                       options={subStrategies.map(ss => ({
                         value: String(ss.id),
                         label: `${ss.code} - ${ss.name}`
@@ -1034,7 +1035,7 @@ const MasterData = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสตัวชี้วัด (เช่น IND1.1.1)</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">รหัสโครงการหลัก / ตัวชี้วัด (เช่น IND1.1.1)</label>
                     <input
                       type="text"
                       value={formData.code || ''}
@@ -1045,13 +1046,13 @@ const MasterData = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อตัวชี้วัด</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อโครงการหลัก (Main project Name) / ตัวชี้วัดความสำเร็จ</label>
                     <input
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all hover:border-slate-300 text-slate-700 font-semibold"
-                      placeholder="คำอธิบายตัวชี้วัดสำเร็จ"
+                      placeholder="กรอกชื่อโครงการหลัก หรือคำอธิบายตัวชี้วัดสำเร็จ"
                       required
                     />
                   </div>

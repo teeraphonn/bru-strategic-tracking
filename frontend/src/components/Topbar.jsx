@@ -31,9 +31,9 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     if (pathname === '/master-data') {
       const masterTabs = {
         'user': 'จัดการข้อมูลผู้ใช้งาน',
-        'strategy': 'จัดการยุทธศาสตร์หลัก',
-        'sub-strategy': 'จัดการยุทธศาสตร์ย่อย',
-        'indicator': 'จัดการตัวชี้วัด',
+        'strategy': 'แผนงานหลัก (Program Name) / ประเด็นการพัฒนาท้องถิ่น',
+        'sub-strategy': 'แผนงานย่อย (Sub-Program Name)',
+        'indicator': 'โครงการหลัก (Main project Name) / ตัวชี้วัด',
         'fiscal-year': 'จัดการปีงบประมาณ',
         'budget-source': 'จัดการแหล่งงบประมาณ',
         'faculty': 'จัดการข้อมูลคณะ',
