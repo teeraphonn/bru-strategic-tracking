@@ -148,8 +148,13 @@ const MasterData = () => {
       const response = await api.get(endpoint);
       setData(response.data);
     } catch (err) {
-      console.error(err);
-      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถดึงข้อมูลได้' });
+      console.error('Fetch data error:', err);
+      const errorMsg = err.response?.data?.message || err.message || 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาดในการโหลดข้อมูล',
+        text: `${errorMsg} (หากเซิร์ฟเวอร์เพิ่งอัปเดตหรือกำลังเริ่มระบบ กรุณารอ 10-20 วินาทีแล้วรีเฟรชอีกครั้ง)`
+      });
     } finally {
       setLoading(false);
     }
@@ -157,18 +162,18 @@ const MasterData = () => {
 
   const fetchRelations = async () => {
     try {
-      const [facs, depts, strats, subStrats, lIssues] = await Promise.all([
+      const results = await Promise.allSettled([
         api.get('/master/faculties'),
         api.get('/master/departments'),
         api.get('/master/strategies'),
         api.get('/master/sub-strategies'),
         api.get('/master/local-issues')
       ]);
-      setFaculties(facs.data);
-      setDepartments(depts.data);
-      setStrategies(strats.data);
-      setSubStrategies(subStrats.data);
-      setLocalIssues(lIssues.data);
+      if (results[0].status === 'fulfilled') setFaculties(results[0].value.data);
+      if (results[1].status === 'fulfilled') setDepartments(results[1].value.data);
+      if (results[2].status === 'fulfilled') setStrategies(results[2].value.data);
+      if (results[3].status === 'fulfilled') setSubStrategies(results[3].value.data);
+      if (results[4].status === 'fulfilled') setLocalIssues(results[4].value.data);
     } catch (err) {
       console.error('Failed to load relation options:', err);
     }
