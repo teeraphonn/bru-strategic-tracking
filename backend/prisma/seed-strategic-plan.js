@@ -1,7 +1,9 @@
 /**
  * Dedicated Seed Script for BRU Strategic Planning Architecture
  * -------------------------------------------------------------
- * 2.1 ประเด็นการพัฒนาท้องถิ่น & 2.2 แผนงานหลัก (Program Name) - 4 แผนงาน (S1 - S4)
+ * ข้อมูลตรงตามที่ระบุเป๊ะ 100% ไม่มีการเติมข้อความนำหน้าหรือต่อท้าย
+ * 
+ * 2.2 แผนงานหลัก (Program Name) - 4 แผนงาน (S1 - S4)
  * 2.3 แผนงานย่อย (Sub-Program Name) - 8 แผนงาน (SS1.1 - SS4.2)
  * 2.4 โครงการหลัก (Main Project Name: รหัส MP) - 10 โครงการหลัก (MP1.1 - MP4.3)
  */
@@ -11,13 +13,13 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('====================================================');
-  console.log('🌱 Setting exactly 4 Strategic Programs & 10 Main Projects...');
+  console.log('🌱 Syncing exact text verbatim (ไม่มีข้อความอื่นปน)...');
   console.log('====================================================');
 
   const strategiesData = [
     {
       code: 'S1',
-      name: 'การพัฒนาท้องถิ่นด้านเศรษฐกิจ: ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง',
+      name: 'ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง',
       subStrategies: [
         {
           code: 'SS1.1',
@@ -31,7 +33,7 @@ async function main() {
         },
         {
           code: 'SS1.2',
-          name: 'การใช้แนวคิดเศรษฐกิจสร้างสรรค์ในการยกระดับเศรษฐกิจของคนในชุมชน รวมถึงการนำประเด็น Soft power มาปรับใช้',
+          name: 'การใช้แนวคิดเศรษฐกิจสร้างสรรค์ในการยกระดับเศรษฐกิจของคนในชุมชน รวมถึงการนำประเด็นSoft power มาปรับใช้',
           projects: [
             {
               code: 'MP1.2',
@@ -47,7 +49,7 @@ async function main() {
     },
     {
       code: 'S2',
-      name: 'การพัฒนาท้องถิ่นด้านสังคม: ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่',
+      name: 'ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่',
       subStrategies: [
         {
           code: 'SS2.1',
@@ -73,7 +75,7 @@ async function main() {
     },
     {
       code: 'S3',
-      name: 'การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม: การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ',
+      name: 'การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ',
       subStrategies: [
         {
           code: 'SS3.1',
@@ -99,7 +101,7 @@ async function main() {
     },
     {
       code: 'S4',
-      name: 'การพัฒนาท้องถิ่นด้านการศึกษา: การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน',
+      name: 'การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน',
       subStrategies: [
         {
           code: 'SS4.1',
@@ -129,7 +131,7 @@ async function main() {
     }
   ];
 
-  // 1. Delete S5 and S6 if they exist
+  // 1. Delete S5 and S6 if still present
   const extraStrategies = await prisma.strategy.findMany({
     where: {
       code: { in: ['S5', 'S6'] }
@@ -151,19 +153,27 @@ async function main() {
       for (const ind of ss.indicators) {
         if (ind.projects.length === 0) {
           await prisma.indicator.delete({ where: { id: ind.id } });
-          console.log(`🗑️ Deleted project indicator: ${ind.code}`);
         }
       }
       if (ss.projects.length === 0) {
         await prisma.subStrategy.delete({ where: { id: ss.id } });
-        console.log(`🗑️ Deleted sub-strategy: ${ss.code}`);
       }
     }
     await prisma.strategy.delete({ where: { id: s.id } });
-    console.log(`🗑️ Deleted strategy: ${s.code}`);
   }
 
-  // 2. Upsert S1 to S4, SS1.1 to SS4.2, and MP1.1 to MP4.3
+  // 2. Clean old IND records
+  const oldIndicators = await prisma.indicator.findMany({
+    where: { code: { startsWith: 'IND' } },
+    include: { projects: true }
+  });
+  for (const oldInd of oldIndicators) {
+    if (oldInd.projects.length === 0) {
+      await prisma.indicator.delete({ where: { id: oldInd.id } });
+    }
+  }
+
+  // 3. Upsert S1 to S4 with exact strings verbatim
   for (const s of strategiesData) {
     const strat = await prisma.strategy.upsert({
       where: { code: s.code },
@@ -192,7 +202,7 @@ async function main() {
   }
 
   console.log('\n====================================================');
-  console.log('🎉 Successfully synced exactly 4 Programs and 10 Main Projects!');
+  console.log('🎉 Successfully synced exact verbatim strategic plan!');
   console.log('====================================================');
 }
 
