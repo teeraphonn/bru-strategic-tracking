@@ -242,6 +242,7 @@ const PresidentDashboard = () => {
   const { 
     universityHealth = { totalProjects: 0, totalBudget: 0, totalSpent: 0, overallProgress: 0, overallBurnRate: 0, totalRed: 0, totalYellow: 0, totalGreen: 0 }, 
     crossFacultyMatrix = [], 
+    localIssues = [],
     strategicPillars = [], 
     criticalBottlenecks = [] 
   } = data || {};
@@ -462,6 +463,72 @@ const PresidentDashboard = () => {
 
       {/* ── 2. Executive Visual Analytics (Chart.js Section) ── */}
       <div className="space-y-6">
+        {/* Local Issues Summary Row (Level 1: 4 ด้านประเด็นการพัฒนาท้องถิ่น) */}
+        {localIssues && localIssues.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                  <FiLayers className="w-4 h-4 text-violet-600 shrink-0" />
+                  <span>ภาพรวม 4 ประเด็นการพัฒนาท้องถิ่น (Local Development Issues)</span>
+                </h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">การติดตามผลสัมฤทธิ์ตามกรอบประเด็นการพัฒนาท้องถิ่น มหาวิทยาลัยราชภัฏบุรีรัมย์</p>
+              </div>
+              <span className="text-[11px] font-bold px-3 py-1 bg-violet-50 text-violet-700 rounded-full border border-violet-200 self-start sm:self-auto">
+                4 ประเด็นยุทธศาสตร์หลัก
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {localIssues.map((li, idx) => {
+                const colors = [
+                  { bg: 'from-violet-500/10 to-violet-500/5', border: 'border-violet-200/80', badge: 'bg-violet-100 text-violet-800', bar: 'bg-violet-600' },
+                  { bg: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-200/80', badge: 'bg-purple-100 text-purple-800', bar: 'bg-purple-600' },
+                  { bg: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-200/80', badge: 'bg-blue-100 text-blue-800', bar: 'bg-blue-600' },
+                  { bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-200/80', badge: 'bg-emerald-100 text-emerald-800', bar: 'bg-emerald-600' }
+                ];
+                const c = colors[idx % colors.length];
+
+                return (
+                  <div 
+                    key={li.localIssueId || idx}
+                    className={`bg-gradient-to-br ${c.bg} p-4 rounded-2xl border ${c.border} space-y-3 flex flex-col justify-between`}
+                  >
+                    <div className="space-y-1.5">
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${c.badge}`}>
+                        {li.localIssueCode || `LDI${idx + 1}`}
+                      </span>
+                      <h4 className="text-xs font-black text-slate-800 leading-snug">
+                        {li.localIssueName}
+                      </h4>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-slate-200/50 text-[11px]">
+                      <div className="flex items-center justify-between text-slate-600 font-bold">
+                        <span>จำนวนโครงการ</span>
+                        <span className="text-slate-900 font-black">{li.totalProjects} โครงการ</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-600 font-bold">
+                        <span>งบประมาณรวม</span>
+                        <span className="text-slate-900 font-black">{parseFloat(li.totalBudget || 0).toLocaleString()} ฿</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px] font-black">
+                          <span className="text-slate-500">ความก้าวหน้ารวม</span>
+                          <span className="text-emerald-700">{li.progressPct}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-200/70 rounded-full overflow-hidden">
+                          <div className={`h-full ${c.bar} rounded-full transition-all duration-500`} style={{ width: `${Math.min(li.progressPct, 100)}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Row 1: Budget by Strategy (Grouped Bar) & Strategic Proportion (Donut) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Chart 1: Grouped Bar - Budget Allocation vs Actual Spent */}
@@ -586,12 +653,21 @@ const PresidentDashboard = () => {
                       <div className="flex items-start gap-2.5">
                         <span className={`w-3 h-3 rounded-full ${c.dot} shrink-0 mt-0.5 shadow-2xs`} />
                         <div className="flex-1 min-w-0">
-                          <span className={`text-xs font-black ${c.text} mr-1.5`}>
-                            ยุทธศาสตร์ที่ {idx + 1}:
-                          </span>
-                          <span className="text-xs text-slate-700 font-medium leading-relaxed break-words">
-                            {s.strategyName || `ยุทธศาสตร์ที่ ${idx + 1}`}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className={`text-xs font-black ${c.text}`}>
+                              {s.strategyCode || `S${idx + 1}`}:
+                            </span>
+                            <span className="text-xs text-slate-800 font-bold leading-relaxed break-words">
+                              {s.strategyName || `ยุทธศาสตร์ที่ ${idx + 1}`}
+                            </span>
+                          </div>
+                          {s.localIssueName && (
+                            <div className="mt-1">
+                              <span className="inline-flex items-center gap-1 text-[9.5px] font-extrabold px-2 py-0.5 rounded-md bg-white/90 text-violet-700 border border-violet-200/80 shadow-3xs">
+                                🌐 {s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
 

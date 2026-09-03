@@ -89,6 +89,14 @@ const getDashboardStats = async (req, res) => {
             images: true
           }
         },
+        subStrategy: { 
+          include: { 
+            strategy: { 
+              include: { localIssue: true } 
+            } 
+          } 
+        },
+        indicator: true,
         department: true,
         faculty: true
       }
@@ -389,7 +397,14 @@ const getDeanDashboardStats = async (req, res) => {
         faculty: true,
         creator: { select: { id: true, name: true, username: true } },
         fiscalYear: true,
-        subStrategy: { include: { strategy: true } },
+        subStrategy: { 
+          include: { 
+            strategy: { 
+              include: { localIssue: true } 
+            } 
+          } 
+        },
+        indicator: true,
         activities: {
           include: {
             images: true
@@ -527,7 +542,14 @@ const getPresidentDashboardStats = async (req, res) => {
         department: true,
         creator: { select: { id: true, name: true, username: true } },
         fiscalYear: true,
-        subStrategy: { include: { strategy: true } },
+        subStrategy: { 
+          include: { 
+            strategy: { 
+              include: { localIssue: true } 
+            } 
+          } 
+        },
+        indicator: true,
         activities: {
           include: {
             images: true
@@ -541,7 +563,12 @@ const getPresidentDashboardStats = async (req, res) => {
     });
 
     const strategies = await prisma.strategy.findMany({
-      include: { subStrategies: true }
+      include: { subStrategies: true, localIssue: true },
+      orderBy: { code: 'asc' }
+    });
+
+    const localIssues = await prisma.localIssue.findMany({
+      orderBy: { code: 'asc' }
     });
 
     // 1. Cross-Faculty Strategic Heatmap Matrix
@@ -591,7 +618,35 @@ const getPresidentDashboardStats = async (req, res) => {
       };
     });
 
-    // 2. Strategic Pillars Accomplishment
+    // 2.1 Local Issues Accomplishment (Level 1: 4 ด้านการพัฒนาท้องถิ่น)
+    const localIssueStats = localIssues.map(li => {
+      const liProjects = projects.filter(p => p.subStrategy?.strategy?.localIssueId === li.id);
+      let liBudget = 0;
+      let liSpent = 0;
+      let liTarget = 0;
+      let liCompleted = 0;
+
+      liProjects.forEach(p => {
+        liBudget += parseFloat(p.totalBudget || 0);
+        liSpent += p.activities.reduce((sum, a) => sum + parseFloat(a.actualBudget || 0), 0);
+        liTarget += (p.targetCount || 0);
+        liCompleted += (p.completedCount || 0);
+      });
+
+      const progressPct = liTarget > 0 ? parseFloat(((liCompleted / liTarget) * 100).toFixed(2)) : 0;
+
+      return {
+        localIssueId: li.id,
+        localIssueCode: li.code,
+        localIssueName: li.name,
+        totalProjects: liProjects.length,
+        totalBudget: parseFloat(liBudget.toFixed(2)),
+        totalSpent: parseFloat(liSpent.toFixed(2)),
+        progressPct
+      };
+    });
+
+    // 2.2 Strategic Pillars Accomplishment (Level 2: แผนงานหลัก)
     const pillarStats = strategies.map(s => {
       const sProjects = projects.filter(p => p.subStrategy?.strategyId === s.id);
       let sBudget = 0;
@@ -610,7 +665,11 @@ const getPresidentDashboardStats = async (req, res) => {
 
       return {
         strategyId: s.id,
+        strategyCode: s.code,
         strategyName: s.name,
+        localIssueId: s.localIssueId,
+        localIssueCode: s.localIssue?.code,
+        localIssueName: s.localIssue?.name,
         totalProjects: sProjects.length,
         totalBudget: parseFloat(sBudget.toFixed(2)),
         totalSpent: parseFloat(sSpent.toFixed(2)),
@@ -678,6 +737,7 @@ const getPresidentDashboardStats = async (req, res) => {
         totalGreen: allProcessed.filter(p => p.rag.status === 'GREEN').length
       },
       crossFacultyMatrix: facultyMatrix,
+      localIssues: localIssueStats,
       strategicPillars: pillarStats,
       criticalBottlenecks,
       recentPhotos: extractRecentPhotos(projects, req)

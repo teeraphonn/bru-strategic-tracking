@@ -47,7 +47,15 @@ const fetchReportDataset = async (type, fiscalYearId, user, statusFilter) => {
         department: { select: { name: true } },
         faculty: { select: { name: true } },
         fiscalYear: true,
-        activities: true
+        activities: true,
+        subStrategy: {
+          include: {
+            strategy: {
+              include: { localIssue: true }
+            }
+          }
+        },
+        indicator: true
       },
       orderBy: { id: 'asc' }
     });
@@ -61,6 +69,10 @@ const fetchReportDataset = async (type, fiscalYearId, user, statusFilter) => {
         department: p.department?.name || 'ส่วนกลาง',
         faculty: p.faculty?.name || 'ส่วนกลาง',
         fiscalYear: p.fiscalYear?.year || '',
+        localIssue: p.subStrategy?.strategy?.localIssue?.name || '',
+        strategy: p.subStrategy?.strategy?.name || '',
+        subStrategy: p.subStrategy?.name || '',
+        indicator: p.indicator?.name || '',
         totalBudget: parseFloat(p.totalBudget),
         actualSpent: spent,
         targetCount: p.targetCount,

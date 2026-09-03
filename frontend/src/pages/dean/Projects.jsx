@@ -192,12 +192,31 @@ const DeanProjects = () => {
                 </div>
 
                 {/* Strategic paths container */}
-                <div className="text-[11px] flex flex-wrap gap-x-4 gap-y-1.5 bg-slate-50/80 p-3 rounded-2xl border border-slate-100 text-slate-600 font-semibold">
-                  <div><span className="text-slate-400 uppercase tracking-wider">ยุทธศาสตร์หลัก:</span> {project.subStrategy?.strategy?.name}</div>
-                  <div><span className="text-slate-400 uppercase tracking-wider">ยุทธศาสตร์ย่อย:</span> {project.subStrategy?.name}</div>
-                  {project.indicator && (
-                    <div><span className="text-slate-400 uppercase tracking-wider">ตัวชี้วัด:</span> {project.indicator?.name}</div>
-                  )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 bg-slate-50/90 p-3 rounded-2xl border border-slate-100 text-[11px]">
+                  <div className="flex flex-col">
+                    <span className="text-[9.5px] font-extrabold text-violet-600 uppercase tracking-wider">1. ประเด็นการพัฒนา</span>
+                    <span className="font-bold text-slate-800 line-clamp-1" title={project.subStrategy?.strategy?.localIssue?.name}>
+                      {project.subStrategy?.strategy?.localIssue ? `${project.subStrategy.strategy.localIssue.code}: ${project.subStrategy.strategy.localIssue.name}` : '—'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9.5px] font-extrabold text-purple-600 uppercase tracking-wider">2. แผนงานหลัก</span>
+                    <span className="font-bold text-slate-800 line-clamp-1" title={project.subStrategy?.strategy?.name}>
+                      {project.subStrategy?.strategy ? `${project.subStrategy.strategy.code}: ${project.subStrategy.strategy.name}` : '—'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9.5px] font-extrabold text-blue-600 uppercase tracking-wider">3. แผนงานย่อย</span>
+                    <span className="font-bold text-slate-800 line-clamp-1" title={project.subStrategy?.name}>
+                      {project.subStrategy ? `${project.subStrategy.code}: ${project.subStrategy.name}` : '—'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9.5px] font-extrabold text-emerald-600 uppercase tracking-wider">4. โครงการหลัก</span>
+                    <span className="font-bold text-slate-800 line-clamp-1" title={project.indicator?.name}>
+                      {project.indicator ? `${project.indicator.code}: ${project.indicator.name}` : '—'}
+                    </span>
+                  </div>
                 </div>
               </div>
 

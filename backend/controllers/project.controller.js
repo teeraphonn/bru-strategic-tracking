@@ -116,6 +116,8 @@ const getProjects = async (req, res) => {
     const fiscalYearId = req.query.fiscalYearId ? parseInt(req.query.fiscalYearId) : undefined;
     const departmentId = req.query.departmentId ? parseInt(req.query.departmentId) : undefined;
     const facultyId = req.query.facultyId ? parseInt(req.query.facultyId) : undefined;
+    const localIssueId = req.query.localIssueId ? parseInt(req.query.localIssueId) : undefined;
+    const strategyId = req.query.strategyId ? parseInt(req.query.strategyId) : undefined;
     const subStrategyId = req.query.subStrategyId ? parseInt(req.query.subStrategyId) : undefined;
     const indicatorId = req.query.indicatorId ? parseInt(req.query.indicatorId) : undefined;
 
@@ -130,8 +132,15 @@ const getProjects = async (req, res) => {
     }
 
     if (fiscalYearId) where.fiscalYearId = fiscalYearId;
-    if (subStrategyId) where.subStrategyId = subStrategyId;
     if (indicatorId) where.indicatorId = indicatorId;
+
+    if (subStrategyId) {
+      where.subStrategyId = subStrategyId;
+    } else if (strategyId) {
+      where.subStrategy = { strategyId };
+    } else if (localIssueId) {
+      where.subStrategy = { strategy: { localIssueId } };
+    }
 
     const status = req.query.status;
     if (status === 'completed') {
@@ -185,7 +194,13 @@ const getProjects = async (req, res) => {
           creator: { select: { id: true, name: true, role: true } },
           fiscalYear: true,
           budgetSource: true,
-          subStrategy: { include: { strategy: true } },
+          subStrategy: { 
+            include: { 
+              strategy: { 
+                include: { localIssue: true } 
+              } 
+            } 
+          },
           indicator: true,
           department: { include: { faculty: true } },
           users: { include: { user: { select: { id: true, name: true } } } },
@@ -225,7 +240,13 @@ const getProject = async (req, res) => {
         creator: { select: { id: true, name: true, role: true } },
         fiscalYear: true,
         budgetSource: true,
-        subStrategy: { include: { strategy: true } },
+        subStrategy: { 
+          include: { 
+            strategy: { 
+              include: { localIssue: true } 
+            } 
+          } 
+        },
         indicator: true,
         department: { include: { faculty: true } },
         users: { include: { user: { select: { id: true, name: true, username: true } } } },
