@@ -1,11 +1,11 @@
 /**
  * Dedicated Seed Script for BRU Strategic Planning Architecture
  * -------------------------------------------------------------
- * ข้อมูลตรงตามที่ระบุเป๊ะ 100% ไม่มีการเติมข้อความนำหน้าหรือต่อท้าย
- * 
- * 2.2 แผนงานหลัก (Program Name) - 4 แผนงาน (S1 - S4)
- * 2.3 แผนงานย่อย (Sub-Program Name) - 8 แผนงาน (SS1.1 - SS4.2)
- * 2.4 โครงการหลัก (Main Project Name: รหัส MP) - 10 โครงการหลัก (MP1.1 - MP4.3)
+ * S1 - S4: ประเด็นการพัฒนาท้องถิ่น (เอาแบบนี้เป๊ะๆ 4 ด้าน)
+ * 1. การพัฒนาท้องถิ่นด้านเศรษฐกิจ
+ * 2. การพัฒนาท้องถิ่นด้านสังคม
+ * 3. การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม
+ * 4. การพัฒนาท้องถิ่นด้านการศึกษา
  */
 
 const { PrismaClient } = require('@prisma/client');
@@ -13,13 +13,13 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('====================================================');
-  console.log('🌱 Syncing exact text verbatim (ไม่มีข้อความอื่นปน)...');
+  console.log('🌱 Updating Strategies to exact 4 Local Development Issues...');
   console.log('====================================================');
 
   const strategiesData = [
     {
       code: 'S1',
-      name: 'ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง',
+      name: 'การพัฒนาท้องถิ่นด้านเศรษฐกิจ',
       subStrategies: [
         {
           code: 'SS1.1',
@@ -49,7 +49,7 @@ async function main() {
     },
     {
       code: 'S2',
-      name: 'ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่',
+      name: 'การพัฒนาท้องถิ่นด้านสังคม',
       subStrategies: [
         {
           code: 'SS2.1',
@@ -75,7 +75,7 @@ async function main() {
     },
     {
       code: 'S3',
-      name: 'การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ',
+      name: 'การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม',
       subStrategies: [
         {
           code: 'SS3.1',
@@ -101,7 +101,7 @@ async function main() {
     },
     {
       code: 'S4',
-      name: 'การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน',
+      name: 'การพัฒนาท้องถิ่นด้านการศึกษา',
       subStrategies: [
         {
           code: 'SS4.1',
@@ -131,17 +131,13 @@ async function main() {
     }
   ];
 
-  // 1. Delete S5 and S6 if still present
+  // 1. Delete extra S5, S6 if any
   const extraStrategies = await prisma.strategy.findMany({
-    where: {
-      code: { in: ['S5', 'S6'] }
-    },
+    where: { code: { in: ['S5', 'S6'] } },
     include: {
       subStrategies: {
         include: {
-          indicators: {
-            include: { projects: true }
-          },
+          indicators: { include: { projects: true } },
           projects: true
         }
       }
@@ -173,7 +169,7 @@ async function main() {
     }
   }
 
-  // 3. Upsert S1 to S4 with exact strings verbatim
+  // 3. Upsert S1 to S4 with exact 4 local development issues
   for (const s of strategiesData) {
     const strat = await prisma.strategy.upsert({
       where: { code: s.code },
@@ -202,13 +198,13 @@ async function main() {
   }
 
   console.log('\n====================================================');
-  console.log('🎉 Successfully synced exact verbatim strategic plan!');
+  console.log('🎉 Successfully synced exact 4 Local Development Issues!');
   console.log('====================================================');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error updating main projects:', e);
+    console.error('❌ Error updating strategies:', e);
     process.exit(1);
   })
   .finally(async () => {

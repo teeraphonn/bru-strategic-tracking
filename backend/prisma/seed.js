@@ -182,26 +182,26 @@ async function main() {
   console.log('[SEED] Budget Sources created.');
 
   // 5. Create Strategies, Sub-strategies and Indicators based on University Strategic Architecture
-  // 2.1 ประเด็นการพัฒนาท้องถิ่น & 2.2 แผนงานหลัก (Program Name)
+  // 2.1 ประเด็นการพัฒนาท้องถิ่น
   const s1 = await prisma.strategy.upsert({
     where: { code: 'S1' },
-    update: { name: 'ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง' },
-    create: { code: 'S1', name: 'ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง' }
+    update: { name: 'การพัฒนาท้องถิ่นด้านเศรษฐกิจ' },
+    create: { code: 'S1', name: 'การพัฒนาท้องถิ่นด้านเศรษฐกิจ' }
   });
   const s2 = await prisma.strategy.upsert({
     where: { code: 'S2' },
-    update: { name: 'ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่' },
-    create: { code: 'S2', name: 'ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่' }
+    update: { name: 'การพัฒนาท้องถิ่นด้านสังคม' },
+    create: { code: 'S2', name: 'การพัฒนาท้องถิ่นด้านสังคม' }
   });
   const s3 = await prisma.strategy.upsert({
     where: { code: 'S3' },
-    update: { name: 'การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ' },
-    create: { code: 'S3', name: 'การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ' }
+    update: { name: 'การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม' },
+    create: { code: 'S3', name: 'การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม' }
   });
   const s4 = await prisma.strategy.upsert({
     where: { code: 'S4' },
-    update: { name: 'การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน' },
-    create: { code: 'S4', name: 'การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน' }
+    update: { name: 'การพัฒนาท้องถิ่นด้านการศึกษา' },
+    create: { code: 'S4', name: 'การพัฒนาท้องถิ่นด้านการศึกษา' }
   });
 
   // 2.3 แผนงานย่อย (Sub-Program Name)

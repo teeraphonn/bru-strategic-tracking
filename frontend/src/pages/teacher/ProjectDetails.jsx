@@ -926,7 +926,7 @@ const ProjectDetails = () => {
 
             <div className="space-y-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">แผนงานหลัก (Program Name)</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ประเด็นการพัฒนาท้องถิ่น</label>
                 <p className="text-slate-800 font-bold mt-1">{project.subStrategy?.strategy?.name}</p>
               </div>
 

@@ -46,7 +46,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
       roles: ['ADMIN'],
       subItems: [
         { to: '/master-data?tab=user',          name: 'ผู้ใช้งาน',                     shortName: 'ผู้ใช้',        icon: <FiUsers className="w-4 h-4" /> },
-        { to: '/master-data?tab=strategy',      name: 'แผนงานหลัก (Program Name)',     shortName: 'แผนงานหลัก',    icon: <FiDatabase className="w-4 h-4" /> },
+        { to: '/master-data?tab=strategy',      name: 'ประเด็นการพัฒนาท้องถิ่น',       shortName: 'ประเด็นพัฒนา',  icon: <FiDatabase className="w-4 h-4" /> },
         { to: '/master-data?tab=sub-strategy',  name: 'แผนงานย่อย (Sub-Program Name)', shortName: 'แผนงานย่อย',    icon: <FiGitCommit className="w-4 h-4" /> },
         { to: '/master-data?tab=indicator',     name: 'โครงการหลัก (Main project Name)', shortName: 'โครงการหลัก', icon: <FiBriefcase className="w-4 h-4" /> },
         { to: '/projects',                      name: 'โครงการยุทธศาสตร์ทั้งหมด',     shortName: 'โครงการ',       icon: <FiBriefcase className="w-4 h-4" /> },

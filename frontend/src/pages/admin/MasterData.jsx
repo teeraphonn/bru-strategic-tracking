@@ -114,7 +114,7 @@ const MasterData = () => {
     { id: 'user', name: 'ผู้ใช้งาน', icon: <FiUsers /> },
     { id: 'faculty', name: 'คณะ', icon: <FiBookmark /> },
     { id: 'department', name: 'ภาควิชา/หน่วยงาน', icon: <FiLayers /> },
-    { id: 'strategy', name: 'แผนงานหลัก (Program Name)', icon: <FiDatabase /> },
+    { id: 'strategy', name: 'ประเด็นการพัฒนาท้องถิ่น', icon: <FiDatabase /> },
     { id: 'sub-strategy', name: 'แผนงานย่อย (Sub-Program Name)', icon: <FiGitCommit /> },
     { id: 'indicator', name: 'โครงการหลัก (Main project Name)', icon: <FiBriefcase /> },
     { id: 'fiscal-year', name: 'ปีงบประมาณ', icon: <FiCalendar /> },
@@ -451,7 +451,7 @@ const MasterData = () => {
             { id: 'user', name: 'ผู้ใช้งาน', icon: <FiUsers className="w-4 h-4" /> },
             { id: 'faculty', name: 'คณะ', icon: <FiBookmark className="w-4 h-4" /> },
             { id: 'department', name: 'ภาควิชา/หน่วยงาน', icon: <FiLayers className="w-4 h-4" /> },
-            { id: 'strategy', name: 'แผนงานหลัก (Program Name)', icon: <FiDatabase className="w-4 h-4" /> },
+            { id: 'strategy', name: 'ประเด็นการพัฒนาท้องถิ่น', icon: <FiDatabase className="w-4 h-4" /> },
             { id: 'sub-strategy', name: 'แผนงานย่อย (Sub-Program Name)', icon: <FiGitCommit className="w-4 h-4" /> },
             { id: 'indicator', name: 'โครงการหลัก (Main project Name)', icon: <FiBriefcase className="w-4 h-4" /> },
             { id: 'fiscal-year', name: 'ปีงบประมาณ', icon: <FiCalendar className="w-4 h-4" /> },
@@ -672,7 +672,7 @@ const MasterData = () => {
                   {activeTab === 'strategy' && (
                     <>
                       <th className="w-24 px-4 py-3.5">รหัส</th>
-                      <th className="min-w-[340px] px-4 py-3.5">แผนงานหลัก (Program Name) / ประเด็นการพัฒนาท้องถิ่น</th>
+                      <th className="min-w-[340px] px-4 py-3.5">ประเด็นการพัฒนาท้องถิ่น</th>
                       <th className="w-24 px-4 py-3.5 text-center">จัดการ</th>
                     </>
                   )}
@@ -968,13 +968,13 @@ const MasterData = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อแผนงานหลัก (Program Name) / ประเด็นการพัฒนาท้องถิ่น</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ประเด็นการพัฒนาท้องถิ่น</label>
                     <input
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all hover:border-slate-300 text-slate-700 font-semibold"
-                      placeholder="กรอกชื่อแผนงานหลัก หรือประเด็นการพัฒนาท้องถิ่น"
+                      placeholder="กรอกชื่อประเด็นการพัฒนาท้องถิ่น"
                       required
                     />
                   </div>
@@ -984,11 +984,11 @@ const MasterData = () => {
               {activeTab === 'sub-strategy' && (
                 <>
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">แผนงานหลัก (Program Name)</label>
+                    <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ประเด็นการพัฒนาท้องถิ่น</label>
                     <CustomSelect
                       value={formData.strategyId ? String(formData.strategyId) : ''}
                       onChange={(val) => setFormData({ ...formData, strategyId: val })}
-                      placeholder="-- เลือกแผนงานหลัก (Program) --"
+                      placeholder="-- เลือกประเด็นการพัฒนาท้องถิ่น --"
                       options={strategies.map(s => ({
                         value: String(s.id),
                         label: `${s.code} - ${s.name}`
