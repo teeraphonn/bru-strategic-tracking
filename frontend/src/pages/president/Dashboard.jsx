@@ -699,7 +699,7 @@ const PresidentDashboard = () => {
           </div>
 
           {/* Chart 2: Strategic Proportion Donut */}
-          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 flex flex-col justify-between">
+          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 flex flex-col justify-start">
             <div className="pb-3 border-b border-slate-100">
               <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
                 <FiPieChart className="w-4 h-4 text-violet-600 shrink-0" />
@@ -708,79 +708,86 @@ const PresidentDashboard = () => {
               <p className="text-xs text-slate-500 font-medium mt-0.5">การกระจายตัวของจำนวนโครงการในแต่ละยุทธศาสตร์</p>
             </div>
             
-            <div className="h-64 w-full relative flex items-center justify-center my-auto">
-              <Doughnut
-                data={{
-                  labels: (strategicPillars || []).map((s, idx) => `ยุทธศาสตร์ที่ ${idx + 1}`),
-                  datasets: [
-                    {
-                      data: (strategicPillars || []).map(s => s.totalProjects || 0),
-                      backgroundColor: ['#6C3BFF', '#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6'],
-                      borderWidth: 3,
-                      borderColor: '#ffffff',
-                      hoverOffset: 6
-                    }
-                  ]
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      display: false
-                    },
-                    tooltip: {
-                      backgroundColor: '#1E1B4B',
-                      callbacks: {
-                        title: (ctx) => {
-                          const idx = ctx[0]?.dataIndex;
-                          const pillar = (strategicPillars || [])[idx];
-                          return `ยุทธศาสตร์ที่ ${idx + 1}: ${pillar?.strategyName || ''}`;
-                        },
-                        label: (ctx) => {
-                          const total = universityHealth.totalProjects || 1;
-                          const pct = ((ctx.raw / total) * 100).toFixed(1);
-                          return ` สัดส่วน: ${ctx.raw} โครงการ (${pct}%)`;
+            <div className="pt-3 flex flex-col items-center">
+              {/* Donut Circle */}
+              <div className="h-56 w-full relative flex items-center justify-center">
+                <Doughnut
+                  data={{
+                    labels: (strategicPillars || []).map((s, idx) => s.strategyCode || `ยุทธศาสตร์ที่ ${idx + 1}`),
+                    datasets: [
+                      {
+                        data: (strategicPillars || []).map(s => s.totalProjects || 0),
+                        backgroundColor: ['#6C3BFF', '#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6'],
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        hoverOffset: 6
+                      }
+                    ]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false
+                      },
+                      tooltip: {
+                        backgroundColor: '#1E1B4B',
+                        callbacks: {
+                          title: (ctx) => {
+                            const idx = ctx[0]?.dataIndex;
+                            const pillar = (strategicPillars || [])[idx];
+                            return `${pillar?.strategyCode || `S${idx + 1}`}: ${pillar?.strategyName || ''}`;
+                          },
+                          label: (ctx) => {
+                            const total = universityHealth.totalProjects || 1;
+                            const pct = ((ctx.raw / total) * 100).toFixed(1);
+                            return ` สัดส่วน: ${ctx.raw} โครงการ (${pct}%)`;
+                          }
                         }
                       }
-                    }
-                  },
-                  cutout: '68%'
-                }}
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">โครงการทั้งหมด</span>
-                <span className="text-3xl font-black text-slate-800 tracking-tight">{universityHealth.totalProjects}</span>
-                <span className="text-[11px] font-bold text-slate-500">โครงการ</span>
+                    },
+                    cutout: '68%'
+                  }}
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">โครงการทั้งหมด</span>
+                  <span className="text-3xl font-black text-slate-800 tracking-tight">{universityHealth.totalProjects}</span>
+                  <span className="text-[11px] font-bold text-slate-500">โครงการ</span>
+                </div>
               </div>
-            </div>
 
-            {/* Clean Legend Badges at bottom of Donut */}
-            <div className="pt-4 border-t border-slate-100">
-              <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-                {(strategicPillars || []).map((s, idx) => {
-                  const colors = [
-                    { dot: 'bg-purple-600', text: 'text-purple-700', bg: 'bg-purple-50' },
-                    { dot: 'bg-blue-600', text: 'text-blue-700', bg: 'bg-blue-50' },
-                    { dot: 'bg-emerald-600', text: 'text-emerald-700', bg: 'bg-emerald-50' },
-                    { dot: 'bg-amber-600', text: 'text-amber-700', bg: 'bg-amber-50' },
-                    { dot: 'bg-pink-600', text: 'text-pink-700', bg: 'bg-pink-50' }
-                  ];
-                  const c = colors[idx % colors.length];
-                  const totalUniv = universityHealth.totalProjects || 1;
-                  const pct = ((s.totalProjects / totalUniv) * 100).toFixed(1);
+              {/* Clean Legend Badges right below Donut Circle */}
+              <div className="w-full mt-3 pt-3 border-t border-slate-100">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-1.5 text-xs">
+                  {(strategicPillars || []).map((s, idx) => {
+                    const colors = [
+                      { dot: 'bg-[#6C3BFF]', text: 'text-[#6C3BFF]', bg: 'bg-purple-50' },
+                      { dot: 'bg-[#3B82F6]', text: 'text-blue-600', bg: 'bg-blue-50' },
+                      { dot: 'bg-[#10B981]', text: 'text-emerald-600', bg: 'bg-emerald-50' },
+                      { dot: 'bg-[#F59E0B]', text: 'text-amber-600', bg: 'bg-amber-50' },
+                      { dot: 'bg-[#EC4899]', text: 'text-pink-600', bg: 'bg-pink-50' },
+                      { dot: 'bg-[#8B5CF6]', text: 'text-violet-600', bg: 'bg-violet-50' }
+                    ];
+                    const c = colors[idx % colors.length];
+                    const totalUniv = universityHealth.totalProjects || 1;
+                    const pct = ((s.totalProjects / totalUniv) * 100).toFixed(1);
 
-                  return (
-                    <div 
-                      key={s.strategyId || idx} 
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${c.bg} border border-slate-200/60 shadow-3xs font-extrabold`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${c.dot}`} />
-                      <span className="text-slate-700">ยุทธศาสตร์ {idx + 1}:</span>
-                      <span className={c.text}>{pct}%</span>
-                    </div>
-                  );
-                })}
+                    return (
+                      <div 
+                        key={s.strategyId || idx} 
+                        className={`flex items-center justify-between px-2.5 py-1 rounded-lg ${c.bg} border border-slate-200/50 shadow-3xs font-extrabold text-[11px]`}
+                        title={s.strategyName}
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className={`w-2 h-2 rounded-full ${c.dot} shrink-0`} />
+                          <span className="text-slate-700 truncate">ยุทธศาสตร์ {idx + 1}:</span>
+                        </div>
+                        <span className={`${c.text} ml-1 font-black shrink-0`}>{pct}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
