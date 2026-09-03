@@ -680,61 +680,72 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5">
-              {strategicPillars.map((sp, idx) => {
-                const colors = [
-                  { bg: 'from-violet-500/10 to-violet-500/5', border: 'border-violet-200/80', badge: 'bg-violet-100 text-violet-800', bar: 'bg-violet-600' },
-                  { bg: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-200/80', badge: 'bg-purple-100 text-purple-800', bar: 'bg-purple-600' },
-                  { bg: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-200/80', badge: 'bg-blue-100 text-blue-800', bar: 'bg-blue-600' },
-                  { bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-200/80', badge: 'bg-emerald-100 text-emerald-800', bar: 'bg-emerald-600' },
-                  { bg: 'from-amber-500/10 to-amber-500/5', border: 'border-amber-200/80', badge: 'bg-amber-100 text-amber-800', bar: 'bg-amber-600' },
-                  { bg: 'from-rose-500/10 to-rose-500/5', border: 'border-rose-200/80', badge: 'bg-rose-100 text-rose-800', bar: 'bg-rose-600' }
-                ];
-                const c = colors[idx % colors.length];
-
-                return (
-                  <div
-                    key={sp.strategyId || idx}
-                    className={`bg-gradient-to-br ${c.bg} p-4 rounded-2xl border ${c.border} space-y-3 flex flex-col justify-between`}
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${c.badge}`}>
-                          {sp.strategyCode || `S${idx + 1}`}
-                        </span>
-                        {sp.localIssueCode && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-white/90 text-slate-600 border border-slate-200/60 shadow-3xs">
-                            {sp.localIssueCode}
+            <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
+              <table className="w-full text-xs text-left border-collapse min-w-[620px]">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
+                    <th className="py-3 px-3.5">แผนงานหลัก</th>
+                    <th className="py-3 px-3">หมวดประเด็นการพัฒนา</th>
+                    <th className="py-3 px-2.5 text-center">โครงการในคณะ</th>
+                    <th className="py-3 px-3 text-right">งบประมาณคณะ</th>
+                    <th className="py-3 px-3 text-right">เบิกจ่ายจริง</th>
+                    <th className="py-3 px-3 text-center">ความก้าวหน้า</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {strategicPillars.map((sp, idx) => {
+                    const burnRatePct = sp.totalBudget > 0 ? ((sp.totalSpent / sp.totalBudget) * 100).toFixed(1) : 0;
+                    return (
+                      <tr key={sp.strategyId || idx} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3 px-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-violet-50 text-violet-700 border border-violet-200/60 shrink-0">
+                              {sp.strategyCode || `S${idx + 1}`}
+                            </span>
+                            <span className="font-bold text-slate-800 line-clamp-1 max-w-[240px] sm:max-w-[320px]" title={sp.strategyName}>
+                              {sp.strategyName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 whitespace-nowrap">
+                          {sp.localIssueName ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 inline-flex items-center gap-1">
+                              🌐 {sp.localIssueCode ? `${sp.localIssueCode}: ` : ''}{sp.localIssueName}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 text-[10px]">—</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-2.5 text-center whitespace-nowrap font-bold text-slate-700">
+                          {sp.totalProjects} <span className="text-slate-400 font-normal text-[10px]">โครงการ</span>
+                        </td>
+                        <td className="py-3 px-3 text-right whitespace-nowrap font-bold text-slate-700">
+                          {Number(sp.totalBudget || 0).toLocaleString()} ฿
+                        </td>
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
+                          <span className="font-black text-slate-900">{Number(sp.totalSpent || 0).toLocaleString()} ฿</span>
+                          <span className="ml-1.5 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                            {burnRatePct}%
                           </span>
-                        )}
-                      </div>
-                      <h4 className="text-xs font-black text-slate-800 leading-snug line-clamp-2" title={sp.strategyName}>
-                        {sp.strategyName}
-                      </h4>
-                    </div>
-
-                    <div className="space-y-2 pt-2 border-t border-slate-200/50 text-[11px]">
-                      <div className="flex items-center justify-between text-slate-600 font-bold">
-                        <span>จำนวนโครงการ</span>
-                        <span className="text-slate-900 font-black">{sp.totalProjects} โครงการ</span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-600 font-bold">
-                        <span>งบประมาณคณะ</span>
-                        <span className="text-slate-900 font-black">{parseFloat(sp.totalBudget || 0).toLocaleString()} ฿</span>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[10px] font-black">
-                          <span className="text-slate-500">ความก้าวหน้ารวม</span>
-                          <span className="text-emerald-700">{sp.progressPct}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-slate-200/70 rounded-full overflow-hidden">
-                          <div className={`h-full ${c.bar} rounded-full transition-all duration-500`} style={{ width: `${Math.min(sp.progressPct, 100)}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                        </td>
+                        <td className="py-3 px-3 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full transition-all duration-300 ${sp.progressPct >= 75 ? 'bg-emerald-500' : sp.progressPct >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} 
+                                style={{ width: `${Math.min(100, sp.progressPct)}%` }} 
+                              />
+                            </div>
+                            <span className="font-black text-slate-800 text-[11px] w-8 text-right">
+                              {sp.progressPct}%
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
