@@ -181,51 +181,153 @@ async function main() {
 
   console.log('[SEED] Budget Sources created.');
 
-  // 5. Create Strategies, Sub-strategies and Indicators
+  // 5. Create Strategies, Sub-strategies and Indicators based on University Strategic Architecture
+  // 2.1 ประเด็นการพัฒนาท้องถิ่น & 2.2 แผนงานหลัก (Program Name)
   const s1 = await prisma.strategy.upsert({
     where: { code: 'S1' },
-    update: { name: 'การพัฒนาท้องถิ่นด้วยวิทยาศาสตร์ เทคโนโลยี และนวัตกรรม' },
-    create: { code: 'S1', name: 'การพัฒนาท้องถิ่นด้วยวิทยาศาสตร์ เทคโนโลยี และนวัตกรรม' }
+    update: { name: 'ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง (การพัฒนาท้องถิ่นด้านเศรษฐกิจ)' },
+    create: { code: 'S1', name: 'ยกระดับเศรษฐกิจฐานรากบนหลักปรัชญาของเศรษฐกิจพอเพียง (การพัฒนาท้องถิ่นด้านเศรษฐกิจ)' }
   });
   const s2 = await prisma.strategy.upsert({
     where: { code: 'S2' },
-    update: { name: 'การยกระดับคุณภาพการศึกษาและการผลิตบัณฑิตนักปฏิบัติ' },
-    create: { code: 'S2', name: 'การยกระดับคุณภาพการศึกษาและการผลิตบัณฑิตนักปฏิบัติ' }
+    update: { name: 'ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่ (การพัฒนาท้องถิ่นด้านสังคม)' },
+    create: { code: 'S2', name: 'ส่งเสริมคุณภาพชีวิตและภูมิปัญญาท้องถิ่นเพื่อความมั่นคงและยั่งยืนเชิงพื้นที่ (การพัฒนาท้องถิ่นด้านสังคม)' }
+  });
+  const s3 = await prisma.strategy.upsert({
+    where: { code: 'S3' },
+    update: { name: 'การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ (การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม)' },
+    create: { code: 'S3', name: 'การเสริมสร้างชุมชนรักษ์โลกเพื่อรับมือการเปลี่ยนแปลงสภาพภูมิอากาศ (การพัฒนาท้องถิ่นด้านสิ่งแวดล้อม)' }
+  });
+  const s4 = await prisma.strategy.upsert({
+    where: { code: 'S4' },
+    update: { name: 'การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน (การพัฒนาท้องถิ่นด้านการศึกษา)' },
+    create: { code: 'S4', name: 'การติดอาวุธทางปัญญาเพื่อการพัฒนาการศึกษาเชิงพื้นที่อย่างยั่งยืน (การพัฒนาท้องถิ่นด้านการศึกษา)' }
+  });
+  const s5 = await prisma.strategy.upsert({
+    where: { code: 'S5' },
+    update: { name: 'โครงการร่วมระดับภูมิภาค' },
+    create: { code: 'S5', name: 'โครงการร่วมระดับภูมิภาค' }
+  });
+  const s6 = await prisma.strategy.upsert({
+    where: { code: 'S6' },
+    update: { name: 'โครงการร่วมระดับประเทศ' },
+    create: { code: 'S6', name: 'โครงการร่วมระดับประเทศ' }
   });
 
+  // 2.3 แผนงานย่อย (Sub-Program Name)
+  // ภายใต้ S1: ด้านเศรษฐกิจ
   const ss1_1 = await prisma.subStrategy.upsert({
     where: { code: 'SS1.1' },
-    update: { name: 'การส่งเสริมการเกษตรปลอดภัยและการแปรรูปสินค้าเกษตร', strategyId: s1.id },
-    create: { code: 'SS1.1', name: 'การส่งเสริมการเกษตรปลอดภัยและการแปรรูปสินค้าเกษตร', strategyId: s1.id }
+    update: { name: 'การใช้ BCG MODEL ในการยกระดับเศรษฐกิจของคนในชุมชนท้องถิ่น', strategyId: s1.id },
+    create: { code: 'SS1.1', name: 'การใช้ BCG MODEL ในการยกระดับเศรษฐกิจของคนในชุมชนท้องถิ่น', strategyId: s1.id }
   });
   const ss1_2 = await prisma.subStrategy.upsert({
     where: { code: 'SS1.2' },
-    update: { name: 'การส่งเสริมการท่องเที่ยวเชิงวัฒนธรรมและนวัตกรรมชุมชน', strategyId: s1.id },
-    create: { code: 'SS1.2', name: 'การส่งเสริมการท่องเที่ยวเชิงวัฒนธรรมและนวัตกรรมชุมชน', strategyId: s1.id }
+    update: { name: 'การใช้แนวคิดเศรษฐกิจสร้างสรรค์ในการยกระดับเศรษฐกิจของคนในชุมชน รวมถึงการนำประเด็น Soft power มาปรับใช้', strategyId: s1.id },
+    create: { code: 'SS1.2', name: 'การใช้แนวคิดเศรษฐกิจสร้างสรรค์ในการยกระดับเศรษฐกิจของคนในชุมชน รวมถึงการนำประเด็น Soft power มาปรับใช้', strategyId: s1.id }
   });
+
+  // ภายใต้ S2: ด้านสังคม
   const ss2_1 = await prisma.subStrategy.upsert({
     where: { code: 'SS2.1' },
-    update: { name: 'การพัฒนาทักษะวิชาชีพและสมรรถนะดิจิทัลของบัณฑิต', strategyId: s2.id },
-    create: { code: 'SS2.1', name: 'การพัฒนาทักษะวิชาชีพและสมรรถนะดิจิทัลของบัณฑิต', strategyId: s2.id }
+    update: { name: 'การทำนุบำรุงศิลปวัฒนธรรมและภูมิปัญญาท้องถิ่น สร้างความภาคภูมิใจให้คนในชุมชน ยึดโยงกับรากเหง้าเกิดความสามัคคีและมั่นคงในสถาบันหลักของชาติ', strategyId: s2.id },
+    create: { code: 'SS2.1', name: 'การทำนุบำรุงศิลปวัฒนธรรมและภูมิปัญญาท้องถิ่น สร้างความภาคภูมิใจให้คนในชุมชน ยึดโยงกับรากเหง้าเกิดความสามัคคีและมั่นคงในสถาบันหลักของชาติ', strategyId: s2.id }
+  });
+  const ss2_2 = await prisma.subStrategy.upsert({
+    where: { code: 'SS2.2' },
+    update: { name: 'การเสริมสร้างสุขภาวะทางร่างกาย ทางจิตใจ และทางจิตวิญญาณหรือปัญญาให้กับคนในชุมชนท้องถิ่น', strategyId: s2.id },
+    create: { code: 'SS2.2', name: 'การเสริมสร้างสุขภาวะทางร่างกาย ทางจิตใจ และทางจิตวิญญาณหรือปัญญาให้กับคนในชุมชนท้องถิ่น', strategyId: s2.id }
   });
 
-  const ind1_1_1 = await prisma.indicator.upsert({
+  // ภายใต้ S3: ด้านสิ่งแวดล้อม
+  const ss3_1 = await prisma.subStrategy.upsert({
+    where: { code: 'SS3.1' },
+    update: { name: 'การสร้างการมีส่วนร่วมในการบริหารจัดการ บำรุงรักษาและใช้ประโยชน์ทรัพยากรธรรมชาติและสิ่งแวดล้อมของคนในชุมชนท้องถิ่นอย่างสมดุลและยั่งยืน', strategyId: s3.id },
+    create: { code: 'SS3.1', name: 'การสร้างการมีส่วนร่วมในการบริหารจัดการ บำรุงรักษาและใช้ประโยชน์ทรัพยากรธรรมชาติและสิ่งแวดล้อมของคนในชุมชนท้องถิ่นอย่างสมดุลและยั่งยืน', strategyId: s3.id }
+  });
+  const ss3_2 = await prisma.subStrategy.upsert({
+    where: { code: 'SS3.2' },
+    update: { name: 'การสร้างความตระหนักรู้ และแนวทางการรองรับปรับตัวต่อผลกระทบด้านการเปลี่ยนแปลงสภาพภูมิอากาศของคนในชุมชนท้องถิ่น', strategyId: s3.id },
+    create: { code: 'SS3.2', name: 'การสร้างความตระหนักรู้ และแนวทางการรองรับปรับตัวต่อผลกระทบด้านการเปลี่ยนแปลงสภาพภูมิอากาศของคนในชุมชนท้องถิ่น', strategyId: s3.id }
+  });
+
+  // ภายใต้ S4: ด้านการศึกษา
+  const ss4_1 = await prisma.subStrategy.upsert({
+    where: { code: 'SS4.1' },
+    update: { name: 'การเสริมสร้างทักษะ/ความสามารถที่จำเป็นสาหรับการจัดการเรียนการสอนของครูในพื้นที่ ซึ่งต้องสามารถวัดประเมินผลได้อย่างเป็นรูปธรรม', strategyId: s4.id },
+    create: { code: 'SS4.1', name: 'การเสริมสร้างทักษะ/ความสามารถที่จำเป็นสาหรับการจัดการเรียนการสอนของครูในพื้นที่ ซึ่งต้องสามารถวัดประเมินผลได้อย่างเป็นรูปธรรม', strategyId: s4.id }
+  });
+  const ss4_2 = await prisma.subStrategy.upsert({
+    where: { code: 'SS4.2' },
+    update: { name: 'การเสริมสร้างทักษะ/ความสามารถที่จำเป็นในการใช้ชีวิตในสังคมให้กับคนในชุมชนท้องถิ่นด้วยกระบวนการวิศวกรสังคม', strategyId: s4.id },
+    create: { code: 'SS4.2', name: 'การเสริมสร้างทักษะ/ความสามารถที่จำเป็นในการใช้ชีวิตในสังคมให้กับคนในชุมชนท้องถิ่นด้วยกระบวนการวิศวกรสังคม', strategyId: s4.id }
+  });
+
+  // ภายใต้ S5 & S6: ความร่วมมือระดับภูมิภาค/ประเทศ
+  const ss5_1 = await prisma.subStrategy.upsert({
+    where: { code: 'SS5.1' },
+    update: { name: 'แผนงานความร่วมมือขับเคลื่อนโครงการร่วมระดับภูมิภาค', strategyId: s5.id },
+    create: { code: 'SS5.1', name: 'แผนงานความร่วมมือขับเคลื่อนโครงการร่วมระดับภูมิภาค', strategyId: s5.id }
+  });
+  const ss6_1 = await prisma.subStrategy.upsert({
+    where: { code: 'SS6.1' },
+    update: { name: 'แผนงานความร่วมมือขับเคลื่อนโครงการร่วมระดับประเทศ', strategyId: s6.id },
+    create: { code: 'SS6.1', name: 'แผนงานความร่วมมือขับเคลื่อนโครงการร่วมระดับประเทศ', strategyId: s6.id }
+  });
+
+  // 2.4 ตัวชี้วัดสอดคล้องกับโครงการหลัก (Indicators)
+  await prisma.indicator.upsert({
     where: { code: 'IND1.1.1' },
-    update: { name: 'จำนวนชุมชนที่ได้รับการยกระดับคุณภาพชีวิต', subStrategyId: ss1_1.id },
-    create: { code: 'IND1.1.1', name: 'จำนวนชุมชนที่ได้รับการยกระดับคุณภาพชีวิต', subStrategyId: ss1_1.id }
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการพัฒนาคุณภาพชีวิต ผ่านโมเดลเศรษฐกิจทฤษฎีใหม่เพื่อยกระดับรายได้ครัวเรือนของชุมชน ท้องถิ่นอย่างยั่งยืน', subStrategyId: ss1_1.id },
+    create: { code: 'IND1.1.1', name: 'ตัวชี้วัดความสำเร็จ: โครงการพัฒนาคุณภาพชีวิต ผ่านโมเดลเศรษฐกิจทฤษฎีใหม่เพื่อยกระดับรายได้ครัวเรือนของชุมชน ท้องถิ่นอย่างยั่งยืน', subStrategyId: ss1_1.id }
   });
-  const ind1_2_1 = await prisma.indicator.upsert({
+  await prisma.indicator.upsert({
     where: { code: 'IND1.2.1' },
-    update: { name: 'จำนวนเส้นทางการท่องเที่ยวและผลิตภัณฑ์วัฒนธรรมที่ได้รับการพัฒนา', subStrategyId: ss1_2.id },
-    create: { code: 'IND1.2.1', name: 'จำนวนเส้นทางการท่องเที่ยวและผลิตภัณฑ์วัฒนธรรมที่ได้รับการพัฒนา', subStrategyId: ss1_2.id }
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการยกระดับเศรษฐกิจชุมชนเชิงสร้างสรรค์เพื่อสร้างมูลค่าผลิตภัณฑ์ทางภูมิปัญญาของชุมชนท้องถิ่น', subStrategyId: ss1_2.id },
+    create: { code: 'IND1.2.1', name: 'ตัวชี้วัดความสำเร็จ: โครงการยกระดับเศรษฐกิจชุมชนเชิงสร้างสรรค์เพื่อสร้างมูลค่าผลิตภัณฑ์ทางภูมิปัญญาของชุมชนท้องถิ่น', subStrategyId: ss1_2.id }
   });
-  const ind2_1_1 = await prisma.indicator.upsert({
+  await prisma.indicator.upsert({
+    where: { code: 'IND1.2.2' },
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการยกระดับผลิตภัณฑ์ผ้าพื้นเมืองของกลุ่มอารยธรรมท้องถิ่นสู่เชิงพานิชย์', subStrategyId: ss1_2.id },
+    create: { code: 'IND1.2.2', name: 'ตัวชี้วัดความสำเร็จ: โครงการยกระดับผลิตภัณฑ์ผ้าพื้นเมืองของกลุ่มอารยธรรมท้องถิ่นสู่เชิงพานิชย์', subStrategyId: ss1_2.id }
+  });
+  await prisma.indicator.upsert({
     where: { code: 'IND2.1.1' },
-    update: { name: 'ร้อยละของบัณฑิตที่มีคะแนนสมรรถนะดิจิทัลผ่านเกณฑ์มาตรฐาน', subStrategyId: ss2_1.id },
-    create: { code: 'IND2.1.1', name: 'ร้อยละของบัณฑิตที่มีคะแนนสมรรถนะดิจิทัลผ่านเกณฑ์มาตรฐาน', subStrategyId: ss2_1.id }
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการอนุรักษ์ และเผยแพร่รากอารยะของกลุ่มชาติพันธุ์ในชุมชนท้องถิ่นสู่มรดกทางวัฒนธรรม', subStrategyId: ss2_1.id },
+    create: { code: 'IND2.1.1', name: 'ตัวชี้วัดความสำเร็จ: โครงการอนุรักษ์ และเผยแพร่รากอารยะของกลุ่มชาติพันธุ์ในชุมชนท้องถิ่นสู่มรดกทางวัฒนธรรม', subStrategyId: ss2_1.id }
+  });
+  await prisma.indicator.upsert({
+    where: { code: 'IND2.2.1' },
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างคุณภาพชีวิตเพื่อพัฒนาสุขภาวะที่ดีให้กับประชาชนในชุมชนท้องถิ่นอย่างยั่งยืน', subStrategyId: ss2_2.id },
+    create: { code: 'IND2.2.1', name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างคุณภาพชีวิตเพื่อพัฒนาสุขภาวะที่ดีให้กับประชาชนในชุมชนท้องถิ่นอย่างยั่งยืน', subStrategyId: ss2_2.id }
+  });
+  await prisma.indicator.upsert({
+    where: { code: 'IND3.1.1' },
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการส่งเสริมการมีส่วนร่วมเพื่อบริหารจัดการทรัพยากรธรรมชาติและสิ่งแวดล้อมในชุมชนท้องถิ่นอย่างเป็นระบบที่ยั่งยืน', subStrategyId: ss3_1.id },
+    create: { code: 'IND3.1.1', name: 'ตัวชี้วัดความสำเร็จ: โครงการส่งเสริมการมีส่วนร่วมเพื่อบริหารจัดการทรัพยากรธรรมชาติและสิ่งแวดล้อมในชุมชนท้องถิ่นอย่างเป็นระบบที่ยั่งยืน', subStrategyId: ss3_1.id }
+  });
+  await prisma.indicator.upsert({
+    where: { code: 'IND3.2.1' },
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะการปรับตัวและสร้างภูมิต้านทานให้กับประชาชนในชุมชนท้องถิ่นเพื่อรองรับการเปลี่ยนแปลงทางสภาพภูมิอากาศ', subStrategyId: ss3_2.id },
+    create: { code: 'IND3.2.1', name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะการปรับตัวและสร้างภูมิต้านทานให้กับประชาชนในชุมชนท้องถิ่นเพื่อรองรับการเปลี่ยนแปลงทางสภาพภูมิอากาศ', subStrategyId: ss3_2.id }
+  });
+  await prisma.indicator.upsert({
+    where: { code: 'IND4.1.1' },
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะการจัดการเรียนการสอนของครูเพื่อยกระดับการศึกษาในชุมชนท้องถิ่น อย่างยั่งยืน', subStrategyId: ss4_1.id },
+    create: { code: 'IND4.1.1', name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะการจัดการเรียนการสอนของครูเพื่อยกระดับการศึกษาในชุมชนท้องถิ่น อย่างยั่งยืน', subStrategyId: ss4_1.id }
+  });
+  await prisma.indicator.upsert({
+    where: { code: 'IND4.1.2' },
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการพัฒนามาตรฐานโรงเรียนสาธิต', subStrategyId: ss4_1.id },
+    create: { code: 'IND4.1.2', name: 'ตัวชี้วัดความสำเร็จ: โครงการพัฒนามาตรฐานโรงเรียนสาธิต', subStrategyId: ss4_1.id }
+  });
+  await prisma.indicator.upsert({
+    where: { code: 'IND4.2.1' },
+    update: { name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะความสามารถเชิงสมรรถนะด้วยกระบวนการวิศวกรสังคมโดยใช้ชุมชนท้องถิ่นเป็นฐาน', subStrategyId: ss4_2.id },
+    create: { code: 'IND4.2.1', name: 'ตัวชี้วัดความสำเร็จ: โครงการเสริมสร้างทักษะความสามารถเชิงสมรรถนะด้วยกระบวนการวิศวกรสังคมโดยใช้ชุมชนท้องถิ่นเป็นฐาน', subStrategyId: ss4_2.id }
   });
 
-  console.log('[SEED] Strategies, SubStrategies, and Indicators created.');
+  console.log('[SEED] Strategies, SubStrategies, and Indicators updated according to new plan.');
 
   // 6. Create Users
   const passwordHash = await bcrypt.hash('admin1234', 10);

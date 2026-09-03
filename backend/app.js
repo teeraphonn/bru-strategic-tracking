@@ -1,5 +1,4 @@
 const express = require('express');
-const compression = require('compression');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -11,7 +10,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-app.use(compression());
 const PORT = process.env.PORT || 5000;
 
 // Ensure upload directories exist on server startup
