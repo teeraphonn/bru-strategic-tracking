@@ -214,56 +214,88 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
         )}
 
         {/* 4-Tier Strategic Alignment Pipeline */}
-        <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100 space-y-2.5">
+        <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100 space-y-3">
           <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
             <span>🎯 ความเชื่อมโยงตามประเด็นยุทธศาสตร์ (Strategic Alignment)</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
             {/* Tier 1: Local Issue */}
             <div 
-              className="p-3 rounded-xl bg-white border border-violet-100 shadow-3xs space-y-1.5 flex flex-col justify-between"
+              className="p-3 rounded-xl bg-white border border-violet-100 shadow-3xs flex flex-col justify-start gap-1.5"
               title={activeProject.subStrategy?.strategy?.localIssue ? `${activeProject.subStrategy.strategy.localIssue.code}: ${activeProject.subStrategy.strategy.localIssue.name}` : ''}
             >
-              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-violet-50 text-violet-700 w-fit">1. ประเด็นการพัฒนา</span>
-              <div className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
-                {activeProject.subStrategy?.strategy?.localIssue?.code ? `${activeProject.subStrategy.strategy.localIssue.code}: ` : ''}
-                {activeProject.subStrategy?.strategy?.localIssue?.name || 'ไม่ระบุ'}
+              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-violet-50 text-violet-700 border border-violet-100/60 w-fit">
+                1. ประเด็นการพัฒนา
+              </span>
+              <div className="space-y-0.5 mt-0.5">
+                {activeProject.subStrategy?.strategy?.localIssue?.code && (
+                  <span className="font-mono text-xs font-black text-violet-700 block">
+                    {activeProject.subStrategy.strategy.localIssue.code}
+                  </span>
+                )}
+                <p className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
+                  {activeProject.subStrategy?.strategy?.localIssue?.name || 'ไม่ระบุ'}
+                </p>
               </div>
             </div>
 
             {/* Tier 2: Strategy */}
             <div 
-              className="p-3 rounded-xl bg-white border border-purple-100 shadow-3xs space-y-1.5 flex flex-col justify-between"
+              className="p-3 rounded-xl bg-white border border-purple-100 shadow-3xs flex flex-col justify-start gap-1.5"
               title={activeProject.subStrategy?.strategy ? `${activeProject.subStrategy.strategy.code}: ${activeProject.subStrategy.strategy.name}` : ''}
             >
-              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 w-fit">2. แผนงานหลัก</span>
-              <div className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
-                {activeProject.subStrategy?.strategy?.code ? `${activeProject.subStrategy.strategy.code}: ` : ''}
-                {activeProject.subStrategy?.strategy?.name || 'ไม่ระบุ'}
+              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100/60 w-fit">
+                2. แผนงานหลัก
+              </span>
+              <div className="space-y-0.5 mt-0.5">
+                {activeProject.subStrategy?.strategy?.code && (
+                  <span className="font-mono text-xs font-black text-purple-700 block">
+                    {activeProject.subStrategy.strategy.code}
+                  </span>
+                )}
+                <p className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
+                  {activeProject.subStrategy?.strategy?.name || 'ไม่ระบุ'}
+                </p>
               </div>
             </div>
 
             {/* Tier 3: Sub-Strategy */}
             <div 
-              className="p-3 rounded-xl bg-white border border-blue-100 shadow-3xs space-y-1.5 flex flex-col justify-between"
+              className="p-3 rounded-xl bg-white border border-blue-100 shadow-3xs flex flex-col justify-start gap-1.5"
               title={activeProject.subStrategy ? `${activeProject.subStrategy.code}: ${activeProject.subStrategy.name}` : ''}
             >
-              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 w-fit">3. แผนงานย่อย</span>
-              <div className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
-                {activeProject.subStrategy?.code ? `${activeProject.subStrategy.code}: ` : ''}
-                {activeProject.subStrategy?.name || 'ไม่ระบุ'}
+              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100/60 w-fit">
+                3. แผนงานย่อย
+              </span>
+              <div className="space-y-0.5 mt-0.5">
+                {activeProject.subStrategy?.code && (
+                  <span className="font-mono text-xs font-black text-blue-700 block">
+                    {activeProject.subStrategy.code}
+                  </span>
+                )}
+                <p className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
+                  {activeProject.subStrategy?.name || 'ไม่ระบุ'}
+                </p>
               </div>
             </div>
 
             {/* Tier 4: Indicator / Main Project */}
             <div 
-              className="p-3 rounded-xl bg-white border border-emerald-100 shadow-3xs space-y-1.5 flex flex-col justify-between"
+              className="p-3 rounded-xl bg-white border border-emerald-100 shadow-3xs flex flex-col justify-start gap-1.5"
               title={activeProject.indicator ? `${activeProject.indicator.code}: ${activeProject.indicator.name}` : ''}
             >
-              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 w-fit">4. โครงการหลัก</span>
-              <div className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
-                {activeProject.indicator?.code ? `${activeProject.indicator.code}: ` : ''}
-                {activeProject.indicator?.name || 'ไม่ระบุ'}
+              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100/60 w-fit">
+                4. โครงการหลัก
+              </span>
+              <div className="space-y-0.5 mt-0.5">
+                {activeProject.indicator?.code && (
+                  <span className="font-mono text-xs font-black text-emerald-700 block">
+                    {activeProject.indicator.code}
+                  </span>
+                )}
+                <p className="font-bold text-slate-800 text-[11px] leading-relaxed break-words">
+                  {activeProject.indicator?.name || 'ไม่ระบุ'}
+                </p>
               </div>
             </div>
           </div>
