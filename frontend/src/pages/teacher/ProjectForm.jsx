@@ -182,11 +182,19 @@ const ProjectForm = () => {
       if (isEdit) {
         await api.put(`/projects/${id}`, payload);
         Swal.fire({ icon: 'success', title: 'ปรับปรุงโครงการสำเร็จ', showConfirmButton: false, timer: 1500 });
+        navigate(`/projects/${id}`);
       } else {
-        await api.post('/projects', payload);
-        Swal.fire({ icon: 'success', title: 'สร้างโครงการสำเร็จ', showConfirmButton: false, timer: 1500 });
+        const response = await api.post('/projects', payload);
+        const newProject = response.data;
+        Swal.fire({ 
+          icon: 'success', 
+          title: 'สร้างโครงการสำเร็จ', 
+          text: 'เข้าสู่หน้ากิจกรรมโครงการเพื่อเริ่มวางแผนงาน...',
+          showConfirmButton: false, 
+          timer: 1500 
+        });
+        navigate(`/projects/${newProject.id}`, { state: { autoOpenAddActivity: true, isNewProject: true } });
       }
-      navigate('/projects');
     } catch (err) {
       console.error(err);
       Swal.fire({

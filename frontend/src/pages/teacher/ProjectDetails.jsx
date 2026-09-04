@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { AuthContext } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
@@ -38,6 +38,7 @@ const ProjectDetails = () => {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -159,6 +160,20 @@ const ProjectDetails = () => {
   useEffect(() => {
     fetchProjectDetails();
   }, [id]);
+
+  // Automatically activate Activities tab and open Activity form if redirected from project creation
+  useEffect(() => {
+    if (location.state?.autoOpenAddActivity) {
+      setActiveSubTab('activities');
+      setActivityFormOpen(true);
+      setTimeout(() => {
+        const el = document.getElementById('activity-form-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 350);
+    }
+  }, [location.state]);
 
   // Handle Create Activity Plan
   const handleAddActivity = async (e) => {
@@ -368,6 +383,36 @@ const ProjectDetails = () => {
         </div>
       </div>
 
+      {/* Welcoming banner if redirected from new project creation */}
+      {location.state?.isNewProject && (
+        <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 border border-emerald-500/20 text-emerald-900 p-4 sm:p-5 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeIn shadow-xs">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 bg-emerald-500 text-white rounded-2xl shadow-sm shrink-0">
+              <FiCheckCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-sm text-emerald-950">บันทึกข้อมูลโครงการสำเร็จเรียบร้อย! 🎉</h4>
+              <p className="text-xs text-emerald-700/90 font-medium mt-0.5">ระบบนำท่านมายังหน้าจัดการกิจกรรมของโครงการนี้แล้ว สามารถเริ่มวางแผนและบันทึกกิจกรรมย่อยได้ทันที</p>
+            </div>
+          </div>
+          {isCoordinatingTeacher && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveSubTab('activities');
+                setActivityFormOpen(true);
+                const el = document.getElementById('activity-form-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-sm cursor-pointer transition-all shrink-0"
+            >
+              <FiPlus className="w-4 h-4" />
+              <span>เริ่มวางแผนกิจกรรม</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Executive Directive Banners (Separated for DEAN and PRESIDENT) */}
       {(project.deanDirective || project.presidentDirective || project.executiveDirective) && (
         <div className="space-y-4">
@@ -554,7 +599,7 @@ const ProjectDetails = () => {
         <div className="space-y-6">
           {/* Add Activity Button & Form Card */}
           {isCoordinatingTeacher && (
-            <div className="bg-gradient-to-r from-primary/5 via-violet-50 to-indigo-50/50 rounded-3xl shadow-soft border border-primary/15 p-5 space-y-4">
+            <div id="activity-form-section" className="bg-gradient-to-r from-primary/5 via-violet-50 to-indigo-50/50 rounded-3xl shadow-soft border border-primary/15 p-5 space-y-4 scroll-mt-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
@@ -890,6 +935,22 @@ const ProjectDetails = () => {
                 <p className="text-xs text-slate-400 max-w-sm mx-auto font-medium">
                   อาจารย์ผู้รับผิดชอบโครงการสามารถคลิกปุ่ม "วางแผนกิจกรรมใหม่" เพื่อเพิ่มกิจกรรมย่อย
                 </p>
+                {isCoordinatingTeacher && !activityFormOpen && (
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActivityFormOpen(true);
+                        const el = document.getElementById('activity-form-section');
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold text-white bg-gradient-to-r from-primary via-violet-600 to-indigo-600 hover:from-primary-dark hover:to-indigo-700 rounded-xl shadow-md shadow-primary/25 hover:shadow-lg active:scale-95 transition-all cursor-pointer"
+                    >
+                      <FiPlus className="w-4 h-4 stroke-[3]" />
+                      <span>วางแผนกิจกรรมแรกของโครงการ</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
