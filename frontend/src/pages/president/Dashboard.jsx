@@ -468,7 +468,94 @@ const PresidentDashboard = () => {
         </div>
       </div>
 
-        {/* ── 2. Management by Exception: Critical Bottleneck Alerts Panel ── */}
+        {/* ── 2. Strategic Pillars Performance Summary Table (ภาพรวมผลสัมฤทธิ์รายยุทธศาสตร์) ── */}
+        <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-3.5 print:border-slate-300 print-break-inside-avoid">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 print:border-slate-300">
+            <div>
+              <h2 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
+                  <FiBookmark className="w-4 h-4 shrink-0" />
+                </span>
+                <span>ตารางสรุปผลสัมฤทธิ์รายยุทธศาสตร์ (Strategic Pillars Performance Summary)</span>
+              </h2>
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                สรุปภาพรวมจำนวนโครงการ งบประมาณจัดสรร ยอดเบิกจ่ายจริง และความก้าวหน้าสะสมจำแนกตามรายประเด็นยุทธศาสตร์มหาวิทยาลัย
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 no-print">
+              <span className="text-[11px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl shadow-3xs">
+                🎯 ทั้งหมด {strategicPillars.length} ประเด็นยุทธศาสตร์
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
+            <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="bg-slate-50/90 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
+                  <th className="py-3 px-4 w-[38%]">ประเด็นยุทธศาสตร์ (Strategic Pillar)</th>
+                  <th className="py-3 px-3 text-center w-[12%]">โครงการ</th>
+                  <th className="py-3 px-4 text-right w-[16%]">งบประมาณจัดสรร</th>
+                  <th className="py-3 px-4 text-right w-[18%]">เบิกจ่ายจริง</th>
+                  <th className="py-3 px-4 text-center w-[16%]">ความก้าวหน้ารวม</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {(strategicPillars || []).map((s, idx) => {
+                  const burnRatePct = s.totalBudget > 0 ? ((s.totalSpent / s.totalBudget) * 100).toFixed(1) : 0;
+                  return (
+                    <tr key={s.strategyId || idx} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-start gap-2.5">
+                          <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 shrink-0 mt-0.5">
+                            {s.strategyCode || `S${idx + 1}`}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="font-bold text-[13px] text-slate-800 leading-snug break-words">
+                              {s.strategyName}
+                            </div>
+                            {s.localIssueName && (
+                              <div className="text-[10px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
+                                <span className="text-slate-500 font-semibold">{s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-700">
+                        <span className="text-xs font-black text-slate-800">{s.totalProjects}</span> <span className="text-slate-400 font-normal text-[10.5px]">โครงการ</span>
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap font-extrabold text-slate-800">
+                        {Number(s.totalBudget || 0).toLocaleString()} ฿
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <span className="font-black text-slate-900">{Number(s.totalSpent || 0).toLocaleString()} ฿</span>
+                        <span className="ml-2 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                          {burnRatePct}%
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-2.5">
+                          <div className="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-300 ${s.progressPct >= 75 ? 'bg-emerald-500' : s.progressPct >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} 
+                              style={{ width: `${Math.min(100, s.progressPct)}%` }} 
+                            />
+                          </div>
+                          <span className="font-black text-slate-800 text-[11.5px] w-9 text-right">
+                            {s.progressPct}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ── 3. Management by Exception: Critical Bottleneck Alerts Panel ── */}
         <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
             <div>
@@ -569,7 +656,7 @@ const PresidentDashboard = () => {
           )}
         </div>
 
-        {/* ── 3. Strategic Governance: 10 Main Projects Strategic Tracking & Drill-down ── */}
+        {/* ── 4. Strategic Governance: 10 Main Projects Strategic Tracking & Drill-down ── */}
         <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
           {/* Header with Title & Quick RAG Filters */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
@@ -825,7 +912,7 @@ const PresidentDashboard = () => {
           </div>
         </div>
 
-        {/* ── 4. Comparative Matrix: Cross-Faculty Strategic Heatmap Matrix ── */}
+        {/* ── 5. Comparative Matrix: Cross-Faculty Strategic Heatmap Matrix ── */}
         <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
             <div>
@@ -919,7 +1006,7 @@ const PresidentDashboard = () => {
           </div>
         </div>
 
-        {/* ── 5. Strategic Deep Dive: 6 Strategic Pillars & Budget Execution ── */}
+        {/* ── 6. Strategic Deep Dive: 6 Strategic Pillars & Budget Execution (Charts) ── */}
         <div className="space-y-6">
           {/* Row 1: Budget by Strategy (Grouped Bar) & Strategic Proportion (Donut) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1108,93 +1195,6 @@ const PresidentDashboard = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* 💡 Strategy Summary Table - Full Width Standalone Card */}
-          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-3.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
-                  <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
-                    <FiBookmark className="w-4 h-4 shrink-0" />
-                  </span>
-                  <span>ตารางสรุปผลสัมฤทธิ์รายยุทธศาสตร์ (Strategic Pillars Performance Summary)</span>
-                </h3>
-                <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                  สรุปภาพรวมจำนวนโครงการ งบประมาณจัดสรร ยอดเบิกจ่ายจริง และความก้าวหน้าสะสมจำแนกตามรายประเด็นยุทธศาสตร์มหาวิทยาลัย
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[11px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl shadow-3xs">
-                  🎯 ทั้งหมด {strategicPillars.length} ประเด็นยุทธศาสตร์
-                </span>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
-              <table className="w-full text-xs text-left border-collapse min-w-[700px]">
-                <thead>
-                  <tr className="bg-slate-50/90 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
-                    <th className="py-3 px-4 w-[38%]">ประเด็นยุทธศาสตร์ (Strategic Pillar)</th>
-                    <th className="py-3 px-3 text-center w-[12%]">โครงการ</th>
-                    <th className="py-3 px-4 text-right w-[16%]">งบประมาณจัดสรร</th>
-                    <th className="py-3 px-4 text-right w-[18%]">เบิกจ่ายจริง</th>
-                    <th className="py-3 px-4 text-center w-[16%]">ความก้าวหน้ารวม</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {(strategicPillars || []).map((s, idx) => {
-                    const burnRatePct = s.totalBudget > 0 ? ((s.totalSpent / s.totalBudget) * 100).toFixed(1) : 0;
-                    return (
-                      <tr key={s.strategyId || idx} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="flex items-start gap-2.5">
-                            <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 shrink-0 mt-0.5">
-                              {s.strategyCode || `S${idx + 1}`}
-                            </span>
-                            <div className="min-w-0">
-                              <div className="font-bold text-[13px] text-slate-800 leading-snug break-words">
-                                {s.strategyName}
-                              </div>
-                              {s.localIssueName && (
-                                <div className="text-[10px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
-                                  <span className="text-slate-500 font-semibold">{s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-700">
-                          <span className="text-xs font-black text-slate-800">{s.totalProjects}</span> <span className="text-slate-400 font-normal text-[10.5px]">โครงการ</span>
-                        </td>
-                        <td className="py-3 px-4 text-right whitespace-nowrap font-extrabold text-slate-800">
-                          {Number(s.totalBudget || 0).toLocaleString()} ฿
-                        </td>
-                        <td className="py-3 px-4 text-right whitespace-nowrap">
-                          <span className="font-black text-slate-900">{Number(s.totalSpent || 0).toLocaleString()} ฿</span>
-                          <span className="ml-2 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
-                            {burnRatePct}%
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-2.5">
-                            <div className="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full rounded-full transition-all duration-300 ${s.progressPct >= 75 ? 'bg-emerald-500' : s.progressPct >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} 
-                                style={{ width: `${Math.min(100, s.progressPct)}%` }} 
-                              />
-                            </div>
-                            <span className="font-black text-slate-800 text-[11.5px] w-9 text-right">
-                              {s.progressPct}%
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
