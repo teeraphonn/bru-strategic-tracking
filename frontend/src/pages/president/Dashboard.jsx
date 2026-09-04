@@ -1290,12 +1290,12 @@ const PresidentDashboard = () => {
           </div>
           <div className="flex items-center gap-2 shrink-0 no-print">
             <span className="text-xs font-black text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl shadow-3xs">
-              🔴 วิกฤต {(criticalProjects || []).length} โครงการ
+              🔴 วิกฤต {(criticalBottlenecks || []).length} โครงการ
             </span>
           </div>
         </div>
 
-        {(criticalProjects && criticalProjects.length > 0) ? (
+        {(criticalBottlenecks && criticalBottlenecks.length > 0) ? (
           <div className="overflow-x-auto print:overflow-visible scrollbar-thin">
             <table className="w-full text-xs text-left border-collapse print:text-[11px] min-w-[700px] print:min-w-full">
               <thead>
@@ -1309,7 +1309,7 @@ const PresidentDashboard = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 print:divide-slate-300">
-                {criticalProjects.map((p) => {
+                {criticalBottlenecks.map((p) => {
                   const hasDirective = !!(p.presidentDirective || p.executiveDirective);
                   return (
                     <tr key={p.id} className="hover:bg-slate-50/70 transition-colors group align-middle">
