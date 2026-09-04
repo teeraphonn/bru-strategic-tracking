@@ -468,18 +468,19 @@ const PresidentDashboard = () => {
         </div>
       </div>
 
-        {/* ── 2. Strategic Pillars Performance Summary Table (ภาพรวมผลสัมฤทธิ์รายยุทธศาสตร์) ── */}
-        <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-3.5 print:border-slate-300 print-break-inside-avoid">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 print:border-slate-300">
+        {/* ── 2. Strategic Pillars Performance Summary (กราฟผลสัมฤทธิ์รายยุทธศาสตร์ & รายละเอียด S1-S6) ── */}
+        <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-5 print:border-slate-300 print-break-inside-avoid">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
             <div>
               <h2 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
                 <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
-                  <FiBookmark className="w-4 h-4 shrink-0" />
+                  <FiBarChart2 className="w-4 h-4 shrink-0" />
                 </span>
-                <span>ตารางสรุปผลสัมฤทธิ์รายยุทธศาสตร์ (Strategic Pillars Performance Summary)</span>
+                <span>ผลสัมฤทธิ์รายประเด็นยุทธศาสตร์ (Strategic Pillars Performance)</span>
               </h2>
               <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                สรุปภาพรวมจำนวนโครงการ งบประมาณจัดสรร ยอดเบิกจ่ายจริง และความก้าวหน้าสะสมจำแนกตามรายประเด็นยุทธศาสตร์มหาวิทยาลัย
+                เปรียบเทียบงบประมาณจัดสรร vs เบิกจ่ายจริง และ % ความก้าวหน้าสะสมจำแนกตามรายประเด็นยุทธศาสตร์มหาวิทยาลัย
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 no-print">
@@ -489,69 +490,188 @@ const PresidentDashboard = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
-            <table className="w-full text-xs text-left border-collapse min-w-[700px]">
-              <thead>
-                <tr className="bg-slate-50/90 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
-                  <th className="py-3 px-4 w-[38%]">ประเด็นยุทธศาสตร์ (Strategic Pillar)</th>
-                  <th className="py-3 px-3 text-center w-[12%]">โครงการ</th>
-                  <th className="py-3 px-4 text-right w-[16%]">งบประมาณจัดสรร</th>
-                  <th className="py-3 px-4 text-right w-[18%]">เบิกจ่ายจริง</th>
-                  <th className="py-3 px-4 text-center w-[16%]">ความก้าวหน้ารวม</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {(strategicPillars || []).map((s, idx) => {
-                  const burnRatePct = s.totalBudget > 0 ? ((s.totalSpent / s.totalBudget) * 100).toFixed(1) : 0;
-                  return (
-                    <tr key={s.strategyId || idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="flex items-start gap-2.5">
-                          <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 shrink-0 mt-0.5">
-                            {s.strategyCode || `S${idx + 1}`}
-                          </span>
-                          <div className="min-w-0">
-                            <div className="font-bold text-[13px] text-slate-800 leading-snug break-words">
-                              {s.strategyName}
-                            </div>
-                            {s.localIssueName && (
-                              <div className="text-[10px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
-                                <span className="text-slate-500 font-semibold">{s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-700">
-                        <span className="text-xs font-black text-slate-800">{s.totalProjects}</span> <span className="text-slate-400 font-normal text-[10.5px]">โครงการ</span>
-                      </td>
-                      <td className="py-3 px-4 text-right whitespace-nowrap font-extrabold text-slate-800">
-                        {Number(s.totalBudget || 0).toLocaleString()} ฿
-                      </td>
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <span className="font-black text-slate-900">{Number(s.totalSpent || 0).toLocaleString()} ฿</span>
-                        <span className="ml-2 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
-                          {burnRatePct}%
+          {/* 📊 Graph: Grouped Bar & Progress Line Chart */}
+          <div className="h-72 w-full no-print">
+            <Bar
+              data={{
+                labels: (strategicPillars || []).map((s, idx) => s.strategyCode || `S${idx + 1}`),
+                datasets: [
+                  {
+                    type: 'bar',
+                    label: 'งบประมาณจัดสรรตามแผน (฿)',
+                    data: (strategicPillars || []).map(s => s.totalBudget || 0),
+                    backgroundColor: '#DDD6FE',
+                    borderRadius: 8,
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.7,
+                    yAxisID: 'y'
+                  },
+                  {
+                    type: 'bar',
+                    label: 'งบประมาณเบิกจ่ายจริง (฿)',
+                    data: (strategicPillars || []).map(s => s.totalSpent || 0),
+                    backgroundColor: '#6C3BFF',
+                    borderRadius: 8,
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.7,
+                    yAxisID: 'y'
+                  },
+                  {
+                    type: 'line',
+                    label: 'ความก้าวหน้ารวม (%)',
+                    data: (strategicPillars || []).map(s => s.progressPct || 0),
+                    borderColor: '#10B981',
+                    backgroundColor: '#10B981',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                  }
+                ]
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                      font: { family: "'Prompt', sans-serif", size: 11, weight: 'bold' },
+                      usePointStyle: true,
+                      boxWidth: 8
+                    }
+                  },
+                  tooltip: {
+                    backgroundColor: '#1E1B4B',
+                    padding: 12,
+                    cornerRadius: 12,
+                    callbacks: {
+                      title: (ctx) => {
+                        const idx = ctx[0]?.dataIndex;
+                        const pillar = (strategicPillars || [])[idx];
+                        return `${pillar?.strategyCode || `S${idx + 1}`}: ${pillar?.strategyName || ''}`;
+                      },
+                      label: (ctx) => {
+                        if (ctx.dataset.yAxisID === 'y1') {
+                          return ` ${ctx.dataset.label}: ${ctx.raw}%`;
+                        }
+                        return ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString()} บาท`;
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    grid: { display: false },
+                    ticks: {
+                      font: { family: "'Prompt', sans-serif", size: 11, weight: '700' }
+                    }
+                  },
+                  y: {
+                    type: 'linear',
+                    position: 'left',
+                    grid: { color: '#F1F5F9' },
+                    ticks: {
+                      font: { family: "'Prompt', sans-serif", size: 10 },
+                      callback: (v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
+                    }
+                  },
+                  y1: {
+                    type: 'linear',
+                    position: 'right',
+                    min: 0,
+                    max: 100,
+                    grid: { drawOnChartArea: false },
+                    ticks: {
+                      font: { family: "'Prompt', sans-serif", size: 10, weight: 'bold' },
+                      callback: (v) => `${v}%`
+                    }
+                  }
+                }
+              }}
+            />
+          </div>
+
+          {/* 🏷️ Breakdown Cards: ระบุย่อยๆ ด้านล่างว่าแต่ละ S หมายถึงอะไร */}
+          <div className="pt-4 border-t border-slate-100">
+            <div className="text-xs font-black text-slate-700 flex items-center gap-1.5 mb-3">
+              <FiBookmark className="w-3.5 h-3.5 text-primary" />
+              <span>ความหมายและรายละเอียดผลสัมฤทธิ์รายประเด็นยุทธศาสตร์ (Strategic Definitions & Breakdown)</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {(strategicPillars || []).map((s, idx) => {
+                const burnRatePct = s.totalBudget > 0 ? ((s.totalSpent / s.totalBudget) * 100).toFixed(1) : 0;
+                return (
+                  <div
+                    key={s.strategyId || idx}
+                    className="bg-slate-50/70 hover:bg-white p-4 rounded-2xl border border-slate-100 hover:border-purple-200 hover:shadow-soft transition-all space-y-3 flex flex-col justify-between group"
+                  >
+                    {/* Top: Strategic Code + Name + Local Issue */}
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-black px-2.5 py-0.5 rounded-lg bg-purple-100 text-primary border border-purple-200/80 shrink-0">
+                          {s.strategyCode || `S${idx + 1}`}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-2.5">
-                          <div className="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full transition-all duration-300 ${s.progressPct >= 75 ? 'bg-emerald-500' : s.progressPct >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} 
-                              style={{ width: `${Math.min(100, s.progressPct)}%` }} 
-                            />
-                          </div>
-                          <span className="font-black text-slate-800 text-[11.5px] w-9 text-right">
-                            {s.progressPct}%
+                        <span className="text-[10px] font-extrabold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200/60 shadow-3xs">
+                          {s.totalProjects || 0} โครงการ
+                        </span>
+                      </div>
+
+                      <h4 className="font-bold text-[13px] text-slate-800 group-hover:text-primary transition-colors leading-snug mt-2" title={s.strategyName}>
+                        {s.strategyName}
+                      </h4>
+
+                      {s.localIssueName && (
+                        <div className="text-[10.5px] text-slate-400 font-medium mt-1 flex items-center gap-1">
+                          <span className="text-slate-500 font-semibold">
+                            {s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}
                           </span>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      )}
+                    </div>
+
+                    {/* Bottom Metrics: Allocation, Spent, Burn Rate & Progress */}
+                    <div className="pt-2.5 border-t border-slate-200/60 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-400 font-medium">งบจัดสรร:</span>
+                        <span className="font-extrabold text-slate-800">{Number(s.totalBudget || 0).toLocaleString()} ฿</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-400 font-medium">เบิกจ่ายจริง:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-black text-slate-900">{Number(s.totalSpent || 0).toLocaleString()} ฿</span>
+                          <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                            {burnRatePct}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="pt-1">
+                        <div className="flex items-center justify-between text-[11px] mb-1">
+                          <span className="text-slate-400 font-medium">ความก้าวหน้ารวม:</span>
+                          <span className="font-black text-slate-800">{s.progressPct || 0}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200/80 h-1.5 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              (s.progressPct || 0) >= 75
+                                ? 'bg-emerald-500'
+                                : (s.progressPct || 0) >= 40
+                                ? 'bg-amber-400'
+                                : 'bg-rose-500'
+                            }`}
+                            style={{ width: `${Math.min(100, s.progressPct || 0)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
