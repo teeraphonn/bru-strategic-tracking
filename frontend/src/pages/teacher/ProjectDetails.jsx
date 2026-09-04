@@ -962,9 +962,9 @@ const ProjectDetails = () => {
                               <button
                                 type="button"
                                 onClick={() => openProgressModal(act)}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-900 border border-emerald-200/90 rounded-xl transition-all shadow-xs hover:shadow-md active:scale-95 cursor-pointer"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-black text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl shadow-md shadow-emerald-600/25 hover:shadow-lg hover:shadow-emerald-600/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-150 cursor-pointer border border-emerald-500/40"
                               >
-                                <FiUploadCloud className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <FiUploadCloud className="w-4 h-4 text-white stroke-[2.5] shrink-0" />
                                 <span>บันทึกความก้าวหน้า (รูปภาพ & งบจริง)</span>
                               </button>
                             )}
@@ -973,10 +973,10 @@ const ProjectDetails = () => {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteActivity(act.id)}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 border border-rose-200/80 rounded-xl transition-all active:scale-95 cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-extrabold text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 hover:border-rose-300 rounded-xl shadow-xs hover:shadow-sm active:scale-95 transition-all duration-150 cursor-pointer"
                                 title="ลบกิจกรรมย่อยนี้ออกจากระบบ"
                               >
-                                <FiTrash2 className="w-3.5 h-3.5 text-rose-500" />
+                                <FiTrash2 className="w-3.5 h-3.5 text-rose-500 stroke-[2.5]" />
                                 <span>ลบกิจกรรม</span>
                               </button>
                             )}
