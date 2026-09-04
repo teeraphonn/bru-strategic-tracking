@@ -21,6 +21,7 @@ const CustomSelect = ({
   multiline = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpwards, setOpenUpwards] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const containerRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -55,9 +56,20 @@ const CustomSelect = ({
     return () => document.removeEventListener('keydown', handleEsc);
   }, [isOpen]);
 
-  // Auto-focus search input & auto-scroll to selected item when opened
+  // Auto-detect optimal direction & auto-focus search input & auto-scroll to selected item when opened
   useEffect(() => {
     if (isOpen) {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        if (spaceBelow < 280 && spaceAbove > spaceBelow) {
+          setOpenUpwards(true);
+        } else {
+          setOpenUpwards(false);
+        }
+      }
+
       setSearchQuery('');
       if (options.length > 6) {
         setTimeout(() => searchInputRef.current?.focus(), 50);
@@ -150,9 +162,10 @@ const CustomSelect = ({
 
           <div
             className={`
-              absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[220px]
+              absolute left-0 z-50 w-full min-w-[240px]
               rounded-2xl overflow-hidden
-              animate-fadeIn origin-top border
+              animate-fadeIn border
+              ${openUpwards ? 'bottom-[calc(100%+6px)] origin-bottom shadow-2xl' : 'top-[calc(100%+6px)] origin-top shadow-2xl'}
               ${dark ? panelDark : panelLight}
             `}
           >
@@ -187,10 +200,10 @@ const CustomSelect = ({
               </div>
             )}
 
-            {/* Scrollable Items Container (Comfortable 340px Max Height) */}
+            {/* Scrollable Items Container (Comfortable 260px-300px Max Height) */}
             <div 
-              className="overflow-y-auto"
-              style={{ maxHeight: '340px', scrollbarWidth: 'thin' }}
+              className="overflow-y-auto max-h-[260px] sm:max-h-[300px] scroll-smooth"
+              style={{ scrollbarWidth: 'thin' }}
             >
               {filteredOptions.length === 0 ? (
                 <div className={`px-4 py-6 text-center text-xs ${dark ? 'text-slate-400' : 'text-slate-400'}`}>

@@ -936,7 +936,7 @@ const MasterData = () => {
           onClick={() => setModalOpen(false)}
         >
           <div 
-            className={`w-full max-w-md ${activeTab === 'user' ? 'bg-slate-900 text-white' : 'bg-white text-gray-800'} rounded-3xl shadow-2xl border ${activeTab === 'user' ? 'border-slate-800' : 'border-gray-100'} overflow-hidden max-h-[90vh] flex flex-col my-auto`}
+            className={`w-full ${activeTab === 'user' ? 'max-w-2xl' : 'max-w-md'} ${activeTab === 'user' ? 'bg-slate-900 text-white' : 'bg-white text-gray-800'} rounded-3xl shadow-2xl border ${activeTab === 'user' ? 'border-slate-800' : 'border-gray-100'} overflow-hidden max-h-[90vh] flex flex-col my-auto`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className={`flex items-center justify-between px-6 py-4 border-b ${activeTab === 'user' ? 'border-slate-800' : 'border-gray-100'} shrink-0`}>
@@ -1144,45 +1144,21 @@ const MasterData = () => {
               )}
 
               {activeTab === 'user' && (
-                <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5">ชื่อเข้าใช้ระบบ (Username)</label>
-                    <input
-                      type="text"
-                      value={formData.username || ''}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm disabled:opacity-50 disabled:bg-slate-900"
-                      placeholder="ชื่อผู้ใช้งาน"
-                      required
-                      disabled={!!editId}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5">
-                      รหัสผ่าน {editId && <span className="text-[10px] text-slate-300">(เว้นว่างไว้เพื่อคงรหัสผ่านเดิม)</span>}
-                    </label>
-                    <input
-                      type="password"
-                      value={formData.password || ''}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
-                      placeholder="รหัสผ่านบัญชี"
-                      required={!editId}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5">ชื่อ-นามสกุลจริง</label>
+                    <label className="block text-xs font-semibold text-white mb-1.5">ชื่อ-นามสกุลจริง *</label>
                     <input
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
+                      className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent text-xs font-medium"
                       placeholder="คำนำหน้าและชื่อนามสกุล"
                       required
                     />
                   </div>
+
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5">บทบาทระบบ (Role)</label>
+                    <label className="block text-xs font-semibold text-white mb-1.5">บทบาทระบบ (Role) *</label>
                     <CustomSelect
                       value={formData.role || 'TEACHER'}
                       onChange={(val) => setFormData({ ...formData, role: val })}
@@ -1195,7 +1171,34 @@ const MasterData = () => {
                       ]}
                     />
                   </div>
-                  
+
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-1.5">ชื่อเข้าใช้ระบบ (Username) *</label>
+                    <input
+                      type="text"
+                      value={formData.username || ''}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent text-xs font-medium disabled:opacity-50 disabled:bg-slate-900"
+                      placeholder="ชื่อผู้ใช้งาน"
+                      required
+                      disabled={!!editId}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-1.5">
+                      รหัสผ่าน {editId && <span className="text-[10px] text-slate-400 font-normal">(เว้นว่างเพื่อคงเดิม)</span>} {!editId && '*'}
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password || ''}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent text-xs font-medium"
+                      placeholder={editId ? "••••••••" : "รหัสผ่านบัญชี"}
+                      required={!editId}
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-white mb-1.5">สังกัดคณะ</label>
                     <CustomSelect
@@ -1229,7 +1232,7 @@ const MasterData = () => {
                       ]}
                     />
                   </div>
-                </>
+                </div>
               )}
 
               {activeTab === 'fiscal-year' && (
