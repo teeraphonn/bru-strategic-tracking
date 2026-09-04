@@ -9,6 +9,7 @@ import {
   FiPlus, 
   FiLock, 
   FiUnlock, 
+  FiCheck,
   FiCheckCircle, 
   FiTrendingUp, 
   FiCalendar, 
@@ -1192,43 +1193,62 @@ const ProjectDetails = () => {
                 </div>
               </div>
 
-              {/* Status Selector: กำลังดำเนินการ / เสร็จสิ้น */}
+              {/* Status Selector: Checkbox Option */}
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider mb-1.5">
                   สถานะการดำเนินงานกิจกรรม <span className="text-rose-500 font-bold">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Option 1: กำลังดำเนินการ */}
+                  <label
                     onClick={() => {
                       setActSuccess(false);
                       setActCompletedCount('0');
                     }}
-                    className={`p-3 rounded-2xl border text-xs font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer select-none ${
                       !actSuccess
-                        ? 'bg-amber-50 border-amber-300 text-amber-800 shadow-sm ring-2 ring-amber-400/30'
-                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+                        ? 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/30 text-amber-900 shadow-xs'
+                        : 'bg-slate-50/80 border-slate-200 text-slate-600 hover:bg-slate-100/80'
                     }`}
                   >
-                    <FiClock className={`w-4 h-4 ${!actSuccess ? 'text-amber-600' : 'text-slate-400'}`} />
-                    <span>กำลังดำเนินการ</span>
-                  </button>
+                    <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all shrink-0 ${
+                      !actSuccess
+                        ? 'bg-amber-500 border-amber-600 text-white shadow-xs'
+                        : 'bg-white border-slate-300 text-transparent'
+                    }`}>
+                      <FiCheck className="w-3.5 h-3.5 stroke-[3]" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiClock className={`w-4 h-4 shrink-0 ${!actSuccess ? 'text-amber-600' : 'text-slate-400'}`} />
+                      <span className="text-xs font-extrabold">กำลังดำเนินการ</span>
+                    </div>
+                  </label>
 
-                  <button
-                    type="button"
+                  {/* Option 2: ดำเนินงานเสร็จสิ้น */}
+                  <label
                     onClick={() => {
                       setActSuccess(true);
                       setActCompletedCount('1');
                     }}
-                    className={`p-3 rounded-2xl border text-xs font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer select-none ${
                       actSuccess
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 shadow-sm ring-2 ring-emerald-400/30'
-                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+                        ? 'bg-emerald-50/80 border-emerald-300 ring-2 ring-emerald-400/30 text-emerald-900 shadow-xs'
+                        : 'bg-slate-50/80 border-slate-200 text-slate-600 hover:bg-slate-100/80'
                     }`}
                   >
-                    <FiCheckCircle className={`w-4 h-4 ${actSuccess ? 'text-emerald-600' : 'text-slate-400'}`} />
-                    <span>เสร็จสิ้น</span>
-                  </button>
+                    <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all shrink-0 ${
+                      actSuccess
+                        ? 'bg-emerald-600 border-emerald-700 text-white shadow-xs'
+                        : 'bg-white border-slate-300 text-transparent'
+                    }`}>
+                      <FiCheck className="w-3.5 h-3.5 stroke-[3]" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiCheckCircle className={`w-4 h-4 shrink-0 ${actSuccess ? 'text-emerald-600' : 'text-slate-400'}`} />
+                      <span className="text-xs font-extrabold">ดำเนินงานเสร็จสิ้น</span>
+                    </div>
+                  </label>
                 </div>
               </div>
 
