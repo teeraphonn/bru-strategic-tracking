@@ -1,13 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { FiChevronDown, FiCheck, FiSearch, FiX } from 'react-icons/fi';
 
 /**
  * CustomSelect — High-performance searchable dropdown for large data sets
  * Features:
+ *   - Uses React Portal to document.body: completely immune to parent overflow/clipping
  *   - Auto-search filter when list has > 6 items
- *   - Large comfortable scroll view (max-h-80 / 320px)
+ *   - Smart direction detection (opens downwards or upwards based on viewport space)
  *   - Auto-scroll to selected option on open
- *   - Dark & Light theme glassmorphism support
+ *   - Dark & Light theme support
  */
 const CustomSelect = ({
   value,
@@ -21,8 +23,15 @@ const CustomSelect = ({
   multiline = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [openUpwards, setOpenUpwards] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dropdownPos, setDropdownPos] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    openUpwards: false,
+    maxHeight: 320,
+  });
+
   const containerRef = useRef(null);
   const searchInputRef = useRef(null);
   const selectedItemRef = useRef(null);
@@ -36,15 +45,25 @@ const CustomSelect = ({
     (opt.label || '').toLowerCase().includes(searchQuery.toLowerCase().trim())
   );
 
-  // Close on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+  // Position calculation
+  const updatePosition = useCallback(() => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const shouldOpenUp = spaceBelow < 280 && spaceAbove > spaceBelow;
+
+    const calculatedMaxHeight = shouldOpenUp
+      ? Math.min(340, Math.max(180, spaceAbove - 24))
+      : Math.min(340, Math.max(180, spaceBelow - 24));
+
+    setDropdownPos({
+      top: shouldOpenUp ? rect.top - 6 : rect.bottom + 6,
+      left: Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)),
+      width: rect.width,
+      openUpwards: shouldOpenUp,
+      maxHeight: calculatedMaxHeight,
+    });
   }, []);
 
   // Close on Escape
@@ -56,31 +75,30 @@ const CustomSelect = ({
     return () => document.removeEventListener('keydown', handleEsc);
   }, [isOpen]);
 
-  // Auto-detect optimal direction & auto-focus search input & auto-scroll to selected item when opened
+  // Position update & Auto-focus search input & auto-scroll to selected item when opened
   useEffect(() => {
     if (isOpen) {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - rect.bottom;
-        const spaceAbove = rect.top;
-        if (spaceBelow < 280 && spaceAbove > spaceBelow) {
-          setOpenUpwards(true);
-        } else {
-          setOpenUpwards(false);
-        }
-      }
-
+      updatePosition();
       setSearchQuery('');
+
       if (options.length > 6) {
-        setTimeout(() => searchInputRef.current?.focus(), 50);
+        setTimeout(() => searchInputRef.current?.focus(), 60);
       }
       if (selectedItemRef.current) {
         setTimeout(() => {
           selectedItemRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        }, 60);
+        }, 80);
       }
+
+      // Handle window resize or scrolling (even inside modals)
+      window.addEventListener('resize', updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
+      return () => {
+        window.removeEventListener('resize', updatePosition);
+        window.removeEventListener('scroll', updatePosition, true);
+      };
     }
-  }, [isOpen, options.length]);
+  }, [isOpen, options.length, updatePosition]);
 
   const handleSelect = (val) => {
     onChange(val);
@@ -110,12 +128,12 @@ const CustomSelect = ({
 
   // ── Dropdown panel styles ───────────────────────────────────
   const panelLight = `
-    bg-white border border-slate-200/90 shadow-2xl
-    divide-y divide-slate-100/80
+    bg-white border border-slate-200/95 shadow-2xl
+    divide-y divide-slate-100/80 text-slate-800
   `;
   const panelDark = `
-    bg-slate-900/98 backdrop-blur-xl border border-slate-700/80 shadow-2xl
-    divide-y divide-slate-800/80
+    bg-slate-900 border border-slate-700/90 shadow-2xl
+    divide-y divide-slate-800/80 text-white
   `;
 
   return (
@@ -124,7 +142,12 @@ const CustomSelect = ({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled) {
+            updatePosition();
+            setIsOpen(!isOpen);
+          }
+        }}
         className={`${triggerBase} ${dark ? triggerDark : triggerLight}`}
       >
         <span className="flex items-start gap-2 min-w-0 flex-1 py-0.5 text-left">
@@ -154,24 +177,35 @@ const CustomSelect = ({
         />
       </button>
 
-      {/* ── Dropdown Panel (Large comfortable view) ── */}
-      {isOpen && (
-        <>
+      {/* ── Dropdown Panel (Portal to document.body so it NEVER gets clipped by parent overflows) ── */}
+      {isOpen && createPortal(
+        <div className="fixed inset-0 z-[99999]">
           {/* Invisible clickaway backdrop */}
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div
+            className="fixed inset-0 bg-transparent"
+            onClick={() => setIsOpen(false)}
+          />
 
           <div
+            style={{
+              position: 'fixed',
+              left: `${dropdownPos.left}px`,
+              top: dropdownPos.openUpwards ? 'auto' : `${dropdownPos.top}px`,
+              bottom: dropdownPos.openUpwards ? `${window.innerHeight - dropdownPos.top}px` : 'auto',
+              width: `${Math.max(260, dropdownPos.width)}px`,
+              maxHeight: `${dropdownPos.maxHeight}px`,
+              zIndex: 100000,
+            }}
             className={`
-              absolute left-0 z-50 w-full min-w-[240px]
-              rounded-2xl overflow-hidden
+              rounded-2xl overflow-hidden shadow-2xl flex flex-col
               animate-fadeIn border
-              ${openUpwards ? 'bottom-[calc(100%+6px)] origin-bottom shadow-2xl' : 'top-[calc(100%+6px)] origin-top shadow-2xl'}
+              ${dropdownPos.openUpwards ? 'origin-bottom' : 'origin-top'}
               ${dark ? panelDark : panelLight}
             `}
           >
             {/* Quick Search bar when list has > 6 items */}
             {options.length > 6 && (
-              <div className={`p-2 border-b ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-100 bg-slate-50/80'}`}>
+              <div className={`p-2.5 border-b shrink-0 ${dark ? 'border-slate-800 bg-slate-950/90' : 'border-slate-100 bg-slate-50/95'}`}>
                 <div className="relative flex items-center">
                   <FiSearch className={`w-3.5 h-3.5 absolute left-3 ${dark ? 'text-slate-400' : 'text-slate-400'}`} />
                   <input
@@ -179,9 +213,9 @@ const CustomSelect = ({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={`ค้นหาใน ${options.length} รายการ...`}
+                    placeholder={`พิมพ์เพื่อค้นหา (${options.length} รายการ)...`}
                     className={`
-                      w-full pl-8 pr-7 py-1.5 rounded-lg text-xs font-medium focus:outline-none
+                      w-full pl-8 pr-7 py-2 rounded-lg text-xs font-medium focus:outline-none
                       ${dark 
                         ? 'bg-slate-800 text-white placeholder:text-slate-400 border border-slate-700 focus:border-purple-400' 
                         : 'bg-white text-slate-800 placeholder:text-slate-400 border border-slate-200 focus:border-primary'}
@@ -200,10 +234,13 @@ const CustomSelect = ({
               </div>
             )}
 
-            {/* Scrollable Items Container (Comfortable 260px-300px Max Height) */}
+            {/* Scrollable Items Container */}
             <div 
-              className="overflow-y-auto max-h-[260px] sm:max-h-[300px] scroll-smooth"
-              style={{ scrollbarWidth: 'thin' }}
+              className="overflow-y-auto flex-1 scroll-smooth"
+              style={{
+                maxHeight: `${Math.max(140, dropdownPos.maxHeight - (options.length > 6 ? 56 : 0))}px`,
+                scrollbarWidth: 'thin'
+              }}
             >
               {filteredOptions.length === 0 ? (
                 <div className={`px-4 py-6 text-center text-xs ${dark ? 'text-slate-400' : 'text-slate-400'}`}>
@@ -260,7 +297,8 @@ const CustomSelect = ({
               )}
             </div>
           </div>
-        </>
+        </div>,
+        document.body
       )}
     </div>
   );
