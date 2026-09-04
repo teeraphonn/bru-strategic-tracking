@@ -539,7 +539,7 @@ const PresidentDashboard = () => {
         {/* Row 1: Budget by Strategy (Grouped Bar) & Strategic Proportion (Donut) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Chart 1: Grouped Bar - Budget Allocation vs Actual Spent */}
-          <div className="lg:col-span-2 bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4">
+          <div className="lg:col-span-2 bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 flex flex-col justify-between">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
               <div>
                 <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
@@ -548,7 +548,7 @@ const PresidentDashboard = () => {
                 </h3>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">เปรียบเทียบงบประมาณตามแผนกับยอดเบิกจ่ายจริงในแต่ละประเด็นยุทธศาสตร์</p>
               </div>
-              <div className="flex items-center gap-3 text-[11px] font-bold">
+              <div className="flex items-center gap-3 text-[11px] font-bold shrink-0">
                 <span className="inline-flex items-center gap-1.5 text-slate-600">
                   <span className="w-2.5 h-2.5 rounded-sm bg-[#DDD6FE]"></span>
                   <span>จัดสรรตามแผน</span>
@@ -629,84 +629,10 @@ const PresidentDashboard = () => {
                 }}
               />
             </div>
-
-            {/* 💡 Strategy Summary Table (Clean, Compact, Non-cluttered) */}
-            <div className="pt-4 border-t border-slate-100 space-y-2">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <FiBookmark className="w-3.5 h-3.5 text-primary" />
-                  <span>ตารางสรุปผลสัมฤทธิ์รายยุทธศาสตร์</span>
-                </div>
-                <span className="text-slate-500 font-semibold">{strategicPillars.length} ประเด็นยุทธศาสตร์</span>
-              </div>
-
-              <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
-                <table className="w-full text-xs text-left border-collapse min-w-[580px]">
-                  <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
-                      <th className="py-2.5 px-3">ยุทธศาสตร์</th>
-                      <th className="py-2.5 px-2.5 text-center">โครงการ</th>
-                      <th className="py-2.5 px-3 text-right">งบประมาณจัดสรร</th>
-                      <th className="py-2.5 px-3 text-right">เบิกจ่ายจริง</th>
-                      <th className="py-2.5 px-3 text-center">ความก้าวหน้า</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {(strategicPillars || []).map((s, idx) => {
-                      const burnRatePct = s.totalBudget > 0 ? ((s.totalSpent / s.totalBudget) * 100).toFixed(1) : 0;
-                      return (
-                        <tr key={s.strategyId || idx} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-2.5 px-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-[11px] font-black px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 shrink-0">
-                                {s.strategyCode || `S${idx + 1}`}
-                              </span>
-                              <span className="font-bold text-slate-800 line-clamp-1 max-w-[200px] sm:max-w-[280px]" title={s.strategyName}>
-                                {s.strategyName}
-                              </span>
-                            </div>
-                            {s.localIssueName && (
-                              <div className="text-[9.5px] text-slate-400 font-semibold mt-0.5 pl-7">
-                                🌐 {s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-2.5 px-2.5 text-center whitespace-nowrap font-bold text-slate-700">
-                            {s.totalProjects} <span className="text-slate-400 font-normal text-[10px]">โครงการ</span>
-                          </td>
-                          <td className="py-2.5 px-3 text-right whitespace-nowrap font-bold text-slate-700">
-                            {Number(s.totalBudget || 0).toLocaleString()} ฿
-                          </td>
-                          <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                            <span className="font-black text-slate-900">{Number(s.totalSpent || 0).toLocaleString()} ฿</span>
-                            <span className="ml-1.5 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
-                              {burnRatePct}%
-                            </span>
-                          </td>
-                          <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                            <div className="flex items-center justify-center gap-2">
-                              <div className="w-14 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                <div 
-                                  className={`h-full rounded-full transition-all duration-300 ${s.progressPct >= 75 ? 'bg-emerald-500' : s.progressPct >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} 
-                                  style={{ width: `${Math.min(100, s.progressPct)}%` }} 
-                                />
-                              </div>
-                              <span className="font-black text-slate-800 text-[11px] w-8 text-right">
-                                {s.progressPct}%
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
 
           {/* Chart 2: Strategic Proportion Donut */}
-          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 flex flex-col justify-start">
+          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 flex flex-col justify-between">
             <div className="pb-3 border-b border-slate-100">
               <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
                 <FiPieChart className="w-4 h-4 text-violet-600 shrink-0" />
@@ -715,9 +641,9 @@ const PresidentDashboard = () => {
               <p className="text-xs text-slate-500 font-medium mt-0.5">การกระจายตัวของจำนวนโครงการในแต่ละยุทธศาสตร์</p>
             </div>
             
-            <div className="pt-3 flex flex-col items-center">
+            <div className="pt-2 flex flex-col items-center">
               {/* Donut Circle */}
-              <div className="h-56 w-full relative flex items-center justify-center">
+              <div className="h-52 w-full relative flex items-center justify-center">
                 <Doughnut
                   data={{
                     labels: (strategicPillars || []).map((s, idx) => s.strategyCode || `ยุทธศาสตร์ที่ ${idx + 1}`),
@@ -759,14 +685,14 @@ const PresidentDashboard = () => {
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">โครงการทั้งหมด</span>
-                  <span className="text-3xl font-black text-slate-800 tracking-tight">{universityHealth.totalProjects}</span>
-                  <span className="text-[11px] font-bold text-slate-500">โครงการ</span>
+                  <span className="text-2xl font-black text-slate-800 tracking-tight">{universityHealth.totalProjects}</span>
+                  <span className="text-[10px] font-bold text-slate-500">โครงการ</span>
                 </div>
               </div>
 
               {/* Clean Legend Badges right below Donut Circle */}
-              <div className="w-full mt-3 pt-3 border-t border-slate-100">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-1.5 text-xs">
+              <div className="w-full mt-2 pt-2 border-t border-slate-100">
+                <div className="grid grid-cols-2 gap-1.5 text-xs">
                   {(strategicPillars || []).map((s, idx) => {
                     const colors = [
                       { dot: 'bg-[#6C3BFF]', text: 'text-[#6C3BFF]', bg: 'bg-purple-50' },
@@ -783,12 +709,12 @@ const PresidentDashboard = () => {
                     return (
                       <div 
                         key={s.strategyId || idx} 
-                        className={`flex items-center justify-between px-2.5 py-1 rounded-lg ${c.bg} border border-slate-200/50 shadow-3xs font-extrabold text-[11px]`}
+                        className={`flex items-center justify-between px-2 py-1 rounded-lg ${c.bg} border border-slate-200/50 shadow-3xs font-extrabold text-[10.5px]`}
                         title={s.strategyName}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className={`w-2 h-2 rounded-full ${c.dot} shrink-0`} />
-                          <span className="text-slate-700 truncate">ยุทธศาสตร์ {idx + 1}:</span>
+                          <span className="text-slate-700 truncate">{s.strategyCode || `ยุทธศาสตร์ ${idx + 1}`}:</span>
                         </div>
                         <span className={`${c.text} ml-1 font-black shrink-0`}>{pct}%</span>
                       </div>
@@ -797,6 +723,93 @@ const PresidentDashboard = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* 💡 Strategy Summary Table - Full Width Standalone Card */}
+        <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div>
+              <h3 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
+                  <FiBookmark className="w-4 h-4 shrink-0" />
+                </span>
+                <span>ตารางสรุปผลสัมฤทธิ์รายยุทธศาสตร์ (Strategic Pillars Performance Summary)</span>
+              </h3>
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                สรุปภาพรวมจำนวนโครงการ งบประมาณจัดสรร ยอดเบิกจ่ายจริง และความก้าวหน้าสะสมจำแนกตามรายประเด็นยุทธศาสตร์มหาวิทยาลัย
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl shadow-3xs">
+                🎯 ทั้งหมด {strategicPillars.length} ประเด็นยุทธศาสตร์
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
+            <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="bg-slate-50/90 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
+                  <th className="py-3 px-4 w-[38%]">ประเด็นยุทธศาสตร์ (Strategic Pillar)</th>
+                  <th className="py-3 px-3 text-center w-[12%]">โครงการ</th>
+                  <th className="py-3 px-4 text-right w-[16%]">งบประมาณจัดสรร</th>
+                  <th className="py-3 px-4 text-right w-[18%]">เบิกจ่ายจริง</th>
+                  <th className="py-3 px-4 text-center w-[16%]">ความก้าวหน้ารวม</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {(strategicPillars || []).map((s, idx) => {
+                  const burnRatePct = s.totalBudget > 0 ? ((s.totalSpent / s.totalBudget) * 100).toFixed(1) : 0;
+                  return (
+                    <tr key={s.strategyId || idx} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-start gap-2.5">
+                          <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 shrink-0 mt-0.5">
+                            {s.strategyCode || `S${idx + 1}`}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="font-bold text-[13px] text-slate-800 leading-snug break-words">
+                              {s.strategyName}
+                            </div>
+                            {s.localIssueName && (
+                              <div className="text-[10px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
+                                <span className="text-slate-500 font-semibold">{s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-700">
+                        <span className="text-xs font-black text-slate-800">{s.totalProjects}</span> <span className="text-slate-400 font-normal text-[10.5px]">โครงการ</span>
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap font-extrabold text-slate-800">
+                        {Number(s.totalBudget || 0).toLocaleString()} ฿
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <span className="font-black text-slate-900">{Number(s.totalSpent || 0).toLocaleString()} ฿</span>
+                        <span className="ml-2 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                          {burnRatePct}%
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-2.5">
+                          <div className="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-300 ${s.progressPct >= 75 ? 'bg-emerald-500' : s.progressPct >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} 
+                              style={{ width: `${Math.min(100, s.progressPct)}%` }} 
+                            />
+                          </div>
+                          <span className="font-black text-slate-800 text-[11.5px] w-9 text-right">
+                            {s.progressPct}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
 
