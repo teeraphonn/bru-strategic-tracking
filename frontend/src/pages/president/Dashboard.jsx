@@ -468,192 +468,502 @@ const PresidentDashboard = () => {
         </div>
       </div>
 
-      {/* ── 2. Executive Visual Analytics (Chart.js Section) ── */}
-      <div className="space-y-6">
-        {/* Local Issues Summary Row (Level 1: 4 ด้านประเด็นการพัฒนาท้องถิ่น) */}
-        {localIssues && localIssues.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                  <FiLayers className="w-4 h-4 text-violet-600 shrink-0" />
-                  <span>ภาพรวม 4 ประเด็นการพัฒนาท้องถิ่น (Local Development Issues)</span>
-                </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">การติดตามผลสัมฤทธิ์ตามกรอบประเด็นการพัฒนาท้องถิ่น มหาวิทยาลัยราชภัฏบุรีรัมย์</p>
-              </div>
-              <span className="text-[11px] font-bold px-3 py-1 bg-violet-50 text-violet-700 rounded-full border border-violet-200 self-start sm:self-auto">
-                4 ประเด็นยุทธศาสตร์หลัก
+        {/* ── 2. Management by Exception: Critical Bottleneck Alerts Panel ── */}
+        <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
+            <div>
+              <h2 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                <span className="p-1.5 rounded-xl bg-rose-100 text-rose-600">
+                  <FiAlertTriangle className="w-4 h-4 shrink-0" />
+                </span>
+                <span>โครงการติดธงแดงวิกฤตที่ต้องเร่งรัด (Critical Red Flag Projects)</span>
+              </h2>
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                โครงการที่มีความล่าช้ากว่าแผน หรือมีผลการดำเนินงานต่ำกว่าเกณฑ์มาตรฐาน จำเป็นต้องได้รับการสนับสนุนหรือสั่งการแก้ไข
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 no-print">
+              <span className="text-xs font-black text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl shadow-3xs">
+                🔴 วิกฤต {(criticalBottlenecks || []).length} โครงการ
               </span>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {localIssues.map((li, idx) => {
-                const colors = [
-                  { bg: 'from-violet-500/10 to-violet-500/5', border: 'border-violet-200/80', badge: 'bg-violet-100 text-violet-800', bar: 'bg-violet-600' },
-                  { bg: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-200/80', badge: 'bg-purple-100 text-purple-800', bar: 'bg-purple-600' },
-                  { bg: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-200/80', badge: 'bg-blue-100 text-blue-800', bar: 'bg-blue-600' },
-                  { bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-200/80', badge: 'bg-emerald-100 text-emerald-800', bar: 'bg-emerald-600' }
-                ];
-                const c = colors[idx % colors.length];
+          {(criticalBottlenecks && criticalBottlenecks.length > 0) ? (
+            <div className="overflow-x-auto print:overflow-visible scrollbar-thin">
+              <table className="w-full text-xs text-left border-collapse print:text-[11px] min-w-[700px] print:min-w-full">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px] print:bg-slate-100 print:text-slate-800">
+                    <th className="py-3 px-3">ชื่อโครงการ / ผู้รับผิดชอบ</th>
+                    <th className="py-3 px-3 w-40">คณะ / ภาควิชา</th>
+                    <th className="py-3 px-3 w-28 text-right">งบประมาณ</th>
+                    <th className="py-3 px-3 w-28 text-right">เบิกจ่ายจริง</th>
+                    <th className="py-3 px-3 w-24 text-center">% ก้าวหน้า</th>
+                    <th className="py-3 px-3 w-24 text-center">ข้อสั่งการ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 print:divide-slate-300">
+                  {criticalBottlenecks.map((p) => {
+                    const hasDirective = !!(p.presidentDirective || p.executiveDirective);
+                    return (
+                      <tr key={p.id} className="hover:bg-slate-50/70 transition-colors group align-middle">
+                        <td className="py-3.5 px-3">
+                          <div className="font-extrabold text-slate-800 group-hover:text-primary transition-colors leading-snug">
+                            {p.name}
+                          </div>
+                          <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+                            <FiUser className="w-3 h-3 shrink-0" />
+                            <span>{p.creatorName || 'ไม่ระบุผู้รับผิดชอบ'}</span>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-3">
+                          <div className="font-bold text-slate-700 text-xs">{p.facultyName || 'ส่วนกลาง'}</div>
+                          <div className="text-[10px] text-slate-400 font-semibold">{p.departmentName || 'ไม่ระบุภาควิชา'}</div>
+                        </td>
+                        <td className="py-3.5 px-3 text-right font-extrabold text-slate-800 whitespace-nowrap">
+                          {p.totalBudget?.toLocaleString()} ฿
+                        </td>
+                        <td className="py-3.5 px-3 text-right font-extrabold text-emerald-600 whitespace-nowrap">
+                          {p.actualSpent?.toLocaleString()} ฿
+                        </td>
+                        <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                          <div className="font-black text-rose-600">{p.progressPct}%</div>
+                          <div className="w-14 bg-slate-100 h-1.5 rounded-full mx-auto mt-0.5 overflow-hidden print:hidden">
+                            <div className="bg-rose-500 h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, p.progressPct)}%` }} />
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-3 text-center print:text-left whitespace-nowrap">
+                          {/* Screen Button */}
+                          <div className="print:hidden flex justify-center">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedProjectModal(p)}
+                              className={`inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer shadow-sm ${hasDirective ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20' : 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'}`}
+                              title="ดูรายละเอียดและออกข้อสั่งการอธิการบดี"
+                            >
+                              <FiSend className="w-3 h-3 shrink-0" />
+                              <span>{hasDirective ? 'ดูสั่งการ' : 'สั่งการ'}</span>
+                            </button>
+                          </div>
+                          {/* Print Directive Text */}
+                          <div className="hidden print:block text-[10px] font-semibold text-slate-800 max-w-[200px] break-words">
+                            {hasDirective ? (
+                              <span>"{p.presidentDirective || p.executiveDirective}"</span>
+                            ) : (
+                              <span className="text-slate-400 italic">อยู่ระหว่างติดตามและประสานงาน</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="p-6 text-center bg-slate-50/70 rounded-2xl border border-dashed border-slate-200">
+              <FiCheckCircle className="w-7 h-7 text-emerald-500 mx-auto mb-1.5" />
+              <div className="text-xs md:text-sm font-extrabold text-slate-700">ไม่มีโครงการสำคัญระดับมหาวิทยาลัยติดสถานะวิกฤต</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">การดำเนินงานตามแผนยุทธศาสตร์ภาพรวมของมหาวิทยาลัยเป็นไปอย่างราบรื่น</div>
+            </div>
+          )}
+        </div>
+
+        {/* ── 3. Strategic Governance: 10 Main Projects Strategic Tracking & Drill-down ── */}
+        <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
+          {/* Header with Title & Quick RAG Filters */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
+            <div>
+              <h2 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
+                  <FiLayers className="w-4 h-4 shrink-0" />
+                </span>
+                <span>ตารางกำกับติดตาม 10 โครงการหลักระดับมหาวิทยาลัย (10 Main Projects Strategic Tracking)</span>
+              </h2>
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                ติดตามความก้าวหน้าและการเบิกจ่ายงบประมาณของ 10 โครงการหลักตามกรอบยุทธศาสตร์
+              </p>
+            </div>
+
+            {/* Quick RAG Filter Buttons */}
+            <div className="flex items-center gap-1.5 flex-wrap no-print">
+              <button
+                type="button"
+                onClick={() => setMpFilter('ALL')}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  mpFilter === 'ALL'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                }`}
+              >
+                ทั้งหมด ({(mainProjects || []).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setMpFilter('GREEN')}
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  mpFilter === 'GREEN'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/60'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                <span>ปกติ ({(mainProjects || []).filter(m => m.overallStatus === 'GREEN').length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMpFilter('YELLOW')}
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  mpFilter === 'YELLOW'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/60'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                <span>เฝ้าระวัง ({(mainProjects || []).filter(m => m.overallStatus === 'YELLOW').length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMpFilter('RED')}
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  mpFilter === 'RED'
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/60'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                <span>วิกฤต ({(mainProjects || []).filter(m => m.overallStatus === 'RED').length})</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Standard Column Header Bar for Desktop */}
+          <div className="hidden lg:flex items-center justify-between px-4 py-2 bg-slate-100/80 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-wider">
+            <div className="flex-1 min-w-0 pr-4">รหัส & ชื่อโครงการหลัก (Main Project - MP)</div>
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="w-24 text-center">โครงการย่อย</div>
+              <div className="w-40 text-right">งบประมาณ / เบิกจ่าย</div>
+              <div className="w-24 text-center">% ความก้าวหน้า</div>
+              <div className="w-20 text-center">สถานะ RAG</div>
+              <div className="w-8 text-center"></div>
+            </div>
+          </div>
+
+          {/* List of 10 Main Projects */}
+          <div className="space-y-2.5">
+            {(mainProjects || [])
+              .filter(m => {
+                if (mpFilter === 'GREEN') return m.overallStatus === 'GREEN';
+                if (mpFilter === 'YELLOW') return m.overallStatus === 'YELLOW';
+                if (mpFilter === 'RED') return m.overallStatus === 'RED';
+                return true;
+              })
+              .map((mp) => {
+                const isExpanded = expandedMainProjectId === mp.id;
+                const statusConfig = {
+                  GREEN: { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', border: 'border-l-emerald-500' },
+                  YELLOW: { label: 'เฝ้าระวัง', badge: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500', border: 'border-l-amber-400' },
+                  RED: { label: 'วิกฤต', badge: 'bg-rose-50 text-rose-700 border-rose-200', dot: 'bg-rose-500', border: 'border-l-rose-500' },
+                  GRAY: { label: 'ยังไม่มีโครงการ', badge: 'bg-slate-50 text-slate-500 border-slate-200', dot: 'bg-slate-400', border: 'border-l-slate-300' }
+                }[mp.overallStatus] || { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', border: 'border-l-emerald-500' };
 
                 return (
                   <div 
-                    key={li.localIssueId || idx}
-                    className={`bg-gradient-to-br ${c.bg} p-4 rounded-2xl border ${c.border} space-y-3 flex flex-col justify-between`}
+                    key={mp.id}
+                    className={`rounded-xl border border-l-4 ${statusConfig.border} transition-all duration-200 overflow-hidden ${
+                      isExpanded 
+                        ? 'border-t-primary/30 border-r-primary/30 border-b-primary/30 shadow-md bg-white' 
+                        : 'border-slate-100 hover:border-slate-200 bg-slate-50/40 hover:bg-white'
+                    }`}
                   >
-                    <div className="space-y-1.5">
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${c.badge}`}>
-                        {li.localIssueCode || `LDI${idx + 1}`}
-                      </span>
-                      <h4 className="text-xs font-black text-slate-800 leading-snug">
-                        {li.localIssueName}
-                      </h4>
+                    {/* Main Project Header Row */}
+                    <div 
+                      onClick={() => setExpandedMainProjectId(isExpanded ? null : mp.id)}
+                      className="px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/80 transition-colors select-none group"
+                    >
+                      {/* Left: Code, Title, Clean Breadcrumb */}
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-600 text-white shadow-3xs shrink-0 mt-0.5">
+                          {mp.code}
+                        </span>
+                        <div className="min-w-0 space-y-1 flex-1">
+                          <div className="font-bold text-[13px] text-slate-800 group-hover:text-primary transition-colors leading-snug break-words">
+                            {mp.name}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10.5px] text-slate-400 font-medium">
+                            <span className="text-slate-600 font-semibold truncate">{mp.localIssueCode ? `${mp.localIssueCode}: ${mp.localIssueName}` : mp.localIssueName}</span>
+                            <span className="text-slate-300 font-bold">›</span>
+                            <span className="text-purple-600 font-semibold truncate">{mp.subStrategyCode ? `${mp.subStrategyCode}: ${mp.subStrategyName}` : mp.subStrategyName}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: Uniform Fixed-Width Columns */}
+                      <div className="flex items-center gap-4 shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-2.5 lg:pt-0 border-slate-100">
+                        {/* Projects Count */}
+                        <div className="w-24 text-left lg:text-center">
+                          <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">โครงการปฏิบัติการ</div>
+                          <span className="text-xs font-extrabold text-slate-800">{mp.totalProjects}</span> <span className="text-[10.5px] text-slate-400 font-medium">โครงการ</span>
+                        </div>
+
+                        {/* Budget & Spent */}
+                        <div className="w-40 text-left lg:text-right">
+                          <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">งบประมาณ / เบิกจ่าย</div>
+                          <div className="text-xs font-black text-slate-900">{mp.totalBudget.toLocaleString()} ฿</div>
+                          <div className="text-[9.5px] text-slate-500 font-medium mt-0.5">
+                            จ่าย <span className="font-bold text-slate-700">{mp.totalSpent.toLocaleString()} ฿</span> <span className={mp.burnRatePct > 90 ? 'text-amber-600 font-bold' : 'text-emerald-600 font-bold'}>({mp.burnRatePct}%)</span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-24 text-center">
+                          <div className="flex items-center justify-between text-[9.5px] font-bold mb-0.5">
+                            <span className="text-slate-400">ก้าวหน้า</span>
+                            <span className="text-primary font-black">{mp.progressPct}%</span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-300 ${mp.progressPct < 40 ? 'bg-rose-500' : mp.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                              style={{ width: `${Math.min(100, mp.progressPct)}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="w-20 flex justify-center">
+                          <span className={`inline-flex items-center justify-center gap-1 w-full py-0.5 rounded-lg text-[9.5px] font-black border shadow-3xs ${statusConfig.badge}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusConfig.dot}`} />
+                            <span className="truncate">{statusConfig.label}</span>
+                          </span>
+                        </div>
+
+                        {/* Toggle Button */}
+                        <div className="w-8 flex justify-center">
+                          <div className={`p-1.5 rounded-lg text-slate-400 transition-all duration-200 ${isExpanded ? 'bg-purple-100 text-primary rotate-180' : 'group-hover:bg-slate-100 group-hover:text-slate-700'}`}>
+                            <FiChevronDown className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="space-y-2 pt-2 border-t border-slate-200/50 text-[11px]">
-                      <div className="flex items-center justify-between text-slate-600 font-bold">
-                        <span>จำนวนโครงการ</span>
-                        <span className="text-slate-900 font-black">{li.totalProjects} โครงการ</span>
+                    {/* Collapsible Inner Projects Table (Drill-down) */}
+                    {isExpanded && (
+                      <div className="border-t border-slate-100 bg-slate-50/60 p-4">
+                        {mp.projects && mp.projects.length > 0 ? (
+                          <div className="rounded-xl border border-slate-200/80 bg-white overflow-x-auto shadow-xs">
+                            <table className="w-full text-[11px] text-left border-collapse min-w-[700px]">
+                              <thead>
+                                <tr className="bg-slate-50/90 border-b border-slate-100 text-[9.5px] font-black text-slate-400 uppercase tracking-wider">
+                                  <th className="py-2.5 px-3.5">ชื่อโครงการปฏิบัติการย่อย (Operational Project)</th>
+                                  <th className="py-2.5 px-3 w-44">คณะ / ภาควิชา</th>
+                                  <th className="py-2.5 px-3 w-36">ผู้รับผิดชอบโครงการ</th>
+                                  <th className="py-2.5 px-3 w-28 text-right">งบประมาณ</th>
+                                  <th className="py-2.5 px-3 w-28 text-right">เบิกจ่ายจริง</th>
+                                  <th className="py-2.5 px-3 w-24 text-center">% ก้าวหน้า</th>
+                                  <th className="py-2.5 px-3 w-16 text-center">ดูข้อมูล</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {mp.projects.map((subP) => (
+                                  <tr key={subP.id} className="hover:bg-purple-50/30 transition-colors">
+                                    <td className="py-2.5 px-3.5 font-bold text-slate-800 leading-snug break-words">
+                                      {subP.name}
+                                    </td>
+                                    <td className="py-2.5 px-3">
+                                      <div className="font-bold text-slate-700 text-[11px]">{subP.facultyName}</div>
+                                      <div className="text-[9.5px] text-slate-400 font-medium">{subP.departmentName}</div>
+                                    </td>
+                                    <td className="py-2.5 px-3">
+                                      <div className="text-[10.5px] font-medium text-slate-600 flex items-center gap-1">
+                                        <FiUser className="w-3 h-3 text-slate-400 shrink-0" />
+                                        <span>{subP.creatorName}</span>
+                                      </div>
+                                    </td>
+                                    <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">
+                                      {subP.totalBudget.toLocaleString()} ฿
+                                    </td>
+                                    <td className="py-2.5 px-3 text-right font-bold text-emerald-600 whitespace-nowrap">
+                                      {subP.actualSpent.toLocaleString()} ฿
+                                    </td>
+                                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                                      <div className="font-black text-primary text-[11px]">{subP.progress}%</div>
+                                      <div className="w-14 bg-slate-100 h-1.5 rounded-full mx-auto mt-0.5 overflow-hidden">
+                                        <div 
+                                          className={`h-full rounded-full ${subP.progress < 40 ? 'bg-rose-500' : subP.progress < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                                          style={{ width: `${Math.min(100, subP.progress)}%` }}
+                                        />
+                                      </div>
+                                    </td>
+                                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleOpenDetailModal(subP);
+                                        }}
+                                        className="p-1.5 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-600 transition-all cursor-pointer shadow-3xs active:scale-95"
+                                        title="ดูรายละเอียดโครงการและออกข้อสั่งการ"
+                                      >
+                                        <FiEye className="w-3.5 h-3.5" />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <div className="text-center py-5 text-slate-400 text-xs font-medium bg-white rounded-xl border border-dashed border-slate-200">
+                            ยังไม่มีคณะใดส่งข้อเสนอโครงการปฏิบัติการภายใต้โครงการหลักนี้
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center justify-between text-slate-600 font-bold">
-                        <span>งบประมาณรวม</span>
-                        <span className="text-slate-900 font-black">{parseFloat(li.totalBudget || 0).toLocaleString()} ฿</span>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[10px] font-black">
-                          <span className="text-slate-500">ความก้าวหน้ารวม</span>
-                          <span className="text-emerald-700">{li.progressPct}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-slate-200/70 rounded-full overflow-hidden">
-                          <div className={`h-full ${c.bar} rounded-full transition-all duration-500`} style={{ width: `${Math.min(li.progressPct, 100)}%` }} />
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}
-            </div>
           </div>
-        )}
+        </div>
 
-        {/* Row 1: Budget by Strategy (Grouped Bar) & Strategic Proportion (Donut) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Chart 1: Grouped Bar - Budget Allocation vs Actual Spent */}
-          <div className="lg:col-span-2 bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 flex flex-col justify-between">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                  <FiBarChart2 className="w-4 h-4 text-primary shrink-0" />
-                  <span>งบประมาณจัดสรร vs เบิกจ่ายจริง รายยุทธศาสตร์ (Budget Execution)</span>
-                </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">เปรียบเทียบงบประมาณตามแผนกับยอดเบิกจ่ายจริงในแต่ละประเด็นยุทธศาสตร์</p>
-              </div>
-              <div className="flex items-center gap-3 text-[11px] font-bold shrink-0">
-                <span className="inline-flex items-center gap-1.5 text-slate-600">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-[#DDD6FE]"></span>
-                  <span>จัดสรรตามแผน</span>
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-primary">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-[#6C3BFF]"></span>
-                  <span>เบิกจ่ายจริง</span>
-                </span>
-              </div>
+        {/* ── 4. Comparative Matrix: Cross-Faculty Strategic Heatmap Matrix ── */}
+        <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+                <FiGrid className="w-5 h-5 text-primary shrink-0" />
+                <span>ตารางเปรียบเทียบผลงานตามคณะ/สำนัก (Cross-Faculty Strategic Heatmap)</span>
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">ตารางประเมินเปรียบเทียบ % ความก้าวหน้ายุทธศาสตร์ % การใช้จ่ายงบประมาณ และจำนวนจุดวิกฤตจำแนกรายคณะ</p>
             </div>
-            <div className="h-72 w-full">
-              <Bar
-                data={{
-                  labels: (strategicPillars || []).map((s, idx) => s.strategyCode || `S${idx + 1}`),
-                  datasets: [
-                    {
-                      label: 'งบประมาณจัดสรรตามแผน (฿)',
-                      data: (strategicPillars || []).map(s => s.totalBudget || 0),
-                      backgroundColor: '#DDD6FE',
-                      borderRadius: 8,
-                      barPercentage: 0.6,
-                      categoryPercentage: 0.7
-                    },
-                    {
-                      label: 'งบประมาณเบิกจ่ายจริง (฿)',
-                      data: (strategicPillars || []).map(s => s.totalSpent || 0),
-                      backgroundColor: '#6C3BFF',
-                      borderRadius: 8,
-                      barPercentage: 0.6,
-                      categoryPercentage: 0.7
-                    }
-                  ]
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                      labels: {
-                        font: { family: "'Prompt', sans-serif", size: 11, weight: 'bold' },
-                        usePointStyle: true,
-                        boxWidth: 8
-                      }
-                    },
-                    tooltip: {
-                      backgroundColor: '#1E1B4B',
-                      padding: 12,
-                      cornerRadius: 10,
-                      callbacks: {
-                        title: (ctx) => {
-                          const idx = ctx[0]?.dataIndex;
-                          const pillar = (strategicPillars || [])[idx];
-                          return `${pillar?.strategyCode || `S${idx + 1}`}: ${pillar?.strategyName || ''}`;
-                        },
-                        label: (ctx) => ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString()} บาท`
-                      }
-                    }
-                  },
-                  scales: {
-                    x: {
-                      grid: { display: false },
-                      ticks: {
-                        font: { family: "'Prompt', sans-serif", size: 11, weight: '700' },
-                        maxRotation: 0,
-                        minRotation: 0,
-                        autoSkip: false
-                      }
-                    },
-                    y: {
-                      grid: { color: '#F1F5F9' },
-                      ticks: {
-                        font: { family: "'Prompt', sans-serif", size: 10 },
-                        callback: (v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
-                      }
-                    }
-                  }
-                }}
-              />
-            </div>
+
+            {/* Toggle show all faculties / only active */}
+            {(crossFacultyMatrix || []).some(f => f.totalProjects === 0) && (
+              <button
+                type="button"
+                onClick={() => setShowAllFaculties(!showAllFaculties)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer shrink-0 self-start sm:self-auto bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 shadow-3xs active:scale-95 no-print"
+              >
+                <FiFilter className="w-3.5 h-3.5 text-primary" />
+                <span>{showAllFaculties ? 'แสดงเฉพาะคณะที่มีโครงการ' : `แสดงทุกคณะ (${crossFacultyMatrix.length})`}</span>
+              </button>
+            )}
           </div>
 
-          {/* Chart 2: Strategic Proportion Donut */}
-          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 flex flex-col justify-between">
-            <div className="pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                <FiPieChart className="w-4 h-4 text-violet-600 shrink-0" />
-                <span>สัดส่วนโครงการตามยุทธศาสตร์</span>
-              </h3>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">การกระจายตัวของจำนวนโครงการในแต่ละยุทธศาสตร์</p>
-            </div>
-            
-            <div className="pt-2 flex flex-col items-center">
-              {/* Donut Circle */}
-              <div className="h-52 w-full relative flex items-center justify-center">
-                <Doughnut
+          <div className="overflow-x-auto print:overflow-visible scrollbar-thin">
+            {(() => {
+              const activeFaculties = (crossFacultyMatrix || []).filter(f => f.totalProjects > 0);
+              // In print mode, always display all faculties for complete institutional records
+              const displayedFaculties = crossFacultyMatrix && crossFacultyMatrix.length > 0 ? crossFacultyMatrix : activeFaculties;
+
+              return (
+                <table className="w-full text-xs text-left border-collapse print:text-[11px] min-w-[760px] print:min-w-full">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px] print:bg-slate-100 print:text-slate-800">
+                      <th className="py-3 px-3">คณะ / สำนัก</th>
+                      <th className="py-3 px-3 w-28 text-center">จำนวนโครงการ</th>
+                      <th className="py-3 px-3 w-32 text-right">งบประมาณจัดสรร</th>
+                      <th className="py-3 px-3 w-32 text-right">เบิกจ่ายจริง</th>
+                      <th className="py-3 px-3 w-28 text-center">% ความก้าวหน้า</th>
+                      <th className="py-3 px-3 w-24 text-center">% Burn Rate</th>
+                      <th className="py-3 px-3 w-40 text-center">สถานะโครงการ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 print:divide-slate-300">
+                    {displayedFaculties.map((fac) => {
+                      const facName = fac.facultyName || 'ส่วนกลาง';
+                      const formattedFac = (!facName || facName === 'ส่วนกลาง' || facName.startsWith('คณะ')) ? facName : `คณะ${facName}`;
+
+                      return (
+                        <tr 
+                          key={fac.facultyId} 
+                          onClick={() => handleFacultyClick(fac.facultyId, formattedFac)}
+                          className="hover:bg-slate-50 hover:shadow-3xs cursor-pointer transition-colors group align-middle"
+                          title={`คลิกเพื่อดูรายการโครงการของ ${formattedFac}`}
+                        >
+                          <td className="py-3.5 px-4 font-extrabold text-slate-800 group-hover:text-primary transition-colors flex items-center gap-2 whitespace-nowrap">
+                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${fac.overallStatus === 'RED' ? 'bg-rose-500' : fac.overallStatus === 'YELLOW' ? 'bg-amber-400' : 'bg-emerald-500'}`} />
+                            <span>{formattedFac}</span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-bold text-slate-700 whitespace-nowrap">
+                            {fac.totalProjects} โครงการ
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-extrabold text-slate-800 whitespace-nowrap">
+                            {fac.totalBudget.toLocaleString()} ฿
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-extrabold text-emerald-600 whitespace-nowrap">
+                            {fac.totalSpent.toLocaleString()} ฿
+                          </td>
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                            <div className="font-extrabold text-slate-800">{fac.progressPct}%</div>
+                            <div className="w-20 bg-slate-100 h-1.5 rounded-full mx-auto mt-1 overflow-hidden">
+                              <div className={`h-full rounded-full ${fac.progressPct < 40 ? 'bg-rose-500' : fac.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, fac.progressPct)}%` }} />
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-extrabold text-slate-700 whitespace-nowrap">
+                            {fac.burnRatePct}%
+                          </td>
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                            <div className="flex items-center justify-center gap-2 text-[11px] font-extrabold">
+                              <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">🟢 {fac.greenCount} ปกติ</span>
+                              <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">🟡 {fac.yellowCount} เฝ้าระวัง</span>
+                              <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">🔴 {fac.redCount} วิกฤต</span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* ── 5. Strategic Deep Dive: 6 Strategic Pillars & Budget Execution ── */}
+        <div className="space-y-6">
+          {/* Row 1: Budget by Strategy (Grouped Bar) & Strategic Proportion (Donut) */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Chart 1: Grouped Bar - Budget Allocation vs Actual Spent */}
+            <div className="lg:col-span-2 bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 flex flex-col justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                    <FiBarChart2 className="w-4 h-4 text-primary shrink-0" />
+                    <span>งบประมาณจัดสรร vs เบิกจ่ายจริง รายยุทธศาสตร์ (Budget Execution)</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">เปรียบเทียบงบประมาณตามแผนกับยอดเบิกจ่ายจริงในแต่ละประเด็นยุทธศาสตร์</p>
+                </div>
+                <div className="flex items-center gap-3 text-[11px] font-bold shrink-0">
+                  <span className="inline-flex items-center gap-1.5 text-slate-600">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-[#DDD6FE]"></span>
+                    <span>จัดสรรตามแผน</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-primary">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-[#6C3BFF]"></span>
+                    <span>เบิกจ่ายจริง</span>
+                  </span>
+                </div>
+              </div>
+              <div className="h-72 w-full">
+                <Bar
                   data={{
-                    labels: (strategicPillars || []).map((s, idx) => s.strategyCode || `ยุทธศาสตร์ที่ ${idx + 1}`),
+                    labels: (strategicPillars || []).map((s, idx) => s.strategyCode || `S${idx + 1}`),
                     datasets: [
                       {
-                        data: (strategicPillars || []).map(s => s.totalProjects || 0),
-                        backgroundColor: ['#6C3BFF', '#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6'],
-                        borderWidth: 3,
-                        borderColor: '#ffffff',
-                        hoverOffset: 6
+                        label: 'งบประมาณจัดสรรตามแผน (฿)',
+                        data: (strategicPillars || []).map(s => s.totalBudget || 0),
+                        backgroundColor: '#DDD6FE',
+                        borderRadius: 8,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7
+                      },
+                      {
+                        label: 'งบประมาณเบิกจ่ายจริง (฿)',
+                        data: (strategicPillars || []).map(s => s.totalSpent || 0),
+                        backgroundColor: '#6C3BFF',
+                        borderRadius: 8,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7
                       }
                     ]
                   }}
@@ -662,669 +972,222 @@ const PresidentDashboard = () => {
                     maintainAspectRatio: false,
                     plugins: {
                       legend: {
-                        display: false
+                        position: 'top',
+                        labels: {
+                          font: { family: "'Prompt', sans-serif", size: 11, weight: 'bold' },
+                          usePointStyle: true,
+                          boxWidth: 8
+                        }
                       },
                       tooltip: {
                         backgroundColor: '#1E1B4B',
+                        padding: 12,
+                        cornerRadius: 10,
                         callbacks: {
                           title: (ctx) => {
                             const idx = ctx[0]?.dataIndex;
                             const pillar = (strategicPillars || [])[idx];
                             return `${pillar?.strategyCode || `S${idx + 1}`}: ${pillar?.strategyName || ''}`;
                           },
-                          label: (ctx) => {
-                            const total = universityHealth.totalProjects || 1;
-                            const pct = ((ctx.raw / total) * 100).toFixed(1);
-                            return ` สัดส่วน: ${ctx.raw} โครงการ (${pct}%)`;
-                          }
+                          label: (ctx) => ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString()} บาท`
                         }
                       }
                     },
-                    cutout: '68%'
+                    scales: {
+                      x: {
+                        grid: { display: false },
+                        ticks: {
+                          font: { family: "'Prompt', sans-serif", size: 11, weight: '700' },
+                          maxRotation: 0,
+                          minRotation: 0,
+                          autoSkip: false
+                        }
+                      },
+                      y: {
+                        grid: { color: '#F1F5F9' },
+                        ticks: {
+                          font: { family: "'Prompt', sans-serif", size: 10 },
+                          callback: (v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
+                        }
+                      }
+                    }
                   }}
                 />
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">โครงการทั้งหมด</span>
-                  <span className="text-2xl font-black text-slate-800 tracking-tight">{universityHealth.totalProjects}</span>
-                  <span className="text-[10px] font-bold text-slate-500">โครงการ</span>
-                </div>
-              </div>
-
-              {/* Clean Legend Badges right below Donut Circle */}
-              <div className="w-full mt-2 pt-2 border-t border-slate-100">
-                <div className="grid grid-cols-2 gap-1.5 text-xs">
-                  {(strategicPillars || []).map((s, idx) => {
-                    const colors = [
-                      { dot: 'bg-[#6C3BFF]', text: 'text-[#6C3BFF]', bg: 'bg-purple-50' },
-                      { dot: 'bg-[#3B82F6]', text: 'text-blue-600', bg: 'bg-blue-50' },
-                      { dot: 'bg-[#10B981]', text: 'text-emerald-600', bg: 'bg-emerald-50' },
-                      { dot: 'bg-[#F59E0B]', text: 'text-amber-600', bg: 'bg-amber-50' },
-                      { dot: 'bg-[#EC4899]', text: 'text-pink-600', bg: 'bg-pink-50' },
-                      { dot: 'bg-[#8B5CF6]', text: 'text-violet-600', bg: 'bg-violet-50' }
-                    ];
-                    const c = colors[idx % colors.length];
-                    const totalUniv = universityHealth.totalProjects || 1;
-                    const pct = ((s.totalProjects / totalUniv) * 100).toFixed(1);
-
-                    return (
-                      <div 
-                        key={s.strategyId || idx} 
-                        className={`flex items-center justify-between px-2 py-1 rounded-lg ${c.bg} border border-slate-200/50 shadow-3xs font-extrabold text-[10.5px]`}
-                        title={s.strategyName}
-                      >
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className={`w-2 h-2 rounded-full ${c.dot} shrink-0`} />
-                          <span className="text-slate-700 truncate">{s.strategyCode || `ยุทธศาสตร์ ${idx + 1}`}:</span>
-                        </div>
-                        <span className={`${c.text} ml-1 font-black shrink-0`}>{pct}%</span>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* 💡 Strategy Summary Table - Full Width Standalone Card */}
-        <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-3.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-            <div>
-              <h3 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
-                <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
-                  <FiBookmark className="w-4 h-4 shrink-0" />
-                </span>
-                <span>ตารางสรุปผลสัมฤทธิ์รายยุทธศาสตร์ (Strategic Pillars Performance Summary)</span>
-              </h3>
-              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                สรุปภาพรวมจำนวนโครงการ งบประมาณจัดสรร ยอดเบิกจ่ายจริง และความก้าวหน้าสะสมจำแนกตามรายประเด็นยุทธศาสตร์มหาวิทยาลัย
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl shadow-3xs">
-                🎯 ทั้งหมด {strategicPillars.length} ประเด็นยุทธศาสตร์
-              </span>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
-            <table className="w-full text-xs text-left border-collapse min-w-[700px]">
-              <thead>
-                <tr className="bg-slate-50/90 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
-                  <th className="py-3 px-4 w-[38%]">ประเด็นยุทธศาสตร์ (Strategic Pillar)</th>
-                  <th className="py-3 px-3 text-center w-[12%]">โครงการ</th>
-                  <th className="py-3 px-4 text-right w-[16%]">งบประมาณจัดสรร</th>
-                  <th className="py-3 px-4 text-right w-[18%]">เบิกจ่ายจริง</th>
-                  <th className="py-3 px-4 text-center w-[16%]">ความก้าวหน้ารวม</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {(strategicPillars || []).map((s, idx) => {
-                  const burnRatePct = s.totalBudget > 0 ? ((s.totalSpent / s.totalBudget) * 100).toFixed(1) : 0;
-                  return (
-                    <tr key={s.strategyId || idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="flex items-start gap-2.5">
-                          <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 shrink-0 mt-0.5">
-                            {s.strategyCode || `S${idx + 1}`}
-                          </span>
-                          <div className="min-w-0">
-                            <div className="font-bold text-[13px] text-slate-800 leading-snug break-words">
-                              {s.strategyName}
-                            </div>
-                            {s.localIssueName && (
-                              <div className="text-[10px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
-                                <span className="text-slate-500 font-semibold">{s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-700">
-                        <span className="text-xs font-black text-slate-800">{s.totalProjects}</span> <span className="text-slate-400 font-normal text-[10.5px]">โครงการ</span>
-                      </td>
-                      <td className="py-3 px-4 text-right whitespace-nowrap font-extrabold text-slate-800">
-                        {Number(s.totalBudget || 0).toLocaleString()} ฿
-                      </td>
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <span className="font-black text-slate-900">{Number(s.totalSpent || 0).toLocaleString()} ฿</span>
-                        <span className="ml-2 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
-                          {burnRatePct}%
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-2.5">
-                          <div className="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full transition-all duration-300 ${s.progressPct >= 75 ? 'bg-emerald-500' : s.progressPct >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} 
-                              style={{ width: `${Math.min(100, s.progressPct)}%` }} 
-                            />
-                          </div>
-                          <span className="font-black text-slate-800 text-[11.5px] w-9 text-right">
-                            {s.progressPct}%
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Row 2: Faculty Performance Ranking (Horizontal Bar) & Quarterly Cumulative Trend (Line) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Chart 3: Horizontal Bar - Faculty Ranking & Budget Summary */}
-          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-              <div>
+            {/* Chart 2: Strategic Proportion Donut */}
+            <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 flex flex-col justify-between">
+              <div className="pb-3 border-b border-slate-100">
                 <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                  <FiTrendingUp className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>จัดอันดับความก้าวหน้า (% Progress) & งบประมาณรายคณะ</span>
+                  <FiPieChart className="w-4 h-4 text-violet-600 shrink-0" />
+                  <span>สัดส่วนโครงการตามยุทธศาสตร์</span>
                 </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">เรียงลำดับผลการดำเนินงานและสถิติการเบิกจ่ายงบประมาณสะสม</p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">การกระจายตัวของจำนวนโครงการในแต่ละยุทธศาสตร์</p>
               </div>
-            </div>
-            
-            {(() => {
-              const sorted = [...(crossFacultyMatrix || [])].sort((a, b) => b.progressPct - a.progressPct);
-              return (
-                <>
-                  <div className="h-72 w-full">
-                    <Bar
-                      data={{
-                        labels: sorted.map(f => f.facultyName?.replace('คณะ', '') || 'ส่วนกลาง'),
-                        datasets: [
-                          {
-                            label: '% ความก้าวหน้ารวม',
-                            data: sorted.map(f => f.progressPct || 0),
-                            backgroundColor: sorted.map(f => 
-                              f.progressPct >= 75 ? '#10B981' : f.progressPct >= 40 ? '#F59E0B' : '#EF4444'
-                            ),
-                            borderRadius: 8,
-                            barThickness: 16
-                          }
-                        ]
-                      }}
-                      options={{
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: { display: false },
-                          tooltip: {
-                            backgroundColor: '#0F172A',
-                            padding: 12,
-                            cornerRadius: 12,
-                            titleFont: { family: "'Prompt', sans-serif", size: 12, weight: 'bold' },
-                            bodyFont: { family: "'Prompt', sans-serif", size: 11 },
-                            callbacks: {
-                              title: (ctx) => {
-                                const idx = ctx[0]?.dataIndex;
-                                const f = sorted[idx];
-                                return `🏛️ ${f?.facultyName?.startsWith('คณะ') ? f?.facultyName : `คณะ${f?.facultyName || ''}`}`;
-                              },
-                              afterTitle: (ctx) => {
-                                const idx = ctx[0]?.dataIndex;
-                                const f = sorted[idx];
-                                return [
-                                  `รวมงบประมาณคณะ: ${Number(f?.totalBudget || 0).toLocaleString()} ฿`,
-                                  `เบิกจ่ายสะสม: ${Number(f?.totalSpent || 0).toLocaleString()} ฿ (${f?.burnRatePct || 0}%)`,
-                                  `ความก้าวหน้ายุทธศาสตร์: ${f?.progressPct || 0}%`
-                                ];
-                              },
-                              label: () => ''
-                            }
-                          }
+              
+              <div className="pt-2 flex flex-col items-center">
+                {/* Donut Circle */}
+                <div className="h-52 w-full relative flex items-center justify-center">
+                  <Doughnut
+                    data={{
+                      labels: (strategicPillars || []).map((s, idx) => s.strategyCode || `ยุทธศาสตร์ที่ ${idx + 1}`),
+                      datasets: [
+                        {
+                          data: (strategicPillars || []).map(s => s.totalProjects || 0),
+                          backgroundColor: ['#6C3BFF', '#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6'],
+                          borderWidth: 3,
+                          borderColor: '#ffffff',
+                          hoverOffset: 6
+                        }
+                      ]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false
                         },
-                        scales: {
-                          x: {
-                            max: 100,
-                            grid: { color: '#F1F5F9' },
-                            ticks: {
-                              font: { family: "'Prompt', sans-serif", size: 10 },
-                              callback: (v) => `${v}%`
+                        tooltip: {
+                          backgroundColor: '#1E1B4B',
+                          callbacks: {
+                            title: (ctx) => {
+                              const idx = ctx[0]?.dataIndex;
+                              const pillar = (strategicPillars || [])[idx];
+                              return `${pillar?.strategyCode || `S${idx + 1}`}: ${pillar?.strategyName || ''}`;
+                            },
+                            label: (ctx) => {
+                              const total = universityHealth.totalProjects || 1;
+                              const pct = ((ctx.raw / total) * 100).toFixed(1);
+                              return ` สัดส่วน: ${ctx.raw} โครงการ (${pct}%)`;
                             }
-                          },
-                          y: {
-                            grid: { display: false },
-                            ticks: { font: { family: "'Prompt', sans-serif", size: 11, weight: 'bold' } }
                           }
                         }
-                      }}
-                    />
+                      },
+                      cutout: '68%'
+                    }}
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">โครงการทั้งหมด</span>
+                    <span className="text-2xl font-black text-slate-800 tracking-tight">{universityHealth.totalProjects}</span>
+                    <span className="text-[10px] font-bold text-slate-500">โครงการ</span>
                   </div>
-                </>
-              );
-            })()}
-          </div>
+                </div>
 
-          {/* Chart 4: Line Chart - Quarterly Cumulative Burn-down Trend */}
-          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                  <FiClock className="w-4 h-4 text-sky-600 shrink-0" />
-                  <span>แนวโน้มการเบิกจ่ายสะสมรายไตรมาส (Quarterly Burn-down)</span>
-                </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">เทียบผลการเบิกจ่ายจริงกับเป้าหมายมาตรฐานของสำนักงบประมาณ</p>
+                {/* Clean Legend Badges right below Donut Circle */}
+                <div className="w-full mt-2 pt-2 border-t border-slate-100">
+                  <div className="grid grid-cols-2 gap-1.5 text-xs">
+                    {(strategicPillars || []).map((s, idx) => {
+                      const colors = [
+                        { dot: 'bg-[#6C3BFF]', text: 'text-[#6C3BFF]', bg: 'bg-purple-50' },
+                        { dot: 'bg-[#3B82F6]', text: 'text-blue-600', bg: 'bg-blue-50' },
+                        { dot: 'bg-[#10B981]', text: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { dot: 'bg-[#F59E0B]', text: 'text-amber-600', bg: 'bg-amber-50' },
+                        { dot: 'bg-[#EC4899]', text: 'text-pink-600', bg: 'bg-pink-50' },
+                        { dot: 'bg-[#8B5CF6]', text: 'text-violet-600', bg: 'bg-violet-50' }
+                      ];
+                      const c = colors[idx % colors.length];
+                      const totalUniv = universityHealth.totalProjects || 1;
+                      const pct = ((s.totalProjects / totalUniv) * 100).toFixed(1);
+
+                      return (
+                        <div 
+                          key={s.strategyId || idx} 
+                          className={`flex items-center justify-between px-2 py-1 rounded-lg ${c.bg} border border-slate-200/50 shadow-3xs font-extrabold text-[10.5px]`}
+                          title={s.strategyName}
+                        >
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className={`w-2 h-2 rounded-full ${c.dot} shrink-0`} />
+                            <span className="text-slate-700 truncate">{s.strategyCode || `ยุทธศาสตร์ ${idx + 1}`}:</span>
+                          </div>
+                          <span className={`${c.text} ml-1 font-black shrink-0`}>{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="h-72 w-full">
-              <Line
-                data={{
-                  labels: ['ไตรมาส 1 (ต.ค.-ธ.ค.)', 'ไตรมาส 2 (ม.ค.-มี.ค.)', 'ไตรมาส 3 (เม.ย.-มิ.ย.)', 'ไตรมาส 4 (ก.ค.-ก.ย.)'],
-                  datasets: [
-                    {
-                      label: 'เป้าหมายมาตรฐานสำนักงบประมาณ (%)',
-                      data: [25, 50, 75, 100],
-                      borderColor: '#94A3B8',
-                      borderDash: [5, 5],
-                      borderWidth: 2,
-                      pointRadius: 4,
-                      pointBackgroundColor: '#94A3B8',
-                      fill: false,
-                      tension: 0.2
-                    },
-                    {
-                      label: '% อัตราการเบิกจ่ายจริง (Burn Rate)',
-                      data: [
-                        Math.min(universityHealth.overallBurnRate, 30),
-                        Math.min(universityHealth.overallBurnRate, 60),
-                        universityHealth.overallBurnRate,
-                        null
-                      ],
-                      borderColor: '#6C3BFF',
-                      backgroundColor: 'rgba(108, 59, 255, 0.08)',
-                      borderWidth: 3,
-                      fill: true,
-                      tension: 0.3,
-                      pointBackgroundColor: '#6C3BFF',
-                      pointBorderColor: '#ffffff',
-                      pointBorderWidth: 2,
-                      pointRadius: 6
-                    }
-                  ]
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                      labels: {
-                        font: { family: "'Prompt', sans-serif", size: 11, weight: 'bold' },
-                        usePointStyle: true,
-                        boxWidth: 8
-                      }
-                    },
-                    tooltip: {
-                      backgroundColor: '#1E1B4B',
-                      callbacks: {
-                        label: (ctx) => ` ${ctx.dataset.label}: ${ctx.raw}%`
-                      }
-                    }
-                  },
-                  scales: {
-                    x: {
-                      grid: { display: false },
-                      ticks: { font: { family: "'Prompt', sans-serif", size: 10 } }
-                    },
-                    y: {
-                      max: 100,
-                      grid: { color: '#F1F5F9' },
-                      ticks: {
-                        font: { family: "'Prompt', sans-serif", size: 10 },
-                        callback: (v) => `${v}%`
-                      }
-                    }
-                  }
-                }}
-              />
+          </div>
+
+          {/* 💡 Strategy Summary Table - Full Width Standalone Card */}
+          <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                  <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
+                    <FiBookmark className="w-4 h-4 shrink-0" />
+                  </span>
+                  <span>ตารางสรุปผลสัมฤทธิ์รายยุทธศาสตร์ (Strategic Pillars Performance Summary)</span>
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                  สรุปภาพรวมจำนวนโครงการ งบประมาณจัดสรร ยอดเบิกจ่ายจริง และความก้าวหน้าสะสมจำแนกตามรายประเด็นยุทธศาสตร์มหาวิทยาลัย
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[11px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl shadow-3xs">
+                  🎯 ทั้งหมด {strategicPillars.length} ประเด็นยุทธศาสตร์
+                </span>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* 3. 10 Main Projects Strategic Tracking & Drill-down */}
-      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
-        {/* Header with Title & Quick RAG Filters */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
-          <div>
-            <h2 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
-              <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
-                <FiLayers className="w-4 h-4 shrink-0" />
-              </span>
-              <span>ตารางกำกับติดตาม 10 โครงการหลักระดับมหาวิทยาลัย (10 Main Projects Strategic Tracking)</span>
-            </h2>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-              ติดตามความก้าวหน้าและการเบิกจ่ายงบประมาณของ 10 โครงการหลักตามกรอบยุทธศาสตร์
-            </p>
-          </div>
-
-          {/* Quick RAG Filter Buttons */}
-          <div className="flex items-center gap-1.5 flex-wrap no-print">
-            <button
-              type="button"
-              onClick={() => setMpFilter('ALL')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                mpFilter === 'ALL'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-              }`}
-            >
-              ทั้งหมด ({(mainProjects || []).length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setMpFilter('GREEN')}
-              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                mpFilter === 'GREEN'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/60'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-              <span>ปกติ ({(mainProjects || []).filter(m => m.overallStatus === 'GREEN').length})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMpFilter('YELLOW')}
-              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                mpFilter === 'YELLOW'
-                  ? 'bg-amber-500 text-white shadow-xs'
-                  : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/60'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
-              <span>เฝ้าระวัง ({(mainProjects || []).filter(m => m.overallStatus === 'YELLOW').length})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMpFilter('RED')}
-              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                mpFilter === 'RED'
-                  ? 'bg-rose-600 text-white shadow-xs'
-                  : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/60'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
-              <span>วิกฤต ({(mainProjects || []).filter(m => m.overallStatus === 'RED').length})</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Standard Column Header Bar for Desktop */}
-        <div className="hidden lg:flex items-center justify-between px-4 py-2 bg-slate-100/80 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-wider">
-          <div className="flex-1 min-w-0 pr-4">รหัส & ชื่อโครงการหลัก (Main Project - MP)</div>
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="w-24 text-center">โครงการย่อย</div>
-            <div className="w-40 text-right">งบประมาณ / เบิกจ่าย</div>
-            <div className="w-24 text-center">% ความก้าวหน้า</div>
-            <div className="w-20 text-center">สถานะ RAG</div>
-            <div className="w-8 text-center"></div>
-          </div>
-        </div>
-
-        {/* List of 10 Main Projects */}
-        <div className="space-y-2.5">
-          {(mainProjects || [])
-            .filter(m => {
-              if (mpFilter === 'GREEN') return m.overallStatus === 'GREEN';
-              if (mpFilter === 'YELLOW') return m.overallStatus === 'YELLOW';
-              if (mpFilter === 'RED') return m.overallStatus === 'RED';
-              return true;
-            })
-            .map((mp) => {
-              const isExpanded = expandedMainProjectId === mp.id;
-              const statusConfig = {
-                GREEN: { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', border: 'border-l-emerald-500' },
-                YELLOW: { label: 'เฝ้าระวัง', badge: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500', border: 'border-l-amber-400' },
-                RED: { label: 'วิกฤต', badge: 'bg-rose-50 text-rose-700 border-rose-200', dot: 'bg-rose-500', border: 'border-l-rose-500' },
-                GRAY: { label: 'ยังไม่มีโครงการ', badge: 'bg-slate-50 text-slate-500 border-slate-200', dot: 'bg-slate-400', border: 'border-l-slate-300' }
-              }[mp.overallStatus] || { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', border: 'border-l-emerald-500' };
-
-              return (
-                <div 
-                  key={mp.id}
-                  className={`rounded-xl border border-l-4 ${statusConfig.border} transition-all duration-200 overflow-hidden ${
-                    isExpanded 
-                      ? 'border-t-primary/30 border-r-primary/30 border-b-primary/30 shadow-md bg-white' 
-                      : 'border-slate-100 hover:border-slate-200 bg-slate-50/40 hover:bg-white'
-                  }`}
-                >
-                  {/* Main Project Header Row */}
-                  <div 
-                    onClick={() => setExpandedMainProjectId(isExpanded ? null : mp.id)}
-                    className="px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/80 transition-colors select-none group"
-                  >
-                    {/* Left: Code, Title, Clean Breadcrumb */}
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-600 text-white shadow-3xs shrink-0 mt-0.5">
-                        {mp.code}
-                      </span>
-                      <div className="min-w-0 space-y-1 flex-1">
-                        <div className="font-bold text-[13px] text-slate-800 group-hover:text-primary transition-colors leading-snug break-words">
-                          {mp.name}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[10.5px] text-slate-400 font-medium">
-                          <span className="text-slate-600 font-semibold truncate">{mp.localIssueCode ? `${mp.localIssueCode}: ${mp.localIssueName}` : mp.localIssueName}</span>
-                          <span className="text-slate-300 font-bold">›</span>
-                          <span className="text-purple-600 font-semibold truncate">{mp.subStrategyCode ? `${mp.subStrategyCode}: ${mp.subStrategyName}` : mp.subStrategyName}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right: Uniform Fixed-Width Columns */}
-                    <div className="flex items-center gap-4 shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-2.5 lg:pt-0 border-slate-100">
-                      {/* Projects Count */}
-                      <div className="w-24 text-left lg:text-center">
-                        <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">โครงการปฏิบัติการ</div>
-                        <span className="text-xs font-extrabold text-slate-800">{mp.totalProjects}</span> <span className="text-[10.5px] text-slate-400 font-medium">โครงการ</span>
-                      </div>
-
-                      {/* Budget & Spent */}
-                      <div className="w-40 text-left lg:text-right">
-                        <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">งบประมาณ / เบิกจ่าย</div>
-                        <div className="text-xs font-black text-slate-900">{mp.totalBudget.toLocaleString()} ฿</div>
-                        <div className="text-[9.5px] text-slate-500 font-medium mt-0.5">
-                          จ่าย <span className="font-bold text-slate-700">{mp.totalSpent.toLocaleString()} ฿</span> <span className={mp.burnRatePct > 90 ? 'text-amber-600 font-bold' : 'text-emerald-600 font-bold'}>({mp.burnRatePct}%)</span>
-                        </div>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="w-24 text-center">
-                        <div className="flex items-center justify-between text-[9.5px] font-bold mb-0.5">
-                          <span className="text-slate-400">ก้าวหน้า</span>
-                          <span className="text-primary font-black">{mp.progressPct}%</span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-300 ${mp.progressPct < 40 ? 'bg-rose-500' : mp.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
-                            style={{ width: `${Math.min(100, mp.progressPct)}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Status Badge */}
-                      <div className="w-20 flex justify-center">
-                        <span className={`inline-flex items-center justify-center gap-1 w-full py-0.5 rounded-lg text-[9.5px] font-black border shadow-3xs ${statusConfig.badge}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusConfig.dot}`} />
-                          <span className="truncate">{statusConfig.label}</span>
-                        </span>
-                      </div>
-
-                      {/* Toggle Button */}
-                      <div className="w-8 flex justify-center">
-                        <div className={`p-1.5 rounded-lg text-slate-400 transition-all duration-200 ${isExpanded ? 'bg-purple-100 text-primary rotate-180' : 'group-hover:bg-slate-100 group-hover:text-slate-700'}`}>
-                          <FiChevronDown className="w-4 h-4" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Collapsible Inner Projects Table (Drill-down) */}
-                  {isExpanded && (
-                    <div className="border-t border-slate-100 bg-slate-50/60 p-4">
-                      {mp.projects && mp.projects.length > 0 ? (
-                        <div className="rounded-xl border border-slate-200/80 bg-white overflow-x-auto shadow-xs">
-                          <table className="w-full text-[11px] text-left border-collapse min-w-[700px]">
-                            <thead>
-                              <tr className="bg-slate-50/90 border-b border-slate-100 text-[9.5px] font-black text-slate-400 uppercase tracking-wider">
-                                <th className="py-2.5 px-3.5">ชื่อโครงการปฏิบัติการย่อย (Operational Project)</th>
-                                <th className="py-2.5 px-3 w-44">คณะ / ภาควิชา</th>
-                                <th className="py-2.5 px-3 w-36">ผู้รับผิดชอบโครงการ</th>
-                                <th className="py-2.5 px-3 w-28 text-right">งบประมาณ</th>
-                                <th className="py-2.5 px-3 w-28 text-right">เบิกจ่ายจริง</th>
-                                <th className="py-2.5 px-3 w-24 text-center">% ก้าวหน้า</th>
-                                <th className="py-2.5 px-3 w-16 text-center">ดูข้อมูล</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                              {mp.projects.map((subP) => (
-                                <tr key={subP.id} className="hover:bg-purple-50/30 transition-colors">
-                                  <td className="py-2.5 px-3.5 font-bold text-slate-800 leading-snug break-words">
-                                    {subP.name}
-                                  </td>
-                                  <td className="py-2.5 px-3">
-                                    <div className="font-bold text-slate-700 text-[11px]">{subP.facultyName}</div>
-                                    <div className="text-[9.5px] text-slate-400 font-medium">{subP.departmentName}</div>
-                                  </td>
-                                  <td className="py-2.5 px-3">
-                                    <div className="text-[10.5px] font-medium text-slate-600 flex items-center gap-1">
-                                      <FiUser className="w-3 h-3 text-slate-400 shrink-0" />
-                                      <span>{subP.creatorName}</span>
-                                    </div>
-                                  </td>
-                                  <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">
-                                    {subP.totalBudget.toLocaleString()} ฿
-                                  </td>
-                                  <td className="py-2.5 px-3 text-right font-bold text-emerald-600 whitespace-nowrap">
-                                    {subP.actualSpent.toLocaleString()} ฿
-                                  </td>
-                                  <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                                    <div className="font-black text-primary text-[11px]">{subP.progress}%</div>
-                                    <div className="w-14 bg-slate-100 h-1.5 rounded-full mx-auto mt-0.5 overflow-hidden">
-                                      <div 
-                                        className={`h-full rounded-full ${subP.progress < 40 ? 'bg-rose-500' : subP.progress < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
-                                        style={{ width: `${Math.min(100, subP.progress)}%` }}
-                                      />
-                                    </div>
-                                  </td>
-                                  <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenDetailModal(subP);
-                                      }}
-                                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-600 transition-all cursor-pointer shadow-3xs active:scale-95"
-                                      title="ดูรายละเอียดโครงการและออกข้อสั่งการ"
-                                    >
-                                      <FiEye className="w-3.5 h-3.5" />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="text-center py-5 text-slate-400 text-xs font-medium bg-white rounded-xl border border-dashed border-slate-200">
-                          ยังไม่มีคณะใดส่งข้อเสนอโครงการปฏิบัติการภายใต้โครงการหลักนี้
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-      </div>
-
-      {/* 3.5. Cross-Faculty Strategic Heatmap Matrix (Comparative Exception Tracker) */}
-      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-              <FiGrid className="w-5 h-5 text-primary shrink-0" />
-              <span>ตารางเปรียบเทียบผลงานตามคณะ/สำนัก (Cross-Faculty Strategic Heatmap)</span>
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">ตารางประเมินเปรียบเทียบ % ความก้าวหน้ายุทธศาสตร์ % การใช้จ่ายงบประมาณ และจำนวนจุดวิกฤตจำแนกรายคณะ</p>
-          </div>
-
-          {/* Toggle show all faculties / only active */}
-          {(crossFacultyMatrix || []).some(f => f.totalProjects === 0) && (
-            <button
-              type="button"
-              onClick={() => setShowAllFaculties(!showAllFaculties)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer shrink-0 self-start sm:self-auto bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 shadow-3xs active:scale-95 no-print"
-            >
-              <FiFilter className="w-3.5 h-3.5 text-primary" />
-              <span>{showAllFaculties ? 'แสดงเฉพาะคณะที่มีโครงการ' : `แสดงทุกคณะ (${crossFacultyMatrix.length})`}</span>
-            </button>
-          )}
-        </div>
-
-        <div className="overflow-x-auto print:overflow-visible scrollbar-thin">
-          {(() => {
-            const activeFaculties = (crossFacultyMatrix || []).filter(f => f.totalProjects > 0);
-            // In print mode, always display all faculties for complete institutional records
-            const displayedFaculties = crossFacultyMatrix && crossFacultyMatrix.length > 0 ? crossFacultyMatrix : activeFaculties;
-
-            return (
-              <table className="w-full text-xs text-left border-collapse print:text-[11px] min-w-[760px] print:min-w-full">
+            <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
+              <table className="w-full text-xs text-left border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px] print:bg-slate-100 print:text-slate-800">
-                    <th className="py-3 px-3">คณะ / สำนัก</th>
-                    <th className="py-3 px-3 w-28 text-center">จำนวนโครงการ</th>
-                    <th className="py-3 px-3 w-32 text-right">งบประมาณจัดสรร</th>
-                    <th className="py-3 px-3 w-32 text-right">เบิกจ่ายจริง</th>
-                    <th className="py-3 px-3 w-28 text-center">% ความก้าวหน้า</th>
-                    <th className="py-3 px-3 w-24 text-center">% Burn Rate</th>
-                    <th className="py-3 px-3 w-40 text-center">สถานะโครงการ</th>
+                  <tr className="bg-slate-50/90 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
+                    <th className="py-3 px-4 w-[38%]">ประเด็นยุทธศาสตร์ (Strategic Pillar)</th>
+                    <th className="py-3 px-3 text-center w-[12%]">โครงการ</th>
+                    <th className="py-3 px-4 text-right w-[16%]">งบประมาณจัดสรร</th>
+                    <th className="py-3 px-4 text-right w-[18%]">เบิกจ่ายจริง</th>
+                    <th className="py-3 px-4 text-center w-[16%]">ความก้าวหน้ารวม</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 print:divide-slate-300">
-                  {displayedFaculties.map((fac) => {
-                    const facName = fac.facultyName || 'ส่วนกลาง';
-                    const formattedFac = (!facName || facName === 'ส่วนกลาง' || facName.startsWith('คณะ')) ? facName : `คณะ${facName}`;
-
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {(strategicPillars || []).map((s, idx) => {
+                    const burnRatePct = s.totalBudget > 0 ? ((s.totalSpent / s.totalBudget) * 100).toFixed(1) : 0;
                     return (
-                      <tr 
-                        key={fac.facultyId} 
-                        onClick={() => handleFacultyClick(fac.facultyId, formattedFac)}
-                        className="hover:bg-slate-50 hover:shadow-3xs cursor-pointer transition-colors group align-middle"
-                        title={`คลิกเพื่อดูรายการโครงการของ ${formattedFac}`}
-                      >
-                        <td className="py-3.5 px-4 font-extrabold text-slate-800 group-hover:text-primary transition-colors flex items-center gap-2 whitespace-nowrap">
-                          <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${fac.overallStatus === 'RED' ? 'bg-rose-500' : fac.overallStatus === 'YELLOW' ? 'bg-amber-400' : 'bg-emerald-500'}`} />
-                          <span>{formattedFac}</span>
-                        </td>
-                        <td className="py-3.5 px-4 text-center font-bold text-slate-700 whitespace-nowrap">
-                          {fac.totalProjects} โครงการ
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-extrabold text-slate-800 whitespace-nowrap">
-                          {fac.totalBudget.toLocaleString()} ฿
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-extrabold text-emerald-600 whitespace-nowrap">
-                          {fac.totalSpent.toLocaleString()} ฿
-                        </td>
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                          <div className="font-extrabold text-slate-800">{fac.progressPct}%</div>
-                          <div className="w-20 bg-slate-100 h-1.5 rounded-full mx-auto mt-1 overflow-hidden">
-                            <div className={`h-full rounded-full ${fac.progressPct < 40 ? 'bg-rose-500' : fac.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, fac.progressPct)}%` }} />
+                      <tr key={s.strategyId || idx} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-start gap-2.5">
+                            <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 shrink-0 mt-0.5">
+                              {s.strategyCode || `S${idx + 1}`}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="font-bold text-[13px] text-slate-800 leading-snug break-words">
+                                {s.strategyName}
+                              </div>
+                              {s.localIssueName && (
+                                <div className="text-[10px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
+                                  <span className="text-slate-500 font-semibold">{s.localIssueCode ? `${s.localIssueCode}: ` : ''}{s.localIssueName}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-center font-extrabold text-slate-700 whitespace-nowrap">
-                          {fac.burnRatePct}%
+                        <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-700">
+                          <span className="text-xs font-black text-slate-800">{s.totalProjects}</span> <span className="text-slate-400 font-normal text-[10.5px]">โครงการ</span>
                         </td>
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-2 text-[11px] font-extrabold">
-                            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">🟢 {fac.greenCount} ปกติ</span>
-                            <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">🟡 {fac.yellowCount} เฝ้าระวัง</span>
-                            <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">🔴 {fac.redCount} วิกฤต</span>
+                        <td className="py-3 px-4 text-right whitespace-nowrap font-extrabold text-slate-800">
+                          {Number(s.totalBudget || 0).toLocaleString()} ฿
+                        </td>
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <span className="font-black text-slate-900">{Number(s.totalSpent || 0).toLocaleString()} ฿</span>
+                          <span className="ml-2 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                            {burnRatePct}%
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-2.5">
+                            <div className="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full transition-all duration-300 ${s.progressPct >= 75 ? 'bg-emerald-500' : s.progressPct >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} 
+                                style={{ width: `${Math.min(100, s.progressPct)}%` }} 
+                              />
+                            </div>
+                            <span className="font-black text-slate-800 text-[11.5px] w-9 text-right">
+                              {s.progressPct}%
+                            </span>
                           </div>
                         </td>
                       </tr>
@@ -1332,230 +1195,9 @@ const PresidentDashboard = () => {
                   })}
                 </tbody>
               </table>
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* 4. Critical Bottleneck Alerts Panel (Top Flagship Red Projects) */}
-      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-              <span className="p-1.5 rounded-xl bg-rose-100 text-rose-600">
-                <FiAlertTriangle className="w-5 h-5 shrink-0" />
-              </span>
-              <span>โครงการติดธงแดงวิกฤตที่ต้องเร่งรัด (Critical Red Flag Projects)</span>
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              โครงการที่มีความล่าช้ากว่าแผน หรือมีผลการดำเนินงานต่ำกว่าเกณฑ์มาตรฐาน จำเป็นต้องได้รับการสนับสนุนหรือสั่งการแก้ไข
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0 no-print">
-            <span className="text-xs font-black text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl shadow-3xs">
-              🔴 วิกฤต {(criticalBottlenecks || []).length} โครงการ
-            </span>
-          </div>
-        </div>
-
-        {(criticalBottlenecks && criticalBottlenecks.length > 0) ? (
-          <div className="overflow-x-auto print:overflow-visible scrollbar-thin">
-            <table className="w-full text-xs text-left border-collapse print:text-[11px] min-w-[700px] print:min-w-full">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold text-[10px] print:bg-slate-100 print:text-slate-800">
-                  <th className="py-3 px-3">ชื่อโครงการ / ผู้รับผิดชอบ</th>
-                  <th className="py-3 px-3 w-40">คณะ / ภาควิชา</th>
-                  <th className="py-3 px-3 w-28 text-right">งบประมาณ</th>
-                  <th className="py-3 px-3 w-28 text-right">เบิกจ่ายจริง</th>
-                  <th className="py-3 px-3 w-24 text-center">% ก้าวหน้า</th>
-                  <th className="py-3 px-3 w-24 text-center">ข้อสั่งการ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 print:divide-slate-300">
-                {criticalBottlenecks.map((p) => {
-                  const hasDirective = !!(p.presidentDirective || p.executiveDirective);
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-50/70 transition-colors group align-middle">
-                      <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-slate-800 group-hover:text-primary transition-colors leading-snug">
-                          {p.name}
-                        </div>
-                        <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
-                          <FiUser className="w-3 h-3 shrink-0" />
-                          <span>{p.creatorName || 'ไม่ระบุผู้รับผิดชอบ'}</span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-3">
-                        <div className="font-bold text-slate-700 text-xs">{p.facultyName || 'ส่วนกลาง'}</div>
-                        <div className="text-[10px] text-slate-400 font-semibold">{p.departmentName || 'ไม่ระบุภาควิชา'}</div>
-                      </td>
-                      <td className="py-3.5 px-3 text-right font-extrabold text-slate-800 whitespace-nowrap">
-                        {p.totalBudget?.toLocaleString()} ฿
-                      </td>
-                      <td className="py-3.5 px-3 text-right font-extrabold text-emerald-600 whitespace-nowrap">
-                        {p.actualSpent?.toLocaleString()} ฿
-                      </td>
-                      <td className="py-3.5 px-3 text-center whitespace-nowrap">
-                        <div className="font-black text-rose-600">{p.progressPct}%</div>
-                        <div className="w-14 bg-slate-100 h-1.5 rounded-full mx-auto mt-0.5 overflow-hidden print:hidden">
-                          <div className="bg-rose-500 h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, p.progressPct)}%` }} />
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-3 text-center print:text-left whitespace-nowrap">
-                        {/* Screen Button */}
-                        <div className="print:hidden flex justify-center">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedProjectModal(p)}
-                            className={`inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer shadow-sm ${hasDirective ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20' : 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'}`}
-                            title="ดูรายละเอียดและออกข้อสั่งการอธิการบดี"
-                          >
-                            <FiSend className="w-3 h-3 shrink-0" />
-                            <span>{hasDirective ? 'ดูสั่งการ' : 'สั่งการ'}</span>
-                          </button>
-                        </div>
-                        {/* Print Directive Text */}
-                        <div className="hidden print:block text-[10px] font-semibold text-slate-800 max-w-[200px] break-words">
-                          {hasDirective ? (
-                            <span>"{p.presidentDirective || p.executiveDirective}"</span>
-                          ) : (
-                            <span className="text-slate-400 italic">อยู่ระหว่างติดตามและประสานงาน</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-            <FiCheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-            <div className="text-sm font-extrabold text-slate-700">ไม่มีโครงการสำคัญระดับมหาวิทยาลัยติดสถานะวิกฤต</div>
-            <div className="text-xs text-slate-400 mt-0.5">การดำเนินงานตามแผนยุทธศาสตร์ภาพรวมของมหาวิทยาลัยเป็นไปอย่างราบรื่น</div>
-          </div>
-        )}
-      </div>
-
-      {/* 4.5 Recent Activity Photos (Evidence-based Executive Gallery with Faculty Filter) */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-slate-100 space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-50 pb-5">
-          <div className="space-y-1">
-            <h2 className="text-base md:text-lg font-black text-slate-800 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-violet-600 animate-pulse" />
-              <span>คลังภาพกิจกรรมความสำเร็จล่าสุด (Recent Activity Photos)</span>
-            </h2>
-            <p className="text-xs text-slate-500 font-medium">ภาพถ่ายหน้างานจริงและหลักฐานเชิงประจักษ์ของการจัดโครงการและกิจกรรมต่าง ๆ ทั่วทั้งมหาวิทยาลัย</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            {/* Faculty Filter Dropdown */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-extrabold text-slate-500 hidden sm:inline">กรองสังกัด:</span>
-              <CustomSelect
-                value={selectedPhotoFaculty}
-                onChange={(val) => {
-                  setSelectedPhotoFaculty(val);
-                  setActivePhotoIndex(null);
-                }}
-                options={[
-                  { value: '', label: '🏛️ ทุกคณะวิชา (ภาพรวมสถาบัน)' },
-                  ...facultiesList.map(f => ({
-                    value: String(f.id),
-                    label: f.name.startsWith('คณะ') ? f.name : `คณะ${f.name}`
-                  }))
-                ]}
-                triggerClassName="bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-extrabold px-3.5 py-2 rounded-xl border border-slate-200 shadow-3xs flex items-center justify-between gap-2 min-w-[210px] cursor-pointer"
-                optionsClassName="absolute right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1 max-h-60 overflow-y-auto min-w-[230px]"
-              />
             </div>
-
-            {filteredPhotos.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setActivePhotoIndex(0)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-violet-50 hover:bg-violet-100 text-primary rounded-xl font-extrabold text-xs transition-all border border-violet-200/70 shadow-3xs cursor-pointer active:scale-95 shrink-0"
-                title="เปิดดูสไลด์ภาพทั้งหมดแบบเต็มจอ"
-              >
-                <FiMaximize2 className="w-3.5 h-3.5" />
-                <span>เปิดดูสไลด์ ({filteredPhotos.length} ภาพ)</span>
-              </button>
-            )}
           </div>
         </div>
-
-        {filteredPhotos.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-5">
-            {filteredPhotos.map((photo, index) => {
-              const facName = photo.facultyName || 'ส่วนกลาง';
-              const formattedFac = (!facName || facName === 'ส่วนกลาง' || facName.startsWith('คณะ')) ? facName : `คณะ${facName}`;
-
-              return (
-                <div 
-                  key={photo.id || index} 
-                  onClick={() => setActivePhotoIndex(index)}
-                  className="bg-white rounded-3xl border border-slate-100 hover:border-violet-200 shadow-soft hover:shadow-xl transition-all duration-300 active:scale-[0.98] overflow-hidden flex flex-col justify-between cursor-pointer group h-full"
-                >
-                  {/* 1. Unobstructed Pure Photo Container (Fixed 16:10 Ratio) */}
-                  <div className="relative aspect-16/10 w-full shrink-0 overflow-hidden bg-slate-900">
-                    <img 
-                      src={getImageUrl(photo.imageUrl)} 
-                      alt={photo.activityName} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80';
-                      }}
-                    />
-                    {/* Floating Zoom Hint on Hover */}
-                    <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <span className="bg-slate-950/75 backdrop-blur-xs text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-                        <FiMaximize2 className="w-3.5 h-3.5" />
-                        <span>คลิกขยายดูภาพ</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 2. Structured Information Body (Locked Heights for 100% Equal Size) */}
-                  <div className="p-3.5 sm:p-4 flex flex-col justify-between flex-1 space-y-2.5 bg-white">
-                    <div className="space-y-1.5">
-                      {/* Faculty Badge Tag (Fixed h-6) */}
-                      <div className="h-6 flex items-center">
-                        <span className="text-[10px] font-black px-2.5 py-0.5 rounded-lg bg-violet-50 text-violet-700 border border-violet-100/80 shadow-3xs truncate max-w-[95%] inline-block" title={formattedFac}>
-                          🏛️ {formattedFac}
-                        </span>
-                      </div>
-
-                      {/* Activity Title (Fixed h-10 for 2-line consistency) */}
-                      <div className="h-10 flex items-start overflow-hidden">
-                        <h4 className="font-extrabold text-slate-800 text-xs group-hover:text-primary transition-colors leading-snug line-clamp-2" title={photo.activityName}>
-                          {photo.activityName}
-                        </h4>
-                      </div>
-                    </div>
-
-                    {/* Department Tag at Bottom (Fixed h-7) */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] h-7 shrink-0">
-                      <span className="font-semibold text-slate-500 truncate max-w-[85%]" title={photo.departmentName}>
-                        {photo.departmentName || 'ไม่ระบุภาควิชา'}
-                      </span>
-                      <span className="text-slate-400 group-hover:text-primary transition-colors text-xs shrink-0">
-                        <FiEye className="w-3.5 h-3.5" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-            <div className="text-sm font-extrabold text-slate-700">ไม่พบภาพกิจกรรมในคณะที่เลือก</div>
-            <div className="text-xs text-slate-400 mt-0.5">ท่านสามารถเลือกคณะอื่น หรือเลือก "ทุกคณะวิชา" เพื่อดูภาพกิจกรรมทั้งหมดของมหาวิทยาลัย</div>
-          </div>
-        )}
-      </div>
 
       {/* Lightbox Modal (Full Gallery View - Preserves 100% Original Photo Dimensions) */}
       {activePhotoIndex !== null && filteredPhotos[activePhotoIndex] && (() => {
