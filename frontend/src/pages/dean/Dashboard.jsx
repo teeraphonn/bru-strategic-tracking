@@ -75,6 +75,7 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
   const [deptProjects, setDeptProjects] = useState(null);
   const [loadingDeptProjects, setLoadingDeptProjects] = useState(false);
   const [expandedMainProjectId, setExpandedMainProjectId] = useState(null);
+  const [mpFilter, setMpFilter] = useState('ALL'); // 'ALL' | 'GREEN' | 'YELLOW' | 'RED'
 
   const recentPhotos = data?.recentPhotos || [];
   const visiblePhotos = recentPhotos.slice(0, 4);
@@ -984,10 +985,11 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
       </div>
 
       {/* 2.8. Faculty Main Projects Strategic Tracking & Drill-down */}
-      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-5 space-y-3.5 print:border-slate-300 print-break-inside-avoid">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100 print:border-slate-300">
+      <div className="bg-white rounded-3xl shadow-soft border border-slate-100 p-6 space-y-4 print:border-slate-300 print-break-inside-avoid">
+        {/* Header with Title & Quick RAG Filters */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100 print:border-slate-300">
           <div>
-            <h2 className="text-sm md:text-[15px] font-extrabold text-slate-800 flex items-center gap-2">
+            <h2 className="text-sm md:text-base font-extrabold text-slate-800 flex items-center gap-2">
               <span className="p-1.5 rounded-xl bg-purple-100 text-primary">
                 <FiLayers className="w-4 h-4 shrink-0" />
               </span>
@@ -997,210 +999,258 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
               ความก้าวหน้าและการขับเคลื่อนโครงการหลักระดับมหาวิทยาลัย (MP1.1 - MP4.3) จำแนกตามโครงการปฏิบัติการของคณะ
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[11px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl shadow-3xs">
-              🎯 ทั้งหมด {(mainProjects || []).length} โครงการหลัก
-            </span>
+
+          {/* Quick RAG Filter Buttons */}
+          <div className="flex items-center gap-1.5 flex-wrap no-print">
+            <button
+              type="button"
+              onClick={() => setMpFilter('ALL')}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                mpFilter === 'ALL'
+                  ? 'bg-slate-900 text-white shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+              }`}
+            >
+              ทั้งหมด ({(mainProjects || []).length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMpFilter('GREEN')}
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                mpFilter === 'GREEN'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/60'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+              <span>ปกติ ({(mainProjects || []).filter(m => m.overallStatus === 'GREEN').length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMpFilter('YELLOW')}
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                mpFilter === 'YELLOW'
+                  ? 'bg-amber-500 text-white shadow-xs'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/60'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span>เฝ้าระวัง ({(mainProjects || []).filter(m => m.overallStatus === 'YELLOW').length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMpFilter('RED')}
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                mpFilter === 'RED'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/60'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+              <span>วิกฤต ({(mainProjects || []).filter(m => m.overallStatus === 'RED').length})</span>
+            </button>
           </div>
         </div>
 
         {/* Standard Column Header Bar for Desktop */}
         <div className="hidden lg:flex items-center justify-between px-4 py-2 bg-slate-100/80 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-wider">
           <div className="flex-1 min-w-0 pr-4">รหัส & ชื่อโครงการหลัก (Main Project - MP)</div>
-          <div className="flex items-center gap-3.5 shrink-0">
+          <div className="flex items-center gap-4 shrink-0">
             <div className="w-24 text-center">โครงการคณะ</div>
             <div className="w-40 text-right">งบประมาณ / เบิกจ่าย</div>
             <div className="w-24 text-center">% ความก้าวหน้า</div>
             <div className="w-20 text-center">สถานะ RAG</div>
-            <div className="w-7 text-center"></div>
+            <div className="w-8 text-center"></div>
           </div>
         </div>
 
         {/* List of Main Projects for this Faculty */}
         <div className="space-y-2.5">
-          {(mainProjects || []).map((mp) => {
-            const isExpanded = expandedMainProjectId === mp.id;
-            const hasFacultyProjects = mp.totalProjects > 0;
-            const statusConfig = {
-              GREEN: { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
-              YELLOW: { label: 'เฝ้าระวัง', badge: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
-              RED: { label: 'วิกฤต', badge: 'bg-rose-50 text-rose-700 border-rose-200', dot: 'bg-rose-500' },
-              GRAY: { label: 'คณะยังไม่มีโครงการ', badge: 'bg-slate-50 text-slate-400 border-slate-200', dot: 'bg-slate-300' }
-            }[mp.overallStatus] || { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' };
+          {(mainProjects || [])
+            .filter(m => {
+              if (mpFilter === 'GREEN') return m.overallStatus === 'GREEN';
+              if (mpFilter === 'YELLOW') return m.overallStatus === 'YELLOW';
+              if (mpFilter === 'RED') return m.overallStatus === 'RED';
+              return true;
+            })
+            .map((mp) => {
+              const isExpanded = expandedMainProjectId === mp.id;
+              const hasFacultyProjects = mp.totalProjects > 0;
+              const statusConfig = {
+                GREEN: { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', border: 'border-l-emerald-500' },
+                YELLOW: { label: 'เฝ้าระวัง', badge: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500', border: 'border-l-amber-400' },
+                RED: { label: 'วิกฤต', badge: 'bg-rose-50 text-rose-700 border-rose-200', dot: 'bg-rose-500', border: 'border-l-rose-500' },
+                GRAY: { label: 'คณะยังไม่มีโครงการ', badge: 'bg-slate-50 text-slate-400 border-slate-200', dot: 'bg-slate-300', border: 'border-l-slate-300' }
+              }[mp.overallStatus] || { label: 'ปกติ', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', border: 'border-l-emerald-500' };
 
-            return (
-              <div 
-                key={mp.id}
-                className={`rounded-xl border transition-all duration-200 overflow-hidden ${
-                  isExpanded ? 'border-primary/40 shadow-sm bg-white' : 'border-slate-100 hover:border-slate-200 bg-slate-50/40'
-                }`}
-              >
-                {/* Main Project Header Row */}
+              return (
                 <div 
-                  onClick={() => setExpandedMainProjectId(isExpanded ? null : mp.id)}
-                  className="px-3.5 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/80 transition-colors select-none"
+                  key={mp.id}
+                  className={`rounded-xl border border-l-4 ${statusConfig.border} transition-all duration-200 overflow-hidden ${
+                    isExpanded 
+                      ? 'border-t-primary/30 border-r-primary/30 border-b-primary/30 shadow-md bg-white' 
+                      : 'border-slate-100 hover:border-slate-200 bg-slate-50/40 hover:bg-white'
+                  }`}
                 >
-                  {/* Left: Code, Title, Strategic Tiers */}
-                  <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                    <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-lg bg-purple-600 text-white shadow-3xs shrink-0 mt-0.5">
-                      {mp.code}
-                    </span>
-                    <div className="min-w-0 space-y-1 flex-1">
-                      <div className="font-bold text-[12.5px] text-slate-800 leading-snug break-words">
-                        {mp.name}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1 text-[9.5px]">
-                        {mp.localIssueCode && (
-                          <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/60 font-medium leading-relaxed">
-                            {mp.localIssueCode}: {mp.localIssueName}
-                          </span>
-                        )}
-                        {mp.subStrategyCode && (
-                          <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-100 font-medium leading-relaxed">
-                            {mp.subStrategyCode}: {mp.subStrategyName}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: Uniform Fixed-Width Columns */}
-                  <div className="flex items-center gap-3.5 shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-2.5 lg:pt-0 border-slate-100">
-                    {/* Projects Count */}
-                    <div className="w-24 text-left lg:text-center">
-                      <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">โครงการของคณะ</div>
-                      <div className="text-[11.5px] font-bold text-slate-700">{mp.totalProjects} โครงการ</div>
-                    </div>
-
-                    {/* Budget & Spent */}
-                    <div className="w-40 text-left lg:text-right">
-                      {hasFacultyProjects ? (
-                        <>
-                          <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">งบประมาณ / เบิกจ่าย</div>
-                          <div className="text-[11.5px] font-extrabold text-slate-800">{mp.totalBudget.toLocaleString()} ฿</div>
-                          <div className="text-[9.5px] text-slate-500 font-medium">
-                            จ่าย {mp.totalSpent.toLocaleString()} ฿ <span className="text-emerald-600 font-bold">({mp.burnRatePct}%)</span>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-[10.5px] text-slate-400 font-medium italic">ยังไม่มีงบประมาณ</div>
-                      )}
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="w-24 text-center">
-                      {hasFacultyProjects ? (
-                        <>
-                          <div className="flex items-center justify-between text-[9.5px] font-bold mb-0.5">
-                            <span className="text-slate-400">ก้าวหน้า</span>
-                            <span className="text-primary font-black">{mp.progressPct}%</span>
-                          </div>
-                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full transition-all duration-300 ${mp.progressPct < 40 ? 'bg-rose-500' : mp.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
-                              style={{ width: `${Math.min(100, mp.progressPct)}%` }}
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <span className="text-[11px] text-slate-300 font-bold">—</span>
-                      )}
-                    </div>
-
-                    {/* Status Badge */}
-                    <div className="w-20 flex justify-center">
-                      <span className={`inline-flex items-center justify-center gap-1 w-full py-0.5 rounded-lg text-[9.5px] font-bold border ${statusConfig.badge}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusConfig.dot}`} />
-                        <span className="truncate">{statusConfig.label}</span>
+                  {/* Main Project Header Row */}
+                  <div 
+                    onClick={() => setExpandedMainProjectId(isExpanded ? null : mp.id)}
+                    className="px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/80 transition-colors select-none group"
+                  >
+                    {/* Left: Code, Title, Clean Breadcrumb */}
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-md bg-purple-600 text-white shadow-3xs shrink-0 mt-0.5">
+                        {mp.code}
                       </span>
+                      <div className="min-w-0 space-y-1 flex-1">
+                        <div className="font-bold text-[13px] text-slate-800 group-hover:text-primary transition-colors leading-snug break-words">
+                          {mp.name}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10.5px] text-slate-400 font-medium">
+                          <span className="text-slate-600 font-semibold truncate">{mp.localIssueCode ? `${mp.localIssueCode}: ${mp.localIssueName}` : mp.localIssueName}</span>
+                          <span className="text-slate-300 font-bold">›</span>
+                          <span className="text-purple-600 font-semibold truncate">{mp.subStrategyCode ? `${mp.subStrategyCode}: ${mp.subStrategyName}` : mp.subStrategyName}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Toggle Icon */}
-                    <div className="w-7 flex justify-center">
-                      <div className="p-1 rounded-md text-slate-400 hover:text-slate-600">
-                        {isExpanded ? <FiChevronUp className="w-3.5 h-3.5" /> : <FiChevronDown className="w-3.5 h-3.5" />}
+                    {/* Right: Uniform Fixed-Width Columns */}
+                    <div className="flex items-center gap-4 shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-2.5 lg:pt-0 border-slate-100">
+                      {/* Projects Count */}
+                      <div className="w-24 text-left lg:text-center">
+                        <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">โครงการของคณะ</div>
+                        <span className="text-xs font-extrabold text-slate-800">{mp.totalProjects}</span> <span className="text-[10.5px] text-slate-400 font-medium">โครงการ</span>
+                      </div>
+
+                      {/* Budget & Spent */}
+                      <div className="w-40 text-left lg:text-right">
+                        {hasFacultyProjects ? (
+                          <>
+                            <div className="text-[9.5px] font-bold text-slate-400 uppercase lg:hidden">งบประมาณ / เบิกจ่าย</div>
+                            <div className="text-xs font-black text-slate-900">{mp.totalBudget.toLocaleString()} ฿</div>
+                            <div className="text-[9.5px] text-slate-500 font-medium mt-0.5">
+                              จ่าย <span className="font-bold text-slate-700">{mp.totalSpent.toLocaleString()} ฿</span> <span className={mp.burnRatePct > 90 ? 'text-amber-600 font-bold' : 'text-emerald-600 font-bold'}>({mp.burnRatePct}%)</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-[10.5px] text-slate-400 font-medium italic">ยังไม่มีงบประมาณ</div>
+                        )}
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="w-24 text-center">
+                        {hasFacultyProjects ? (
+                          <>
+                            <div className="flex items-center justify-between text-[9.5px] font-bold mb-0.5">
+                              <span className="text-slate-400">ก้าวหน้า</span>
+                              <span className="text-primary font-black">{mp.progressPct}%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full transition-all duration-300 ${mp.progressPct < 40 ? 'bg-rose-500' : mp.progressPct < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                                style={{ width: `${Math.min(100, mp.progressPct)}%` }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-slate-300 font-bold">—</span>
+                        )}
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="w-20 flex justify-center">
+                        <span className={`inline-flex items-center justify-center gap-1 w-full py-0.5 rounded-lg text-[9.5px] font-black border shadow-3xs ${statusConfig.badge}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusConfig.dot}`} />
+                          <span className="truncate">{statusConfig.label}</span>
+                        </span>
+                      </div>
+
+                      {/* Toggle Button */}
+                      <div className="w-8 flex justify-center">
+                        <div className={`p-1.5 rounded-lg text-slate-400 transition-all duration-200 ${isExpanded ? 'bg-purple-100 text-primary rotate-180' : 'group-hover:bg-slate-100 group-hover:text-slate-700'}`}>
+                          <FiChevronDown className="w-4 h-4" />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Collapsible Inner Projects Table (Drill-down) */}
-                {isExpanded && (
-                  <div className="border-t border-slate-100 bg-white p-3">
-                    {mp.projects && mp.projects.length > 0 ? (
-                      <div className="rounded-xl border border-slate-100 overflow-x-auto shadow-3xs">
-                        <table className="w-full text-[11px] text-left border-collapse min-w-[680px]">
-                          <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100 text-[9.5px] font-extrabold text-slate-400 uppercase tracking-wider">
-                              <th className="py-2 px-3">ชื่อโครงการปฏิบัติการ (Operational Project)</th>
-                              <th className="py-2 px-3 w-44">ภาควิชา / หน่วยงาน</th>
-                              <th className="py-2 px-3 w-32">ผู้รับผิดชอบโครงการ</th>
-                              <th className="py-2 px-3 w-28 text-right">งบประมาณ</th>
-                              <th className="py-2 px-3 w-28 text-right">เบิกจ่ายจริง</th>
-                              <th className="py-2 px-3 w-24 text-center">% ก้าวหน้า</th>
-                              <th className="py-2 px-3 w-16 text-center">ดูข้อมูล</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100">
-                            {mp.projects.map((subP) => (
-                              <tr key={subP.id} className="hover:bg-slate-50/70 transition-colors">
-                                <td className="py-2.5 px-3 font-semibold text-slate-800 leading-normal break-words">
-                                  {subP.name}
-                                </td>
-                                <td className="py-2.5 px-3">
-                                  <span className="text-[10.5px] font-bold text-slate-700 px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200/60">
-                                    {subP.departmentName}
-                                  </span>
-                                </td>
-                                <td className="py-2.5 px-3">
-                                  <div className="text-[10.5px] font-medium text-slate-600 flex items-center gap-1">
-                                    <FiUser className="w-3 h-3 text-slate-400 shrink-0" />
-                                    <span>{subP.creatorName}</span>
-                                  </div>
-                                </td>
-                                <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">
-                                  {subP.totalBudget.toLocaleString()} ฿
-                                </td>
-                                <td className="py-2.5 px-3 text-right font-bold text-emerald-600 whitespace-nowrap">
-                                  {subP.actualSpent.toLocaleString()} ฿
-                                </td>
-                                <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                                  <div className="font-extrabold text-primary text-[11px]">{subP.progress}%</div>
-                                  <div className="w-14 bg-slate-100 h-1 rounded-full mx-auto mt-0.5 overflow-hidden">
-                                    <div 
-                                      className={`h-full rounded-full ${subP.progress < 40 ? 'bg-rose-500' : subP.progress < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
-                                      style={{ width: `${Math.min(100, subP.progress)}%` }}
-                                    />
-                                  </div>
-                                </td>
-                                <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedProjectModal(subP);
-                                    }}
-                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-600 transition-all cursor-pointer shadow-3xs active:scale-95"
-                                    title="ดูรายละเอียดโครงการและออกข้อสั่งการ"
-                                  >
-                                    <FiEye className="w-3 h-3" />
-                                  </button>
-                                </td>
+                  {/* Collapsible Inner Projects Table (Drill-down) */}
+                  {isExpanded && (
+                    <div className="border-t border-slate-100 bg-slate-50/60 p-4">
+                      {mp.projects && mp.projects.length > 0 ? (
+                        <div className="rounded-xl border border-slate-200/80 bg-white overflow-x-auto shadow-xs">
+                          <table className="w-full text-[11px] text-left border-collapse min-w-[700px]">
+                            <thead>
+                              <tr className="bg-slate-50/90 border-b border-slate-100 text-[9.5px] font-black text-slate-400 uppercase tracking-wider">
+                                <th className="py-2.5 px-3.5">ชื่อโครงการปฏิบัติการ (Operational Project)</th>
+                                <th className="py-2.5 px-3 w-44">ภาควิชา / หน่วยงาน</th>
+                                <th className="py-2.5 px-3 w-36">ผู้รับผิดชอบโครงการ</th>
+                                <th className="py-2.5 px-3 w-28 text-right">งบประมาณ</th>
+                                <th className="py-2.5 px-3 w-28 text-right">เบิกจ่ายจริง</th>
+                                <th className="py-2.5 px-3 w-24 text-center">% ก้าวหน้า</th>
+                                <th className="py-2.5 px-3 w-16 text-center">ดูข้อมูล</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 text-slate-400 text-[11px] font-medium bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                        คณะยังไม่ได้เสนอโครงการปฏิบัติการภายใต้โครงการหลักนี้
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {mp.projects.map((subP) => (
+                                <tr key={subP.id} className="hover:bg-purple-50/30 transition-colors">
+                                  <td className="py-2.5 px-3.5 font-bold text-slate-800 leading-snug break-words">
+                                    {subP.name}
+                                  </td>
+                                  <td className="py-2.5 px-3">
+                                    <span className="text-[10.5px] font-bold text-slate-700 px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200/60">
+                                      {subP.departmentName}
+                                    </span>
+                                  </td>
+                                  <td className="py-2.5 px-3">
+                                    <div className="text-[10.5px] font-medium text-slate-600 flex items-center gap-1">
+                                      <FiUser className="w-3 h-3 text-slate-400 shrink-0" />
+                                      <span>{subP.creatorName}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">
+                                    {subP.totalBudget.toLocaleString()} ฿
+                                  </td>
+                                  <td className="py-2.5 px-3 text-right font-bold text-emerald-600 whitespace-nowrap">
+                                    {subP.actualSpent.toLocaleString()} ฿
+                                  </td>
+                                  <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                                    <div className="font-black text-primary text-[11px]">{subP.progress}%</div>
+                                    <div className="w-14 bg-slate-100 h-1.5 rounded-full mx-auto mt-0.5 overflow-hidden">
+                                      <div 
+                                        className={`h-full rounded-full ${subP.progress < 40 ? 'bg-rose-500' : subP.progress < 75 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                                        style={{ width: `${Math.min(100, subP.progress)}%` }}
+                                      />
+                                    </div>
+                                  </td>
+                                  <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedProjectModal(subP);
+                                      }}
+                                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-600 transition-all cursor-pointer shadow-3xs active:scale-95"
+                                      title="ดูรายละเอียดโครงการและออกข้อสั่งการ"
+                                    >
+                                      <FiEye className="w-3.5 h-3.5" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-5 text-slate-400 text-xs font-medium bg-white rounded-xl border border-dashed border-slate-200">
+                          คณะยังไม่ได้เสนอโครงการปฏิบัติการภายใต้โครงการหลักนี้
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
         </div>
       </div>
 
