@@ -771,7 +771,7 @@ const PresidentDashboard = () => {
             <div className="p-6 text-center bg-slate-50/70 rounded-2xl border border-dashed border-slate-200">
               <FiCheckCircle className="w-7 h-7 text-emerald-500 mx-auto mb-1.5" />
               <div className="text-xs md:text-sm font-extrabold text-slate-700">ไม่มีโครงการสำคัญระดับมหาวิทยาลัยติดสถานะวิกฤต</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">การดำเนินงานตามแผนยุทธศาสตร์ภาพรวมของมหาวิทยาลัยเป็นไปอย่างราบรื่น</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">การดำเนินงานตามแผนยุทธศาสตร์ภาพรวมของมหาวิทยาลัยเป็นไปอย่างราบรื่น</div>
             </div>
           )}
         </div>
