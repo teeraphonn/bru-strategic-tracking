@@ -54,13 +54,16 @@ const CustomSelect = ({
     const shouldOpenUp = spaceBelow < 280 && spaceAbove > spaceBelow;
 
     const calculatedMaxHeight = shouldOpenUp
-      ? Math.min(340, Math.max(180, spaceAbove - 24))
-      : Math.min(340, Math.max(180, spaceBelow - 24));
+      ? Math.min(380, Math.max(220, spaceAbove - 20))
+      : Math.min(380, Math.max(220, spaceBelow - 20));
+
+    const optimalWidth = Math.max(300, rect.width);
+    const optimalLeft = Math.max(8, Math.min(rect.left, window.innerWidth - optimalWidth - 8));
 
     setDropdownPos({
       top: shouldOpenUp ? rect.top - 6 : rect.bottom + 6,
-      left: Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)),
-      width: rect.width,
+      left: optimalLeft,
+      width: optimalWidth,
       openUpwards: shouldOpenUp,
       maxHeight: calculatedMaxHeight,
     });
@@ -180,9 +183,9 @@ const CustomSelect = ({
       {/* ── Dropdown Panel (Portal to document.body so it NEVER gets clipped by parent overflows) ── */}
       {isOpen && createPortal(
         <div className="fixed inset-0 z-[99999]">
-          {/* Invisible clickaway backdrop */}
+          {/* Backdrop with subtle dim to focus on the popped-up menu */}
           <div
-            className="fixed inset-0 bg-transparent"
+            className="fixed inset-0 bg-slate-950/20 backdrop-blur-[0.5px] transition-opacity duration-150 animate-fadeIn"
             onClick={() => setIsOpen(false)}
           />
 
@@ -192,13 +195,13 @@ const CustomSelect = ({
               left: `${dropdownPos.left}px`,
               top: dropdownPos.openUpwards ? 'auto' : `${dropdownPos.top}px`,
               bottom: dropdownPos.openUpwards ? `${window.innerHeight - dropdownPos.top}px` : 'auto',
-              width: `${Math.max(260, dropdownPos.width)}px`,
+              width: `${dropdownPos.width}px`,
               maxHeight: `${dropdownPos.maxHeight}px`,
               zIndex: 100000,
             }}
             className={`
               rounded-2xl overflow-hidden shadow-2xl flex flex-col
-              animate-fadeIn border
+              transition-all duration-150 transform scale-100 ease-out border ring-1 ring-black/10
               ${dropdownPos.openUpwards ? 'origin-bottom' : 'origin-top'}
               ${dark ? panelDark : panelLight}
             `}
