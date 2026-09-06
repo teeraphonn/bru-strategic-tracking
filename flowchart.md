@@ -1,64 +1,98 @@
-# ผังกระบวนการทำงานของระบบแบบแนวตรงลากยาว (Role-Based Straight Vertical Flowchart)
+# ผังกระบวนการทำงานของระบบ (Optimized Flowchart)
 ## ระบบติดตามและประเมินผลโครงการเชิงยุทธศาสตร์ — มหาวิทยาลัยราชภัฏบุรีรัมย์ (BRU)
 
-ผังงานนี้รวบรวมบทบาทหน้าที่ของทุก Role จัดวางเป็น **เส้นตรงแนวดิ่งเส้นเดียว ลากยาวจากบนลงล่าง (Single Vertical Pipeline)** จุดเริ่มต้นอยู่บนสุด จุดสิ้นสุดอยู่ล่างสุด เส้นตรง สบายตา และเข้าใจง่ายที่สุด
+ผังงานนี้จัดวางโครงสร้างและ **เส้นเชื่อมโยง (Connecting Lines) ใหม่ให้เป็นระเบียบ สวยงาม สมดุล ไม่ตัดไขว้กัน** โดยแบ่งบทบาทเป็นสัดส่วนชัดเจน พร้อมเส้นประวนลูปข้อสั่งการที่สะอาดตา
 
 ---
 
-### 📊 ผังกระบวนการแนวตรงลากยาว (Straight Vertical Flowchart)
+### 📊 ผังกระบวนการทำงานที่ปรับปรุงเส้นเชื่อมโยง (Optimized Layout)
 
 ```mermaid
 flowchart TD
     %% ==========================================
-    %% COLOR & STYLE DEFINITIONS
+    %% GLOBAL STYLES
     %% ==========================================
-    classDef startEnd fill:#059669,stroke:#047857,stroke-width:2.5px,color:#ffffff,font-weight:bold,font-size:15px;
-    classDef adminNode fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#0369a1,font-size:14px;
-    classDef teacherNode fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#15803d,font-size:14px;
-    classDef engineNode fill:#fefce8,stroke:#ca8a04,stroke-width:2px,color:#854d0e,font-size:14px;
-    classDef deanNode fill:#faf5ff,stroke:#9333ea,stroke-width:2px,color:#6b21a8,font-size:14px;
-    classDef presNode fill:#fff1f2,stroke:#e11d48,stroke-width:2px,color:#9f1239,font-size:14px;
-    classDef reportNode fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#3730a3,font-size:14px;
+    classDef startEnd fill:#10b981,stroke:#059669,stroke-width:2.5px,color:#ffffff,font-weight:bold;
+    classDef auth fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef admin fill:#f0f9ff,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef teacher fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#15803d;
+    classDef engine fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#854d0e;
+    classDef exec fill:#faf5ff,stroke:#9333ea,stroke-width:1.5px,color:#6b21a8;
+    classDef report fill:#ecfeff,stroke:#0891b2,stroke-width:2px,color:#0e7490,font-weight:bold;
 
     %% ==========================================
-    %% 1. START POINT (TOP)
+    %% AUTHENTICATION
     %% ==========================================
-    Start([🟢 1. จุดเริ่มต้น : เข้าสู่ระบบ Authentication & ยืนยันตัวตนด้วย JWT Token]) :::startEnd
+    Start([🟢 เริ่มต้นระบบ]) :::startEnd --> Login[เข้าสู่ระบบ ยืนยันตัวตนด้วย JWT] :::auth
+    Login --> RoleCheck{ตรวจสอบบทบาทผู้ใช้ RBAC} :::auth
 
     %% ==========================================
-    %% 2. ADMIN ROLE
+    %% 1. ADMIN LANE (ซ้าย)
     %% ==========================================
-    Start --> S1["<b>⚙️ 2. บทบาทผู้ดูแลระบบ (ADMIN) : จัดเตรียมข้อมูลหลัก (Master Data)</b><br/>• กำหนดข้อมูลโครงสร้าง: 9 คณะ, ภาควิชา, แหล่งเงินทุน และเปิดรอบปีงบประมาณ<br/>• กำหนดโครงสร้างยุทธศาสตร์: 6 ประเด็นยุทธศาสตร์ (S1-S6), ตัวชี้วัด และ 10 โครงการหลัก<br/>• บริหารจัดการบัญชีผู้ใช้งาน (RBAC) และดูแลการปลดล็อกแผนงานตามระเบียบ"] :::adminNode
+    subgraph LaneAdmin ["⚙️ ผู้ดูแลระบบ (ADMIN)"]
+        direction TB
+        AdminMaster[จัดการข้อมูลหลัก Master Data<br/>เปิดรอบปีงบประมาณ / จัดการสิทธิ์] :::admin
+        AdminUnlock[ปลดล็อกแผนงาน & ดูแลศูนย์แจ้งปัญหา] :::admin
+        AdminMaster --> AdminUnlock
+    end
+    style LaneAdmin fill:#f8fafc,stroke:#cbd5e1,stroke-width:1.5px
+
+    RoleCheck -->|ADMIN| AdminMaster
 
     %% ==========================================
-    %% 3. TEACHER ROLE
+    %% 2. TEACHER & ENGINE LANE (กลาง)
     %% ==========================================
-    S1 --> S2["<b>📝 3. บทบาทอาจารย์ / ผู้รับผิดชอบ (TEACHER) : ดำเนินงาน & บันทึกผลจริง</b><br/>• สร้างข้อเสนอโครงการ ผูกกับยุทธศาสตร์ S1-S6 และตั้งงบประมาณ<br/>• กำหนดแผนกิจกรรมย่อย (Activities) ระบุวันจัดกิจกรรมและงบตามแผน<br/>• ลงพื้นที่จัดกิจกรรมจริง + บันทึกงบใช้จริง (actualBudget) + ผลผลิตจริง (completedCount)<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์ (Evidence Gallery)"] :::teacherNode
+    subgraph LaneTeacher ["📝 อาจารย์ผู้รับผิดชอบ & ระบบประมวลผล (TEACHER & SYSTEM)"]
+        direction TB
+        TeacherProj[1. สร้างข้อเสนอโครงการ<br/>ระบุยุทธศาสตร์ S1-S6, ตัวชี้วัด, งบประมาณ] :::teacher
+        AutoRedirect[2. ระบบพาไปหน้าโครงการอัตโนมัติ<br/>พร้อมเปิดฟอร์มวางแผนกิจกรรม] :::teacher
+        PlanAct[3. วางแผนกิจกรรมย่อย Activities<br/>กำหนดวันจัดกิจกรรม และงบประมาณ] :::teacher
+        DoAct[4. ดำเนินกิจกรรมในพื้นที่จริง] :::teacher
+        ReportAct[5. บันทึกผลสำเร็จ & งบใช้จริง<br/>อัปโหลดภาพถ่ายหลักฐาน] :::teacher
+        
+        EngineCalc[6. ระบบประมวลผลอัตโนมัติ Real-Time<br/>• คำนวณ % Progress สะสม<br/>• คำนวณ % Burn Rate<br/>• ตรวจจับสถานะ 🟢 ปกติ / 🟡 เฝ้าระวัง / 🔴 วิกฤต<br/>• ล็อกแผนงานป้องกันการเปลี่ยนเป้าหมายย้อนหลัง] :::engine
+
+        TeacherProj --> AutoRedirect --> PlanAct --> DoAct --> ReportAct --> EngineCalc
+    end
+    style LaneTeacher fill:#f0fdf4,stroke:#86efac,stroke-width:1.5px
+
+    RoleCheck -->|TEACHER| TeacherProj
 
     %% ==========================================
-    %% 4. CORE ENGINE
+    %% 3. EXECUTIVE LANE (ขวา)
     %% ==========================================
-    S2 --> S3["<b>🧠 4. กลไกระบบประมวลผลกลาง (SYSTEM CORE ENGINE) : คำนวณอัตโนมัติ</b><br/>• คำนวณ % ความก้าวหน้าสะสม (% Progress) และ % การใช้จ่ายงบประมาณ Real-Time<br/>• ตัดเกรดประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต (Red Flag)<br/>• สั่งล็อกแผนงานอัตโนมัติ (IsLocked) ป้องกันการแก้ไขตัวเลขเป้าหมายย้อนหลัง"] :::engineNode
+    subgraph LaneExec ["🏛️ ผู้บริหาร (DEAN & PRESIDENT)"]
+        direction TB
+        DeanDashboard[ติดตามแดชบอร์ดระดับคณะ<br/>กำกับภาควิชา & โครงการติดธงแดง] :::exec
+        PresDashboard[ติดตามแดชบอร์ดมหาวิทยาลัย<br/>ดูภาพรวมยุทธศาสตร์ & 10 โครงการหลัก] :::exec
+        
+        DeanDirective[ออกข้อสั่งการระดับคณบดี] :::exec
+        PresDirective[ออกข้อสั่งการระดับอธิการบดี] :::exec
+        
+        TeacherReceive[อาจารย์รับข้อสั่งการ & รายงานผลปรับปรุง] :::teacher
+        
+        DeanDashboard --> DeanDirective --> TeacherReceive
+        PresDashboard --> PresDirective --> TeacherReceive
+    end
+    style LaneExec fill:#faf5ff,stroke:#d8b4fe,stroke-width:1.5px
+
+    RoleCheck -->|DEAN| DeanDashboard
+    RoleCheck -->|PRESIDENT| PresDashboard
+
+    %% Connecting Engine to Executives
+    EngineCalc --> DeanDashboard
+    EngineCalc --> PresDashboard
+
+    %% Directive Loop Back (เส้นประเรียบร้อย ไม่ตัดทับเส้นหลัก)
+    TeacherReceive -.->|ปรับปรุงข้อมูลผลงาน| ReportAct
 
     %% ==========================================
-    %% 5. DEAN ROLE
+    %% OUTPUT & TERMINAL
     %% ==========================================
-    S3 --> S4["<b>🏛️ 5. บทบาทคณบดี (DEAN) : กำกับติดตามระดับคณะ</b><br/>• ติดตามแดชบอร์ดความก้าวหน้าและงบประมาณเฉพาะคณะตนเอง<br/>• เปรียบเทียบผลงานรายภาควิชา/สาขาวิชา (Department Breakdown)<br/>• ตรวจสอบโครงการติดธงแดงระดับคณะ (Faculty Red Flags) และออกข้อสั่งการเร่งรัด"] :::deanNode
+    EngineCalc --> ExportReport[ส่งออกรายงานราชการ<br/>PDF / Excel / CSV / พิมพ์ทางการ A4] :::report
+    AdminUnlock --> ExportReport
 
-    %% ==========================================
-    %% 6. PRESIDENT ROLE
-    %% ==========================================
-    S4 --> S5["<b>👑 6. บทบาทอธิการบดี (PRESIDENT) : กำกับยุทธศาสตร์ระดับสถาบัน</b><br/>• ติดตามผลสัมฤทธิ์ภาพรวม 6 ประเด็นยุทธศาสตร์มหาวิทยาลัย (S1-S6)<br/>• ตรวจสอบตารางเปรียบเทียบผลงาน 9 คณะ (Cross-Faculty Heatmap) & 10 โครงการหลัก<br/>• ตรวจสอบโครงการวิกฤต (Critical Red Flags) และออกข้อสั่งการนโยบายเร่งรัด"] :::presNode
-
-    %% ==========================================
-    %% 7. REPORTING
-    %% ==========================================
-    S5 --> S6["<b>📄 7. การสรุปผลและออกรายงาน (REPORTING & OUTPUTS) : ทุกระดับผู้ใช้</b><br/>• สรุปผลสัมฤทธิ์เชิงยุทธศาสตร์เพื่อนำเสนอสภามหาวิทยาลัย<br/>• ส่งออกไฟล์รายงานทางการ: PDF มาตรฐานราชการ / Excel ข้อมูลดิบ / CSV<br/>• สั่งพิมพ์แบบฟอร์มรายงานทางการ A4 Print Layout"] :::reportNode
-
-    %% ==========================================
-    %% 8. END POINT (BOTTOM)
-    %% ==========================================
-    S6 --> End([🏁 8. จุดสิ้นสุด : ครบวงจรการติดตามและประเมินผลเชิงยุทธศาสตร์ประจำปีงบประมาณ]) :::startEnd
+    ExportReport --> End([🏁 สิ้นสุดรอบการประเมิน]) :::startEnd
 ```
 
 ---
@@ -67,36 +101,88 @@ flowchart TD
 
 ```text
 flowchart TD
-    %% COLOR & STYLE DEFINITIONS
-    classDef startEnd fill:#059669,stroke:#047857,stroke-width:2.5px,color:#ffffff,font-weight:bold,font-size:15px;
-    classDef adminNode fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#0369a1,font-size:14px;
-    classDef teacherNode fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#15803d,font-size:14px;
-    classDef engineNode fill:#fefce8,stroke:#ca8a04,stroke-width:2px,color:#854d0e,font-size:14px;
-    classDef deanNode fill:#faf5ff,stroke:#9333ea,stroke-width:2px,color:#6b21a8,font-size:14px;
-    classDef presNode fill:#fff1f2,stroke:#e11d48,stroke-width:2px,color:#9f1239,font-size:14px;
-    classDef reportNode fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#3730a3,font-size:14px;
+    %% ==========================================
+    %% GLOBAL STYLES
+    %% ==========================================
+    classDef startEnd fill:#10b981,stroke:#059669,stroke-width:2.5px,color:#ffffff,font-weight:bold;
+    classDef auth fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef admin fill:#f0f9ff,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef teacher fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#15803d;
+    classDef engine fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#854d0e;
+    classDef exec fill:#faf5ff,stroke:#9333ea,stroke-width:1.5px,color:#6b21a8;
+    classDef report fill:#ecfeff,stroke:#0891b2,stroke-width:2px,color:#0e7490,font-weight:bold;
 
-    %% 1. START POINT (TOP)
-    Start([🟢 1. จุดเริ่มต้น : เข้าสู่ระบบ Authentication & ยืนยันตัวตนด้วย JWT Token]) :::startEnd
+    %% ==========================================
+    %% AUTHENTICATION
+    %% ==========================================
+    Start([🟢 เริ่มต้นระบบ]) :::startEnd --> Login[เข้าสู่ระบบ ยืนยันตัวตนด้วย JWT] :::auth
+    Login --> RoleCheck{ตรวจสอบบทบาทผู้ใช้ RBAC} :::auth
 
-    %% 2. ADMIN ROLE
-    Start --> S1["<b>⚙️ 2. บทบาทผู้ดูแลระบบ (ADMIN) : จัดเตรียมข้อมูลหลัก (Master Data)</b><br/>• กำหนดข้อมูลโครงสร้าง: 9 คณะ, ภาควิชา, แหล่งเงินทุน และเปิดรอบปีงบประมาณ<br/>• กำหนดโครงสร้างยุทธศาสตร์: 6 ประเด็นยุทธศาสตร์ (S1-S6), ตัวชี้วัด และ 10 โครงการหลัก<br/>• บริหารจัดการบัญชีผู้ใช้งาน (RBAC) และดูแลการปลดล็อกแผนงานตามระเบียบ"] :::adminNode
+    %% ==========================================
+    %% 1. ADMIN LANE
+    %% ==========================================
+    subgraph LaneAdmin ["⚙️ ผู้ดูแลระบบ (ADMIN)"]
+        direction TB
+        AdminMaster[จัดการข้อมูลหลัก Master Data<br/>เปิดรอบปีงบประมาณ / จัดการสิทธิ์] :::admin
+        AdminUnlock[ปลดล็อกแผนงาน & ดูแลศูนย์แจ้งปัญหา] :::admin
+        AdminMaster --> AdminUnlock
+    end
+    style LaneAdmin fill:#f8fafc,stroke:#cbd5e1,stroke-width:1.5px
 
-    %% 3. TEACHER ROLE
-    S1 --> S2["<b>📝 3. บทบาทอาจารย์ / ผู้รับผิดชอบ (TEACHER) : ดำเนินงาน & บันทึกผลจริง</b><br/>• สร้างข้อเสนอโครงการ ผูกกับยุทธศาสตร์ S1-S6 และตั้งงบประมาณ<br/>• กำหนดแผนกิจกรรมย่อย (Activities) ระบุวันจัดกิจกรรมและงบตามแผน<br/>• ลงพื้นที่จัดกิจกรรมจริง + บันทึกงบใช้จริง (actualBudget) + ผลผลิตจริง (completedCount)<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์ (Evidence Gallery)"] :::teacherNode
+    RoleCheck -->|ADMIN| AdminMaster
 
-    %% 4. CORE ENGINE
-    S2 --> S3["<b>🧠 4. กลไกระบบประมวลผลกลาง (SYSTEM CORE ENGINE) : คำนวณอัตโนมัติ</b><br/>• คำนวณ % ความก้าวหน้าสะสม (% Progress) และ % การใช้จ่ายงบประมาณ Real-Time<br/>• ตัดเกรดประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต (Red Flag)<br/>• สั่งล็อกแผนงานอัตโนมัติ (IsLocked) ป้องกันการแก้ไขตัวเลขเป้าหมายย้อนหลัง"] :::engineNode
+    %% ==========================================
+    %% 2. TEACHER & ENGINE LANE
+    %% ==========================================
+    subgraph LaneTeacher ["📝 อาจารย์ผู้รับผิดชอบ & ระบบประมวลผล (TEACHER & SYSTEM)"]
+        direction TB
+        TeacherProj[1. สร้างข้อเสนอโครงการ<br/>ระบุยุทธศาสตร์ S1-S6, ตัวชี้วัด, งบประมาณ] :::teacher
+        AutoRedirect[2. ระบบพาไปหน้าโครงการอัตโนมัติ<br/>พร้อมเปิดฟอร์มวางแผนกิจกรรม] :::teacher
+        PlanAct[3. วางแผนกิจกรรมย่อย Activities<br/>กำหนดวันจัดกิจกรรม และงบประมาณ] :::teacher
+        DoAct[4. ดำเนินกิจกรรมในพื้นที่จริง] :::teacher
+        ReportAct[5. บันทึกผลสำเร็จ & งบใช้จริง<br/>อัปโหลดภาพถ่ายหลักฐาน] :::teacher
+        
+        EngineCalc[6. ระบบประมวลผลอัตโนมัติ Real-Time<br/>• คำนวณ % Progress สะสม<br/>• คำนวณ % Burn Rate<br/>• ตรวจจับสถานะ 🟢 ปกติ / 🟡 เฝ้าระวัง / 🔴 วิกฤต<br/>• ล็อกแผนงานป้องกันการเปลี่ยนเป้าหมายย้อนหลัง] :::engine
 
-    %% 5. DEAN ROLE
-    S3 --> S4["<b>🏛️ 5. บทบาทคณบดี (DEAN) : กำกับติดตามระดับคณะ</b><br/>• ติดตามแดชบอร์ดความก้าวหน้าและงบประมาณเฉพาะคณะตนเอง<br/>• เปรียบเทียบผลงานรายภาควิชา/สาขาวิชา (Department Breakdown)<br/>• ตรวจสอบโครงการติดธงแดงระดับคณะ (Faculty Red Flags) และออกข้อสั่งการเร่งรัด"] :::deanNode
+        TeacherProj --> AutoRedirect --> PlanAct --> DoAct --> ReportAct --> EngineCalc
+    end
+    style LaneTeacher fill:#f0fdf4,stroke:#86efac,stroke-width:1.5px
 
-    %% 6. PRESIDENT ROLE
-    S4 --> S5["<b>👑 6. บทบาทอธิการบดี (PRESIDENT) : กำกับยุทธศาสตร์ระดับสถาบัน</b><br/>• ติดตามผลสัมฤทธิ์ภาพรวม 6 ประเด็นยุทธศาสตร์มหาวิทยาลัย (S1-S6)<br/>• ตรวจสอบตารางเปรียบเทียบผลงาน 9 คณะ (Cross-Faculty Heatmap) & 10 โครงการหลัก<br/>• ตรวจสอบโครงการวิกฤต (Critical Red Flags) และออกข้อสั่งการนโยบายเร่งรัด"] :::presNode
+    RoleCheck -->|TEACHER| TeacherProj
 
-    %% 7. REPORTING
-    S5 --> S6["<b>📄 7. การสรุปผลและออกรายงาน (REPORTING & OUTPUTS) : ทุกระดับผู้ใช้</b><br/>• สรุปผลสัมฤทธิ์เชิงยุทธศาสตร์เพื่อนำเสนอสภามหาวิทยาลัย<br/>• ส่งออกไฟล์รายงานทางการ: PDF มาตรฐานราชการ / Excel ข้อมูลดิบ / CSV<br/>• สั่งพิมพ์แบบฟอร์มรายงานทางการ A4 Print Layout"] :::reportNode
+    %% ==========================================
+    %% 3. EXECUTIVE LANE
+    %% ==========================================
+    subgraph LaneExec ["🏛️ ผู้บริหาร (DEAN & PRESIDENT)"]
+        direction TB
+        DeanDashboard[ติดตามแดชบอร์ดระดับคณะ<br/>กำกับภาควิชา & โครงการติดธงแดง] :::exec
+        PresDashboard[ติดตามแดชบอร์ดมหาวิทยาลัย<br/>ดูภาพรวมยุทธศาสตร์ & 10 โครงการหลัก] :::exec
+        
+        DeanDirective[ออกข้อสั่งการระดับคณบดี] :::exec
+        PresDirective[ออกข้อสั่งการระดับอธิการบดี] :::exec
+        
+        TeacherReceive[อาจารย์รับข้อสั่งการ & รายงานผลปรับปรุง] :::teacher
+        
+        DeanDashboard --> DeanDirective --> TeacherReceive
+        PresDashboard --> PresDirective --> TeacherReceive
+    end
+    style LaneExec fill:#faf5ff,stroke:#d8b4fe,stroke-width:1.5px
 
-    %% 8. END POINT (BOTTOM)
-    S6 --> End([🏁 8. จุดสิ้นสุด : ครบวงจรการติดตามและประเมินผลเชิงยุทธศาสตร์ประจำปีงบประมาณ]) :::startEnd
+    RoleCheck -->|DEAN| DeanDashboard
+    RoleCheck -->|PRESIDENT| PresDashboard
+
+    %% Connecting Engine to Executives
+    EngineCalc --> DeanDashboard
+    EngineCalc --> PresDashboard
+
+    %% Directive Loop Back (เส้นประเรียบร้อย ไม่ตัดทับเส้นหลัก)
+    TeacherReceive -.->|ปรับปรุงข้อมูลผลงาน| ReportAct
+
+    %% ==========================================
+    %% OUTPUT & TERMINAL
+    %% ==========================================
+    EngineCalc --> ExportReport[ส่งออกรายงานราชการ<br/>PDF / Excel / CSV / พิมพ์ทางการ A4] :::report
+    AdminUnlock --> ExportReport
+
+    ExportReport --> End([🏁 สิ้นสุดรอบการประเมิน]) :::startEnd
 ```
