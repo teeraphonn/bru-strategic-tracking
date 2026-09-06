@@ -1,76 +1,150 @@
-# ผังกระบวนการทำงานของระบบ (System Flowchart Manual) — ขนาดกระดาษ A4 สำหรับ Microsoft Word
-## Strategic Performance Tracking System — มหาวิทยาลัยราชภัฏบุรีรัมย์ (BRU)
+# ผังกระบวนการทำงานมาตรฐานของระบบ (Standard System Flowchart)
+## ระบบติดตามและประเมินผลโครงการเชิงยุทธศาสตร์ — มหาวิทยาลัยราชภัฏบุรีรัมย์ (BRU)
 
-เอกสารนี้รวบรวมผังกระบวนการทำงานที่ได้รับการจัดสัดส่วน (Aspect Ratio) และความกระชับของข้อความ ให้เหมาะสำหรับการนำไปใส่ใน **เอกสาร Microsoft Word ขนาด A4** โดยเฉพาะ (ไม่ล้นหน้า ตัวหนังสือไม่เล็กเกินไป และคมชัดเมื่อพิมพ์)
-
----
-
-## 📌 สารบัญสำหรับเอกสาร Word A4
-1. [รูปแบบที่ 1 : ผังกระบวนการสำหรับ A4 แนวตั้ง (Single-Page Portrait) — แนะนำสำหรับรายงานทั่วไป](#รูปแบบที่-1--ผังกระบวนการสำหรับ-a4-แนวตั้ง-single-page-portrait)
-2. [รูปแบบที่ 2 : ผังกระบวนการสำหรับ A4 แนวนอน (Landscape Flowchart) — แนะนำสำหรับภาคผนวก](#รูปแบบที่-2--ผังกระบวนการสำหรับ-a4-แนวนอน-landscape-flowchart)
-3. [💡 วิธี Export รูปภาพให้คมชัด 100% ไม่เบลอใน Microsoft Word](#-วิธี-export-รูปภาพให้คมชัด-100-ไม่เบลอใน-microsoft-word)
+ผังงานนี้ออกแบบตาม **มาตรฐานผังงานสากล (Standard ISO/ANSI Flowchart)** ใช้สัญลักษณ์มาตรฐาน (จุดเริ่มต้น/สิ้นสุด, กล่องประมวลผล, กล่องเงื่อนไขตัดสินใจ, ข้อมูลนำเข้า/ส่งออก) เชื่อมโยงเส้นตรง เรียงลำดับจากบนลงล่าง เข้าใจง่าย และนำไปใช้งานในเอกสารรายงานทางการได้ทันที
 
 ---
 
-## รูปแบบที่ 1 : ผังกระบวนการสำหรับ A4 แนวตั้ง (Single-Page Portrait)
-> **เหมาะสำหรับ:** รายงานราชการ / สรุปโครงการหน้าเดียว (A4 Portrait) ที่มีระยะขอบ 2.5 ซม.
+### 📊 ผังกระบวนการทำงานมาตรฐาน (Standard Flowchart)
 
 ```mermaid
 flowchart TD
-    %% Global Settings for Word A4
-    classDef startEnd fill:#059669,stroke:#047857,stroke-width:2px,color:#ffffff,font-weight:bold;
-    classDef stepBox fill:#ffffff,stroke:#0284c7,stroke-width:1.5px,color:#0f172a;
-    classDef engineBox fill:#fffbeb,stroke:#d97706,stroke-width:1.5px,color:#78350f;
-    classDef execBox fill:#faf5ff,stroke:#7c3aed,stroke-width:1.5px,color:#4c1d95;
-    classDef reportBox fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+    %% ==========================================
+    %% START / TERMINAL
+    %% ==========================================
+    Start([🟢 เริ่มต้น]) --> Login[/ผู้ใช้งานเข้าสู่ระบบ Authentication/]
+    
+    %% ==========================================
+    %% AUTHENTICATION & ROLE CHECK
+    %% ==========================================
+    Login --> CheckAuth{ตรวจสอบความถูกต้องของรหัสผ่าน?}
+    CheckAuth -->|ไม่ผ่าน| LoginFail[แสดงข้อความแจ้งเตือนข้อผิดพลาด]
+    LoginFail --> Login
+    
+    CheckAuth -->|ผ่าน| CheckRole{ตรวจสอบบทบาทผู้ใช้ RBAC}
+    
+    %% ==========================================
+    %% ROLE BRANCHES
+    %% ==========================================
+    %% 1. ADMIN BRANCH
+    CheckRole -->|ADMIN| AdminSetup[จัดการข้อมูลหลัก Master Data<br/>• กำหนด 9 คณะ / ภาควิชา / สิทธิ์ผู้ใช้<br/>• กำหนดยุทธศาสตร์ S1-S6 และ 10 โครงการหลัก<br/>• เปิดรอบปีงบประมาณ & แหล่งเงินทุน]
+    AdminSetup --> SaveMaster[(🗄️ บันทึกลงฐานข้อมูลกลาง)]
+    SaveMaster --> WaitTeacher[เข้าสู่สถานะพร้อมใช้งาน]
+    
+    %% 2. TEACHER BRANCH
+    CheckRole -->|TEACHER| CreateProj[/กรอกข้อมูลสร้างข้อเสนอโครงการ<br/>ระบุยุทธศาสตร์ S1-S6, ตัวชี้วัด, งบประมาณ/]
+    WaitTeacher --> CreateProj
+    
+    CreateProj --> PlanActivities[กำหนดแผนกิจกรรมย่อย Activities<br/>ระบุวันจัดกิจกรรม & งบประมาณตามแผน]
+    PlanActivities --> ExecuteAct[ดำเนินกิจกรรมเชิงยุทธศาสตร์ในพื้นที่จริง]
+    
+    ExecuteAct --> ReportActual[/บันทึกผลการดำเนินงานจริง<br/>• งบใช้จริง actualBudget<br/>• ผลผลิตสำเร็จ completedCount<br/>• อัปโหลดภาพถ่ายหลักฐาน/]
+    
+    %% ==========================================
+    %% SYSTEM ENGINE PROCESSING
+    %% ==========================================
+    ReportActual --> SysEngine[ระบบประมวลผลอัตโนมัติ<br/>• คำนวณ % Progress & % Burn Rate<br/>• ประเมินสถานะ 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต<br/>• ล็อกแผนงาน IsLocked ป้องกันแก้ไขย้อนหลัง]
+    
+    SysEngine --> SaveKPI[(🗄️ ปรับปรุงสถานะโครงการใน DB)]
+    
+    %% ==========================================
+    %% DEAN & PRESIDENT OVERSIGHT
+    %% ==========================================
+    CheckRole -->|DEAN / PRESIDENT| ExecMonitor[เข้าสู่หน้าแดชบอร์ดผู้บริหาร<br/>• Executive Health Banner<br/>• สรุปผลสัมฤทธิ์ S1-S6<br/>• ตารางเปรียบเทียบผลงานรายคณะ Heatmap]
+    SaveKPI --> ExecMonitor
+    
+    ExecMonitor --> CheckRedFlag{พบโครงการติดธงแดง<br/>หรือล่าช้าผิดปกติ?}
+    
+    CheckRedFlag -->|พบปัญหา| SendDirective[/ผู้บริหารพิมพ์ข้อสั่งการเร่งรัด Directives/]
+    SendDirective --> AlertTeacher[ระบบส่งข้อความแจ้งเตือนถึงอาจารย์ผู้รับผิดชอบ]
+    AlertTeacher --> ReportActual
+    
+    %% ==========================================
+    %% REPORTING & EXPORT
+    %% ==========================================
+    CheckRedFlag -->|เป็นไปตามแผน| ExportReport[/ส่งออกรายงานสรุปผลสัมฤทธิ์<br/>• เอกสารทางการ PDF / Excel / CSV<br/>• แบบพิมพ์ทางการ A4 Print Layout/]
+    
+    %% ==========================================
+    %% END / TERMINAL
+    %% ==========================================
+    ExportReport --> End([🏁 สิ้นสุดกระบวนการ])
 
-    Start([🟢 เริ่มต้น: ยืนยันตัวตนเข้าสู่ระบบด้วย JWT]) :::startEnd
+    %% ==========================================
+    %% COLOR SCHEMES
+    %% ==========================================
+    classDef terminal fill:#10b981,stroke:#059669,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef process fill:#f8fafc,stroke:#0284c7,stroke-width:1.5px,color:#0f172a;
+    classDef decision fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#854d0e,font-weight:bold;
+    classDef io fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#166534;
+    classDef db fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#334155;
 
-    Start --> P1["<b>ขั้นตอนที่ 1 : เตรียมข้อมูลหลัก (Master Data)</b><br/>• ผู้ดูแลระบบ ADMIN กำหนดข้อมูล 9 คณะ, ภาควิชา, แหล่งเงิน<br/>• กำหนดยุทธศาสตร์ S1-S6, ตัวชี้วัด และเปิดรอบปีงบประมาณ"] :::stepBox
-
-    P1 --> P2["<b>ขั้นตอนที่ 2 : เสนอโครงการ & วางแผนงาน (Proposal)</b><br/>• อาจารย์ TEACHER สร้างข้อเสนอ ระบุยุทธศาสตร์และงบประมาณ<br/>• ระบบนำทางอัตโนมัติเพื่อระบุกิจกรรมย่อยและวันดำเนินงาน"] :::stepBox
-
-    P2 --> P3["<b>ขั้นตอนที่ 3 : ดำเนินการ & บันทึกผลจริง (Execution)</b><br/>• จัดกิจกรรมในพื้นที่จริงตามแผนงานที่กำหนด<br/>• บันทึกงบใช้จริง (actualBudget) และผลผลิต (completedCount)<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์"] :::stepBox
-
-    P3 --> P4["<b>ขั้นตอนที่ 4 : ประมวลผลอัตโนมัติ (Automated Engine)</b><br/>• คำนวณ % ความก้าวหน้า และ % การใช้จ่ายงบประมาณ Real-time<br/>• ประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต<br/>• ทำการล็อกแผนงาน (IsLocked) ป้องกันการแก้ไขย้อนหลัง"] :::engineBox
-
-    P4 --> P5["<b>ขั้นตอนที่ 5 : กำกับติดตาม & ข้อสั่งการ (Governance)</b><br/>• ผู้บริหาร PRESIDENT & DEAN ตรวจสอบแดชบอร์ด & ธงแดง<br/>• ออกข้อสั่งการเร่งรัด (Directives) ส่งตรงถึงผู้รับผิดชอบโครงการ"] :::execBox
-
-    P5 --> P6["<b>ขั้นตอนที่ 6 : สรุปผลสัมฤทธิ์ & ส่งออกรายงาน (Outputs)</b><br/>• รายงานสรุปผลสัมฤทธิ์รายยุทธศาสตร์ S1-S6 & 10 โครงการหลัก<br/>• ส่งออกไฟล์มาตรฐาน: PDF เอกสารราชการ / Excel / พิมพ์ A4"] :::reportBox
-
-    P6 --> End([🏁 สิ้นสุด: ครบวงจรการติดตามและประเมินผลเชิงยุทธศาสตร์]) :::startEnd
+    class Start,End terminal;
+    class Login,CreateProj,ReportActual,SendDirective,ExportReport io;
+    class CheckAuth,CheckRole,CheckRedFlag decision;
+    class AdminSetup,PlanActivities,ExecuteAct,SysEngine,ExecMonitor,AlertTeacher,LoginFail,WaitTeacher process;
+    class SaveMaster,SaveKPI db;
 ```
 
 ---
 
-## รูปแบบที่ 2 : ผังกระบวนการสำหรับ A4 แนวนอน (Landscape Flowchart)
-> **เหมาะสำหรับ:** เอกสารแนวนอน หรือส่วนหัวของสไลด์นำเสนอ
+### 📋 โค้ดดิบสำหรับคัดลอก (Raw Mermaid Code)
 
-```mermaid
-flowchart LR
-    %% Global Settings for Word A4 Landscape
-    classDef startEnd fill:#059669,stroke:#047857,stroke-width:2px,color:#ffffff,font-weight:bold;
-    classDef nodeStyle fill:#ffffff,stroke:#0284c7,stroke-width:1.5px,color:#0f172a;
-    classDef engineStyle fill:#fffbeb,stroke:#d97706,stroke-width:1.5px,color:#78350f;
+```text
+flowchart TD
+    %% START / TERMINAL
+    Start([🟢 เริ่มต้น]) --> Login[/ผู้ใช้งานเข้าสู่ระบบ Authentication/]
+    
+    %% AUTHENTICATION & ROLE CHECK
+    Login --> CheckAuth{ตรวจสอบความถูกต้องของรหัสผ่าน?}
+    CheckAuth -->|ไม่ผ่าน| LoginFail[แสดงข้อความแจ้งเตือนข้อผิดพลาด]
+    LoginFail --> Login
+    
+    CheckAuth -->|ผ่าน| CheckRole{ตรวจสอบบทบาทผู้ใช้ RBAC}
+    
+    %% ROLE BRANCHES
+    CheckRole -->|ADMIN| AdminSetup[จัดการข้อมูลหลัก Master Data<br/>• กำหนด 9 คณะ / ภาควิชา / สิทธิ์ผู้ใช้<br/>• กำหนดยุทธศาสตร์ S1-S6 และ 10 โครงการหลัก<br/>• เปิดรอบปีงบประมาณ & แหล่งเงินทุน]
+    AdminSetup --> SaveMaster[(🗄️ บันทึกลงฐานข้อมูลกลาง)]
+    SaveMaster --> WaitTeacher[เข้าสู่สถานะพร้อมใช้งาน]
+    
+    CheckRole -->|TEACHER| CreateProj[/กรอกข้อมูลสร้างข้อเสนอโครงการ<br/>ระบุยุทธศาสตร์ S1-S6, ตัวชี้วัด, งบประมาณ/]
+    WaitTeacher --> CreateProj
+    
+    CreateProj --> PlanActivities[กำหนดแผนกิจกรรมย่อย Activities<br/>ระบุวันจัดกิจกรรม & งบประมาณตามแผน]
+    PlanActivities --> ExecuteAct[ดำเนินกิจกรรมเชิงยุทธศาสตร์ในพื้นที่จริง]
+    
+    ExecuteAct --> ReportActual[/บันทึกผลการดำเนินงานจริง<br/>• งบใช้จริง actualBudget<br/>• ผลผลิตสำเร็จ completedCount<br/>• อัปโหลดภาพถ่ายหลักฐาน/]
+    
+    %% SYSTEM ENGINE PROCESSING
+    ReportActual --> SysEngine[ระบบประมวลผลอัตโนมัติ<br/>• คำนวณ % Progress & % Burn Rate<br/>• ประเมินสถานะ 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต<br/>• ล็อกแผนงาน IsLocked ป้องกันแก้ไขย้อนหลัง]
+    
+    SysEngine --> SaveKPI[(🗄️ ปรับปรุงสถานะโครงการใน DB)]
+    
+    %% DEAN & PRESIDENT OVERSIGHT
+    CheckRole -->|DEAN / PRESIDENT| ExecMonitor[เข้าสู่หน้าแดชบอร์ดผู้บริหาร<br/>• Executive Health Banner<br/>• สรุปผลสัมฤทธิ์ S1-S6<br/>• ตารางเปรียบเทียบผลงานรายคณะ Heatmap]
+    SaveKPI --> ExecMonitor
+    
+    ExecMonitor --> CheckRedFlag{พบโครงการติดธงแดง<br/>หรือล่าช้าผิดปกติ?}
+    
+    CheckRedFlag -->|พบปัญหา| SendDirective[/ผู้บริหารพิมพ์ข้อสั่งการเร่งรัด Directives/]
+    SendDirective --> AlertTeacher[ระบบส่งข้อความแจ้งเตือนถึงอาจารย์ผู้รับผิดชอบ]
+    AlertTeacher --> ReportActual
+    
+    %% REPORTING & EXPORT
+    CheckRedFlag -->|เป็นไปตามแผน| ExportReport[/ส่งออกรายงานสรุปผลสัมฤทธิ์<br/>• เอกสารทางการ PDF / Excel / CSV<br/>• แบบพิมพ์ทางการ A4 Print Layout/]
+    
+    %% END / TERMINAL
+    ExportReport --> End([🏁 สิ้นสุดกระบวนการ])
 
-    S([🟢 เริ่มต้น]) :::startEnd --> S1["<b>1. Setup</b><br/>เตรียมข้อมูลหลัก<br/>S1-S6 / ผู้ใช้งาน"] :::nodeStyle
-    S1 --> S2["<b>2. Proposal</b><br/>สร้างโครงการ<br/>วางแผนกิจกรรม"] :::nodeStyle
-    S2 --> S3["<b>3. Execution</b><br/>บันทึกงบจริง<br/>แนบภาพถ่าย"] :::nodeStyle
-    S3 --> S4["<b>4. Engine</b><br/>คำนวณ RAG<br/>ล็อกแผนงาน"] :::engineStyle
-    S4 --> S5["<b>5. Directives</b><br/>ผู้บริหารกำกับ<br/>สั่งการเร่งรัด"] :::nodeStyle
-    S5 --> S6["<b>6. Reports</b><br/>ส่งออก PDF/Excel<br/>สรุปผลสัมฤทธิ์"] :::nodeStyle
-    S6 --> E([🏁 สิ้นสุด]) :::startEnd
+    %% COLOR SCHEMES
+    classDef terminal fill:#10b981,stroke:#059669,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef process fill:#f8fafc,stroke:#0284c7,stroke-width:1.5px,color:#0f172a;
+    classDef decision fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#854d0e,font-weight:bold;
+    classDef io fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#166534;
+    classDef db fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#334155;
+
+    class Start,End terminal;
+    class Login,CreateProj,ReportActual,SendDirective,ExportReport io;
+    class CheckAuth,CheckRole,CheckRedFlag decision;
+    class AdminSetup,PlanActivities,ExecuteAct,SysEngine,ExecMonitor,AlertTeacher,LoginFail,WaitTeacher process;
+    class SaveMaster,SaveKPI db;
 ```
-
----
-
-## 💡 วิธี Export รูปภาพให้คมชัด 100% ไม่เบลอใน Microsoft Word
-
-1. **เปิดเว็บไซต์:** ไปที่ [Mermaid Live Editor (mermaid.live)](https://mermaid.live)
-2. **วางโค้ด:** คัดลอกโค้ดด้านบนไปวางในช่องซ้ายมือ
-3. **ดาวน์โหลดภาพความละเอียดสูง (แนะนำ):**
-   - กดปุ่ม **Actions** > เลือก **PNG** 
-   - หรือเลือก **SVG** (หากใช้ Word 2016 ขึ้นไป หรือ Office 365 จะสามารถ Insert SVG ได้โดยตรง ภาพจะคมชัดไม่แตกแม้ขยายใหญ่)
-4. **แทรกลงใน Microsoft Word:**
-   - เมนู **Insert (แทรก)** > **Pictures (รูปภาพ)** > เลือกไฟล์ที่ดาวน์โหลดมา
-   - ปรับขนาดให้กว้างประมาณ **15 - 16 ซม.** จะพอดีกับขอบกระดาษ A4 (Margins Normal 1 นิ้ว) สวยงาม อ่านง่าย ไม่ล้นหน้าครับ
