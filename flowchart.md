@@ -1,150 +1,86 @@
-# ผังกระบวนการทำงานมาตรฐานของระบบ (Standard System Flowchart)
+# ผังกระบวนการทำงานของระบบ (Master System Flowchart)
 ## ระบบติดตามและประเมินผลโครงการเชิงยุทธศาสตร์ — มหาวิทยาลัยราชภัฏบุรีรัมย์ (BRU)
 
-ผังงานนี้ออกแบบตาม **มาตรฐานผังงานสากล (Standard ISO/ANSI Flowchart)** ใช้สัญลักษณ์มาตรฐาน (จุดเริ่มต้น/สิ้นสุด, กล่องประมวลผล, กล่องเงื่อนไขตัดสินใจ, ข้อมูลนำเข้า/ส่งออก) เชื่อมโยงเส้นตรง เรียงลำดับจากบนลงล่าง เข้าใจง่าย และนำไปใช้งานในเอกสารรายงานทางการได้ทันที
+ผังงานนี้ได้รับการออกแบบให้ **เส้นเชื่อมโยงตรง สวยงาม อ่านง่าย มีจุดเริ่มต้นและจุดสิ้นสุดที่ชัดเจน** โดยเรียงลำดับกระบวนการทำงานจากบนลงล่าง (Top-to-Bottom Flow) อย่างสมดุล
 
 ---
 
-### 📊 ผังกระบวนการทำงานมาตรฐาน (Standard Flowchart)
+### 📊 ผังกระบวนการทำงานหลัก (Master System Flowchart)
 
 ```mermaid
 flowchart TD
     %% ==========================================
-    %% START / TERMINAL
+    %% GLOBAL STYLES & PALETTE
     %% ==========================================
-    Start([🟢 เริ่มต้น]) --> Login[/ผู้ใช้งานเข้าสู่ระบบ Authentication/]
-    
-    %% ==========================================
-    %% AUTHENTICATION & ROLE CHECK
-    %% ==========================================
-    Login --> CheckAuth{ตรวจสอบความถูกต้องของรหัสผ่าน?}
-    CheckAuth -->|ไม่ผ่าน| LoginFail[แสดงข้อความแจ้งเตือนข้อผิดพลาด]
-    LoginFail --> Login
-    
-    CheckAuth -->|ผ่าน| CheckRole{ตรวจสอบบทบาทผู้ใช้ RBAC}
-    
-    %% ==========================================
-    %% ROLE BRANCHES
-    %% ==========================================
-    %% 1. ADMIN BRANCH
-    CheckRole -->|ADMIN| AdminSetup[จัดการข้อมูลหลัก Master Data<br/>• กำหนด 9 คณะ / ภาควิชา / สิทธิ์ผู้ใช้<br/>• กำหนดยุทธศาสตร์ S1-S6 และ 10 โครงการหลัก<br/>• เปิดรอบปีงบประมาณ & แหล่งเงินทุน]
-    AdminSetup --> SaveMaster[(🗄️ บันทึกลงฐานข้อมูลกลาง)]
-    SaveMaster --> WaitTeacher[เข้าสู่สถานะพร้อมใช้งาน]
-    
-    %% 2. TEACHER BRANCH
-    CheckRole -->|TEACHER| CreateProj[/กรอกข้อมูลสร้างข้อเสนอโครงการ<br/>ระบุยุทธศาสตร์ S1-S6, ตัวชี้วัด, งบประมาณ/]
-    WaitTeacher --> CreateProj
-    
-    CreateProj --> PlanActivities[กำหนดแผนกิจกรรมย่อย Activities<br/>ระบุวันจัดกิจกรรม & งบประมาณตามแผน]
-    PlanActivities --> ExecuteAct[ดำเนินกิจกรรมเชิงยุทธศาสตร์ในพื้นที่จริง]
-    
-    ExecuteAct --> ReportActual[/บันทึกผลการดำเนินงานจริง<br/>• งบใช้จริง actualBudget<br/>• ผลผลิตสำเร็จ completedCount<br/>• อัปโหลดภาพถ่ายหลักฐาน/]
-    
-    %% ==========================================
-    %% SYSTEM ENGINE PROCESSING
-    %% ==========================================
-    ReportActual --> SysEngine[ระบบประมวลผลอัตโนมัติ<br/>• คำนวณ % Progress & % Burn Rate<br/>• ประเมินสถานะ 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต<br/>• ล็อกแผนงาน IsLocked ป้องกันแก้ไขย้อนหลัง]
-    
-    SysEngine --> SaveKPI[(🗄️ ปรับปรุงสถานะโครงการใน DB)]
-    
-    %% ==========================================
-    %% DEAN & PRESIDENT OVERSIGHT
-    %% ==========================================
-    CheckRole -->|DEAN / PRESIDENT| ExecMonitor[เข้าสู่หน้าแดชบอร์ดผู้บริหาร<br/>• Executive Health Banner<br/>• สรุปผลสัมฤทธิ์ S1-S6<br/>• ตารางเปรียบเทียบผลงานรายคณะ Heatmap]
-    SaveKPI --> ExecMonitor
-    
-    ExecMonitor --> CheckRedFlag{พบโครงการติดธงแดง<br/>หรือล่าช้าผิดปกติ?}
-    
-    CheckRedFlag -->|พบปัญหา| SendDirective[/ผู้บริหารพิมพ์ข้อสั่งการเร่งรัด Directives/]
-    SendDirective --> AlertTeacher[ระบบส่งข้อความแจ้งเตือนถึงอาจารย์ผู้รับผิดชอบ]
-    AlertTeacher --> ReportActual
-    
-    %% ==========================================
-    %% REPORTING & EXPORT
-    %% ==========================================
-    CheckRedFlag -->|เป็นไปตามแผน| ExportReport[/ส่งออกรายงานสรุปผลสัมฤทธิ์<br/>• เอกสารทางการ PDF / Excel / CSV<br/>• แบบพิมพ์ทางการ A4 Print Layout/]
-    
-    %% ==========================================
-    %% END / TERMINAL
-    %% ==========================================
-    ExportReport --> End([🏁 สิ้นสุดกระบวนการ])
+    classDef startEnd fill:#10b981,stroke:#059669,stroke-width:2.5px,color:#ffffff,font-weight:bold,font-size:15px;
+    classDef stepNode fill:#ffffff,stroke:#2563eb,stroke-width:1.8px,color:#1e293b,font-size:14px;
+    classDef engineNode fill:#fefce8,stroke:#d97706,stroke-width:1.8px,color:#78350f,font-size:14px;
+    classDef decisionNode fill:#fdf4ff,stroke:#9333ea,stroke-width:2px,color:#581c87,font-weight:bold,font-size:14px;
+    classDef directiveNode fill:#fff1f2,stroke:#e11d48,stroke-width:1.8px,color:#9f1239,font-size:14px;
+    classDef reportNode fill:#f0fdf4,stroke:#16a34a,stroke-width:1.8px,color:#14532d,font-size:14px;
 
     %% ==========================================
-    %% COLOR SCHEMES
+    %% FLOW NODES
     %% ==========================================
-    classDef terminal fill:#10b981,stroke:#059669,stroke-width:2px,color:#ffffff,font-weight:bold;
-    classDef process fill:#f8fafc,stroke:#0284c7,stroke-width:1.5px,color:#0f172a;
-    classDef decision fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#854d0e,font-weight:bold;
-    classDef io fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#166534;
-    classDef db fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#334155;
+    Start([🟢 เริ่มต้น : ผู้ใช้งานเข้าสู่ระบบ (Start)]) :::startEnd
+    
+    Start --> Step1["<b>ขั้นตอนที่ 1 : ตรวจสอบสิทธิ์ผู้ใช้งาน (Authentication & RBAC)</b><br/>• ยืนยันตัวตนด้วย JWT Token<br/>• ระบุบทบาท: ผู้ดูแลระบบ (ADMIN) / อาจารย์ (TEACHER) / ผู้บริหาร (DEAN, PRESIDENT)"] :::stepNode
 
-    class Start,End terminal;
-    class Login,CreateProj,ReportActual,SendDirective,ExportReport io;
-    class CheckAuth,CheckRole,CheckRedFlag decision;
-    class AdminSetup,PlanActivities,ExecuteAct,SysEngine,ExecMonitor,AlertTeacher,LoginFail,WaitTeacher process;
-    class SaveMaster,SaveKPI db;
+    Step1 --> Step2["<b>ขั้นตอนที่ 2 : จัดเตรียมข้อมูลหลักของระบบ (Master Data Setup)</b><br/>• กำหนดข้อมูล 9 คณะ, ภาควิชา, แหล่งเงินทุน และเปิดรอบปีงบประมาณ<br/>• กำหนด 6 ประเด็นยุทธศาสตร์ (S1-S6), ตัวชี้วัด และ 10 โครงการหลัก"] :::stepNode
+
+    Step2 --> Step3["<b>ขั้นตอนที่ 3 : สร้างข้อเสนอโครงการและวางแผนกิจกรรม (Project Planning)</b><br/>• อาจารย์กรอกข้อเสนอโครงการ ผูกกับยุทธศาสตร์ S1-S6 และงบประมาณตั้งต้น<br/>• กำหนดแผนกิจกรรมย่อย (Activities) พร้อมระบุวันจัดกิจกรรมและวงเงินตามแผน"] :::stepNode
+
+    Step3 --> Step4["<b>ขั้นตอนที่ 4 : ดำเนินกิจกรรมและบันทึกผลงานจริง (Execution & Actuals)</b><br/>• จัดกิจกรรมในพื้นที่จริงตามกำหนดการ<br/>• บันทึกงบประมาณใช้จริง (actualBudget) และผลผลิตที่ทำได้ (completedCount)<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์ (Evidence Gallery)"] :::stepNode
+
+    Step4 --> Step5["<b>ขั้นตอนที่ 5 : ระบบประมวลผลอัตโนมัติ (Automated RAG Engine)</b><br/>• คำนวณ % ความก้าวหน้า (% Progress) และ % เบิกจ่ายงบประมาณ (% Burn Rate)<br/>• ประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต (Red Flag)<br/>• ล็อกแผนงานอัตโนมัติ (IsLocked) ป้องกันการเปลี่ยนแปลงเป้าหมายย้อนหลัง"] :::engineNode
+
+    Step5 --> Step6{"<b>ขั้นตอนที่ 6 : ตรวจสอบสถานะโครงการ (Project Health Review)</b><br/>ผู้บริหารตรวจพบโครงการล่าช้าหรือติดธงแดงหรือไม่?"} :::decisionNode
+
+    %% Branches
+    Step6 -->|🔴 พบปัญหา / ติดธงแดง| StepDirective["<b>ออกข้อสั่งการเร่งรัด (Executive Directives)</b><br/>• อธิการบดี / คณบดี พิมพ์ข้อสั่งการผ่านระบบ<br/>• แจ้งเตือนตรงถึงอาจารย์ผู้รับผิดชอบเพื่อปรับปรุงการทำงาน"] :::directiveNode
+    
+    StepDirective -->|เร่งรัดดำเนินงาน / บันทึกผลใหม่| Step4
+
+    Step6 -->|🟢 ปกติ / เป็นไปตามแผน| Step7["<b>ขั้นตอนที่ 7 : สรุปผลสัมฤทธิ์และส่งออกรายงาน (Reporting & Outputs)</b><br/>• รายงานสรุปผลสัมฤทธิ์ตาม 6 ประเด็นยุทธศาสตร์ และ 10 โครงการหลัก<br/>• ส่งออกเอกสารทางการ: PDF มาตรฐานราชการ / Excel / พิมพ์ A4 Print Layout"] :::reportNode
+
+    Step7 --> End([🏁 สิ้นสุด : ครบวงจรการติดตามและประเมินผล (End)]) :::startEnd
 ```
 
 ---
 
-### 📋 โค้ดดิบสำหรับคัดลอก (Raw Mermaid Code)
+### 📋 โค้ดดิบสำหรับคัดลอก (Raw Copyable Code)
 
 ```text
 flowchart TD
-    %% START / TERMINAL
-    Start([🟢 เริ่มต้น]) --> Login[/ผู้ใช้งานเข้าสู่ระบบ Authentication/]
-    
-    %% AUTHENTICATION & ROLE CHECK
-    Login --> CheckAuth{ตรวจสอบความถูกต้องของรหัสผ่าน?}
-    CheckAuth -->|ไม่ผ่าน| LoginFail[แสดงข้อความแจ้งเตือนข้อผิดพลาด]
-    LoginFail --> Login
-    
-    CheckAuth -->|ผ่าน| CheckRole{ตรวจสอบบทบาทผู้ใช้ RBAC}
-    
-    %% ROLE BRANCHES
-    CheckRole -->|ADMIN| AdminSetup[จัดการข้อมูลหลัก Master Data<br/>• กำหนด 9 คณะ / ภาควิชา / สิทธิ์ผู้ใช้<br/>• กำหนดยุทธศาสตร์ S1-S6 และ 10 โครงการหลัก<br/>• เปิดรอบปีงบประมาณ & แหล่งเงินทุน]
-    AdminSetup --> SaveMaster[(🗄️ บันทึกลงฐานข้อมูลกลาง)]
-    SaveMaster --> WaitTeacher[เข้าสู่สถานะพร้อมใช้งาน]
-    
-    CheckRole -->|TEACHER| CreateProj[/กรอกข้อมูลสร้างข้อเสนอโครงการ<br/>ระบุยุทธศาสตร์ S1-S6, ตัวชี้วัด, งบประมาณ/]
-    WaitTeacher --> CreateProj
-    
-    CreateProj --> PlanActivities[กำหนดแผนกิจกรรมย่อย Activities<br/>ระบุวันจัดกิจกรรม & งบประมาณตามแผน]
-    PlanActivities --> ExecuteAct[ดำเนินกิจกรรมเชิงยุทธศาสตร์ในพื้นที่จริง]
-    
-    ExecuteAct --> ReportActual[/บันทึกผลการดำเนินงานจริง<br/>• งบใช้จริง actualBudget<br/>• ผลผลิตสำเร็จ completedCount<br/>• อัปโหลดภาพถ่ายหลักฐาน/]
-    
-    %% SYSTEM ENGINE PROCESSING
-    ReportActual --> SysEngine[ระบบประมวลผลอัตโนมัติ<br/>• คำนวณ % Progress & % Burn Rate<br/>• ประเมินสถานะ 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต<br/>• ล็อกแผนงาน IsLocked ป้องกันแก้ไขย้อนหลัง]
-    
-    SysEngine --> SaveKPI[(🗄️ ปรับปรุงสถานะโครงการใน DB)]
-    
-    %% DEAN & PRESIDENT OVERSIGHT
-    CheckRole -->|DEAN / PRESIDENT| ExecMonitor[เข้าสู่หน้าแดชบอร์ดผู้บริหาร<br/>• Executive Health Banner<br/>• สรุปผลสัมฤทธิ์ S1-S6<br/>• ตารางเปรียบเทียบผลงานรายคณะ Heatmap]
-    SaveKPI --> ExecMonitor
-    
-    ExecMonitor --> CheckRedFlag{พบโครงการติดธงแดง<br/>หรือล่าช้าผิดปกติ?}
-    
-    CheckRedFlag -->|พบปัญหา| SendDirective[/ผู้บริหารพิมพ์ข้อสั่งการเร่งรัด Directives/]
-    SendDirective --> AlertTeacher[ระบบส่งข้อความแจ้งเตือนถึงอาจารย์ผู้รับผิดชอบ]
-    AlertTeacher --> ReportActual
-    
-    %% REPORTING & EXPORT
-    CheckRedFlag -->|เป็นไปตามแผน| ExportReport[/ส่งออกรายงานสรุปผลสัมฤทธิ์<br/>• เอกสารทางการ PDF / Excel / CSV<br/>• แบบพิมพ์ทางการ A4 Print Layout/]
-    
-    %% END / TERMINAL
-    ExportReport --> End([🏁 สิ้นสุดกระบวนการ])
+    %% GLOBAL STYLES & PALETTE
+    classDef startEnd fill:#10b981,stroke:#059669,stroke-width:2.5px,color:#ffffff,font-weight:bold,font-size:15px;
+    classDef stepNode fill:#ffffff,stroke:#2563eb,stroke-width:1.8px,color:#1e293b,font-size:14px;
+    classDef engineNode fill:#fefce8,stroke:#d97706,stroke-width:1.8px,color:#78350f,font-size:14px;
+    classDef decisionNode fill:#fdf4ff,stroke:#9333ea,stroke-width:2px,color:#581c87,font-weight:bold,font-size:14px;
+    classDef directiveNode fill:#fff1f2,stroke:#e11d48,stroke-width:1.8px,color:#9f1239,font-size:14px;
+    classDef reportNode fill:#f0fdf4,stroke:#16a34a,stroke-width:1.8px,color:#14532d,font-size:14px;
 
-    %% COLOR SCHEMES
-    classDef terminal fill:#10b981,stroke:#059669,stroke-width:2px,color:#ffffff,font-weight:bold;
-    classDef process fill:#f8fafc,stroke:#0284c7,stroke-width:1.5px,color:#0f172a;
-    classDef decision fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#854d0e,font-weight:bold;
-    classDef io fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#166534;
-    classDef db fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#334155;
+    %% FLOW NODES
+    Start([🟢 เริ่มต้น : ผู้ใช้งานเข้าสู่ระบบ (Start)]) :::startEnd
+    
+    Start --> Step1["<b>ขั้นตอนที่ 1 : ตรวจสอบสิทธิ์ผู้ใช้งาน (Authentication & RBAC)</b><br/>• ยืนยันตัวตนด้วย JWT Token<br/>• ระบุบทบาท: ผู้ดูแลระบบ (ADMIN) / อาจารย์ (TEACHER) / ผู้บริหาร (DEAN, PRESIDENT)"] :::stepNode
 
-    class Start,End terminal;
-    class Login,CreateProj,ReportActual,SendDirective,ExportReport io;
-    class CheckAuth,CheckRole,CheckRedFlag decision;
-    class AdminSetup,PlanActivities,ExecuteAct,SysEngine,ExecMonitor,AlertTeacher,LoginFail,WaitTeacher process;
-    class SaveMaster,SaveKPI db;
+    Step1 --> Step2["<b>ขั้นตอนที่ 2 : จัดเตรียมข้อมูลหลักของระบบ (Master Data Setup)</b><br/>• กำหนดข้อมูล 9 คณะ, ภาควิชา, แหล่งเงินทุน และเปิดรอบปีงบประมาณ<br/>• กำหนด 6 ประเด็นยุทธศาสตร์ (S1-S6), ตัวชี้วัด และ 10 โครงการหลัก"] :::stepNode
+
+    Step2 --> Step3["<b>ขั้นตอนที่ 3 : สร้างข้อเสนอโครงการและวางแผนกิจกรรม (Project Planning)</b><br/>• อาจารย์กรอกข้อเสนอโครงการ ผูกกับยุทธศาสตร์ S1-S6 และงบประมาณตั้งต้น<br/>• กำหนดแผนกิจกรรมย่อย (Activities) พร้อมระบุวันจัดกิจกรรมและวงเงินตามแผน"] :::stepNode
+
+    Step3 --> Step4["<b>ขั้นตอนที่ 4 : ดำเนินกิจกรรมและบันทึกผลงานจริง (Execution & Actuals)</b><br/>• จัดกิจกรรมในพื้นที่จริงตามกำหนดการ<br/>• บันทึกงบประมาณใช้จริง (actualBudget) และผลผลิตที่ทำได้ (completedCount)<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์ (Evidence Gallery)"] :::stepNode
+
+    Step4 --> Step5["<b>ขั้นตอนที่ 5 : ระบบประมวลผลอัตโนมัติ (Automated RAG Engine)</b><br/>• คำนวณ % ความก้าวหน้า (% Progress) และ % เบิกจ่ายงบประมาณ (% Burn Rate)<br/>• ประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต (Red Flag)<br/>• ล็อกแผนงานอัตโนมัติ (IsLocked) ป้องกันการเปลี่ยนแปลงเป้าหมายย้อนหลัง"] :::engineNode
+
+    Step5 --> Step6{"<b>ขั้นตอนที่ 6 : ตรวจสอบสถานะโครงการ (Project Health Review)</b><br/>ผู้บริหารตรวจพบโครงการล่าช้าหรือติดธงแดงหรือไม่?"} :::decisionNode
+
+    %% Branches
+    Step6 -->|🔴 พบปัญหา / ติดธงแดง| StepDirective["<b>ออกข้อสั่งการเร่งรัด (Executive Directives)</b><br/>• อธิการบดี / คณบดี พิมพ์ข้อสั่งการผ่านระบบ<br/>• แจ้งเตือนตรงถึงอาจารย์ผู้รับผิดชอบเพื่อปรับปรุงการทำงาน"] :::directiveNode
+    
+    StepDirective -->|เร่งรัดดำเนินงาน / บันทึกผลใหม่| Step4
+
+    Step6 -->|🟢 ปกติ / เป็นไปตามแผน| Step7["<b>ขั้นตอนที่ 7 : สรุปผลสัมฤทธิ์และส่งออกรายงาน (Reporting & Outputs)</b><br/>• รายงานสรุปผลสัมฤทธิ์ตาม 6 ประเด็นยุทธศาสตร์ และ 10 โครงการหลัก<br/>• ส่งออกเอกสารทางการ: PDF มาตรฐานราชการ / Excel / พิมพ์ A4 Print Layout"] :::reportNode
+
+    Step7 --> End([🏁 สิ้นสุด : ครบวงจรการติดตามและประเมินผล (End)]) :::startEnd
 ```
