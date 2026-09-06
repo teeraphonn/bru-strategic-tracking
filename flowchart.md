@@ -1,86 +1,104 @@
-# ผังกระบวนการทำงานของระบบ (Master System Flowchart)
+# ภาพรวมการทำงานของระบบ (System Overview Flowchart)
 ## ระบบติดตามและประเมินผลโครงการเชิงยุทธศาสตร์ — มหาวิทยาลัยราชภัฏบุรีรัมย์ (BRU)
 
-ผังงานนี้ได้รับการออกแบบให้ **เส้นเชื่อมโยงตรง สวยงาม อ่านง่าย มีจุดเริ่มต้นและจุดสิ้นสุดที่ชัดเจน** โดยเรียงลำดับกระบวนการทำงานจากบนลงล่าง (Top-to-Bottom Flow) อย่างสมดุล
+ผังกระบวนการทำงานภาพรวมทั้งระบบ ตั้งแต่จุดเริ่มต้น (เข้าสู่ระบบ) จนถึงจุดสิ้นสุด (การประเมินผลและออกรายงาน) ออกแบบให้อ่านเข้าใจง่าย เป็นขั้นตอนชัดเจน
 
 ---
 
-### 📊 ผังกระบวนการทำงานหลัก (Master System Flowchart)
+### 📊 ผังภาพรวมการทำงานของระบบ (End-to-End System Overview)
 
 ```mermaid
 flowchart TD
     %% ==========================================
-    %% GLOBAL STYLES & PALETTE
+    %% COLOR STYLES
     %% ==========================================
-    classDef startEnd fill:#10b981,stroke:#059669,stroke-width:2.5px,color:#ffffff,font-weight:bold,font-size:15px;
-    classDef stepNode fill:#ffffff,stroke:#2563eb,stroke-width:1.8px,color:#1e293b,font-size:14px;
-    classDef engineNode fill:#fefce8,stroke:#d97706,stroke-width:1.8px,color:#78350f,font-size:14px;
-    classDef decisionNode fill:#fdf4ff,stroke:#9333ea,stroke-width:2px,color:#581c87,font-weight:bold,font-size:14px;
-    classDef directiveNode fill:#fff1f2,stroke:#e11d48,stroke-width:1.8px,color:#9f1239,font-size:14px;
-    classDef reportNode fill:#f0fdf4,stroke:#16a34a,stroke-width:1.8px,color:#14532d,font-size:14px;
+    classDef startEnd fill:#10b981,stroke:#059669,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef adminBox fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef teacherBox fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#15803d;
+    classDef engineBox fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#854d0e;
+    classDef execBox fill:#f3e8ff,stroke:#9333ea,stroke-width:1.5px,color:#6b21a8;
+    classDef reportBox fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#3730a3;
 
     %% ==========================================
-    %% FLOW NODES
+    %% 1. START
     %% ==========================================
-    Start([🟢 เริ่มต้น : ผู้ใช้งานเข้าสู่ระบบ (Start)]) :::startEnd
-    
-    Start --> Step1["<b>ขั้นตอนที่ 1 : ตรวจสอบสิทธิ์ผู้ใช้งาน (Authentication & RBAC)</b><br/>• ยืนยันตัวตนด้วย JWT Token<br/>• ระบุบทบาท: ผู้ดูแลระบบ (ADMIN) / อาจารย์ (TEACHER) / ผู้บริหาร (DEAN, PRESIDENT)"] :::stepNode
+    Start([🟢 เริ่มต้น : เข้าสู่ระบบ (Login)]) :::startEnd
 
-    Step1 --> Step2["<b>ขั้นตอนที่ 2 : จัดเตรียมข้อมูลหลักของระบบ (Master Data Setup)</b><br/>• กำหนดข้อมูล 9 คณะ, ภาควิชา, แหล่งเงินทุน และเปิดรอบปีงบประมาณ<br/>• กำหนด 6 ประเด็นยุทธศาสตร์ (S1-S6), ตัวชี้วัด และ 10 โครงการหลัก"] :::stepNode
+    %% ==========================================
+    %% 2. STEP 1: SETUP
+    %% ==========================================
+    Start --> S1["<b>1. ตั้งค่าระบบและข้อมูลหลัก (Setup & Master Data)</b><br/>👤 <i>ผู้ดูแลระบบ (Admin)</i><br/>• กำหนดข้อมูล 9 คณะ, ภาควิชา, แหล่งเงินทุน<br/>• กำหนดยุทธศาสตร์มหาวิทยาลัย (S1-S6) และ 10 โครงการหลัก"] :::adminBox
 
-    Step2 --> Step3["<b>ขั้นตอนที่ 3 : สร้างข้อเสนอโครงการและวางแผนกิจกรรม (Project Planning)</b><br/>• อาจารย์กรอกข้อเสนอโครงการ ผูกกับยุทธศาสตร์ S1-S6 และงบประมาณตั้งต้น<br/>• กำหนดแผนกิจกรรมย่อย (Activities) พร้อมระบุวันจัดกิจกรรมและวงเงินตามแผน"] :::stepNode
+    %% ==========================================
+    %% 3. STEP 2: PROPOSAL & PLANNING
+    %% ==========================================
+    S1 --> S2["<b>2. เสนอโครงการและวางแผนกิจกรรม (Proposal & Planning)</b><br/>👤 <i>อาจารย์ / ผู้รับผิดชอบ (Teacher)</i><br/>• กรอกข้อเสนอโครงการ ผูกกับยุทธศาสตร์ S1-S6 และตั้งงบประมาณ<br/>• วางแผนกิจกรรมย่อย ระบุวันจัดกิจกรรมและงบตามแผน"] :::teacherBox
 
-    Step3 --> Step4["<b>ขั้นตอนที่ 4 : ดำเนินกิจกรรมและบันทึกผลงานจริง (Execution & Actuals)</b><br/>• จัดกิจกรรมในพื้นที่จริงตามกำหนดการ<br/>• บันทึกงบประมาณใช้จริง (actualBudget) และผลผลิตที่ทำได้ (completedCount)<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์ (Evidence Gallery)"] :::stepNode
+    %% ==========================================
+    %% 4. STEP 3: EXECUTION & ACTUALS
+    %% ==========================================
+    S2 --> S3["<b>3. ดำเนินงานและบันทึกผลจริง (Execution & Actuals)</b><br/>👤 <i>อาจารย์ / ผู้รับผิดชอบ (Teacher)</i><br/>• ดำเนินกิจกรรมเชิงยุทธศาสตร์ในพื้นที่จริง<br/>• บันทึกงบประมาณใช้จริง + ผลผลิตสำเร็จที่ทำได้จริง<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์"] :::teacherBox
 
-    Step4 --> Step5["<b>ขั้นตอนที่ 5 : ระบบประมวลผลอัตโนมัติ (Automated RAG Engine)</b><br/>• คำนวณ % ความก้าวหน้า (% Progress) และ % เบิกจ่ายงบประมาณ (% Burn Rate)<br/>• ประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต (Red Flag)<br/>• ล็อกแผนงานอัตโนมัติ (IsLocked) ป้องกันการเปลี่ยนแปลงเป้าหมายย้อนหลัง"] :::engineNode
+    %% ==========================================
+    %% 5. STEP 4: AUTOMATED ENGINE
+    %% ==========================================
+    S3 --> S4["<b>4. ประมวลผลและประเมินสถานะอัตโนมัติ (Automated Engine)</b><br/>⚙️ <i>ระบบประมวลผลกลาง (System Core)</i><br/>• คำนวณ % ความก้าวหน้าสะสม และ % การใช้จ่ายงบประมาณ<br/>• ประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต<br/>• ล็อกแผนงาน (IsLocked) ป้องกันการแก้ไขเป้าหมายย้อนหลัง"] :::engineBox
 
-    Step5 --> Step6{"<b>ขั้นตอนที่ 6 : ตรวจสอบสถานะโครงการ (Project Health Review)</b><br/>ผู้บริหารตรวจพบโครงการล่าช้าหรือติดธงแดงหรือไม่?"} :::decisionNode
+    %% ==========================================
+    %% 6. STEP 5: GOVERNANCE & DIRECTIVES
+    %% ==========================================
+    S4 --> S5{"<b>5. กำกับติดตามและสั่งการ (Governance & Review)</b><br/>👤 <i>ผู้บริหาร (คณบดี Dean / อธิการบดี President)</i><br/>พบโครงการล่าช้าหรือติดธงแดงหรือไม่?"} :::execBox
 
     %% Branches
-    Step6 -->|🔴 พบปัญหา / ติดธงแดง| StepDirective["<b>ออกข้อสั่งการเร่งรัด (Executive Directives)</b><br/>• อธิการบดี / คณบดี พิมพ์ข้อสั่งการผ่านระบบ<br/>• แจ้งเตือนตรงถึงอาจารย์ผู้รับผิดชอบเพื่อปรับปรุงการทำงาน"] :::directiveNode
-    
-    StepDirective -->|เร่งรัดดำเนินงาน / บันทึกผลใหม่| Step4
+    S5 -->|🔴 พบปัญหา/ติดธงแดง| S5_Fix["<b>ออกข้อสั่งการเร่งรัด (Executive Directives)</b><br/>ผู้บริหารส่งคำสั่งกำชับตรงถึงอาจารย์ผู้รับผิดชอบโครงการ"] :::execBox
+    S5_Fix -->|ปรับปรุงการทำงาน & รายงานผลใหม่| S3
 
-    Step6 -->|🟢 ปกติ / เป็นไปตามแผน| Step7["<b>ขั้นตอนที่ 7 : สรุปผลสัมฤทธิ์และส่งออกรายงาน (Reporting & Outputs)</b><br/>• รายงานสรุปผลสัมฤทธิ์ตาม 6 ประเด็นยุทธศาสตร์ และ 10 โครงการหลัก<br/>• ส่งออกเอกสารทางการ: PDF มาตรฐานราชการ / Excel / พิมพ์ A4 Print Layout"] :::reportNode
+    S5 -->|🟢 ดำเนินงานปกติ| S6["<b>6. สรุปผลสัมฤทธิ์และส่งออกรายงาน (Reporting & Outputs)</b><br/>👥 <i>ผู้ใช้งานทุกระดับ</i><br/>• สรุปผลงานภาพรวมรายยุทธศาสตร์ S1-S6 เสนอสภามหาวิทยาลัย<br/>• ส่งออกไฟล์รายงานราชการ: PDF / Excel / พิมพ์แบบฟอร์ม A4"] :::reportBox
 
-    Step7 --> End([🏁 สิ้นสุด : ครบวงจรการติดตามและประเมินผล (End)]) :::startEnd
+    %% ==========================================
+    %% 7. END
+    %% ==========================================
+    S6 --> End([🏁 สิ้นสุด : สิ้นสุดรอบการประเมินยุทธศาสตร์ (End)]) :::startEnd
 ```
 
 ---
 
-### 📋 โค้ดดิบสำหรับคัดลอก (Raw Copyable Code)
+### 📋 โค้ดดิบสำหรับคัดลอก (Raw Mermaid Code)
 
 ```text
 flowchart TD
-    %% GLOBAL STYLES & PALETTE
-    classDef startEnd fill:#10b981,stroke:#059669,stroke-width:2.5px,color:#ffffff,font-weight:bold,font-size:15px;
-    classDef stepNode fill:#ffffff,stroke:#2563eb,stroke-width:1.8px,color:#1e293b,font-size:14px;
-    classDef engineNode fill:#fefce8,stroke:#d97706,stroke-width:1.8px,color:#78350f,font-size:14px;
-    classDef decisionNode fill:#fdf4ff,stroke:#9333ea,stroke-width:2px,color:#581c87,font-weight:bold,font-size:14px;
-    classDef directiveNode fill:#fff1f2,stroke:#e11d48,stroke-width:1.8px,color:#9f1239,font-size:14px;
-    classDef reportNode fill:#f0fdf4,stroke:#16a34a,stroke-width:1.8px,color:#14532d,font-size:14px;
+    %% COLOR STYLES
+    classDef startEnd fill:#10b981,stroke:#059669,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef adminBox fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef teacherBox fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#15803d;
+    classDef engineBox fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#854d0e;
+    classDef execBox fill:#f3e8ff,stroke:#9333ea,stroke-width:1.5px,color:#6b21a8;
+    classDef reportBox fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#3730a3;
 
-    %% FLOW NODES
-    Start([🟢 เริ่มต้น : ผู้ใช้งานเข้าสู่ระบบ (Start)]) :::startEnd
-    
-    Start --> Step1["<b>ขั้นตอนที่ 1 : ตรวจสอบสิทธิ์ผู้ใช้งาน (Authentication & RBAC)</b><br/>• ยืนยันตัวตนด้วย JWT Token<br/>• ระบุบทบาท: ผู้ดูแลระบบ (ADMIN) / อาจารย์ (TEACHER) / ผู้บริหาร (DEAN, PRESIDENT)"] :::stepNode
+    %% 1. START
+    Start([🟢 เริ่มต้น : เข้าสู่ระบบ (Login)]) :::startEnd
 
-    Step1 --> Step2["<b>ขั้นตอนที่ 2 : จัดเตรียมข้อมูลหลักของระบบ (Master Data Setup)</b><br/>• กำหนดข้อมูล 9 คณะ, ภาควิชา, แหล่งเงินทุน และเปิดรอบปีงบประมาณ<br/>• กำหนด 6 ประเด็นยุทธศาสตร์ (S1-S6), ตัวชี้วัด และ 10 โครงการหลัก"] :::stepNode
+    %% 2. STEP 1: SETUP
+    Start --> S1["<b>1. ตั้งค่าระบบและข้อมูลหลัก (Setup & Master Data)</b><br/>👤 <i>ผู้ดูแลระบบ (Admin)</i><br/>• กำหนดข้อมูล 9 คณะ, ภาควิชา, แหล่งเงินทุน<br/>• กำหนดยุทธศาสตร์มหาวิทยาลัย (S1-S6) และ 10 โครงการหลัก"] :::adminBox
 
-    Step2 --> Step3["<b>ขั้นตอนที่ 3 : สร้างข้อเสนอโครงการและวางแผนกิจกรรม (Project Planning)</b><br/>• อาจารย์กรอกข้อเสนอโครงการ ผูกกับยุทธศาสตร์ S1-S6 และงบประมาณตั้งต้น<br/>• กำหนดแผนกิจกรรมย่อย (Activities) พร้อมระบุวันจัดกิจกรรมและวงเงินตามแผน"] :::stepNode
+    %% 3. STEP 2: PROPOSAL & PLANNING
+    S1 --> S2["<b>2. เสนอโครงการและวางแผนกิจกรรม (Proposal & Planning)</b><br/>👤 <i>อาจารย์ / ผู้รับผิดชอบ (Teacher)</i><br/>• กรอกข้อเสนอโครงการ ผูกกับยุทธศาสตร์ S1-S6 และตั้งงบประมาณ<br/>• วางแผนกิจกรรมย่อย ระบุวันจัดกิจกรรมและงบตามแผน"] :::teacherBox
 
-    Step3 --> Step4["<b>ขั้นตอนที่ 4 : ดำเนินกิจกรรมและบันทึกผลงานจริง (Execution & Actuals)</b><br/>• จัดกิจกรรมในพื้นที่จริงตามกำหนดการ<br/>• บันทึกงบประมาณใช้จริง (actualBudget) และผลผลิตที่ทำได้ (completedCount)<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์ (Evidence Gallery)"] :::stepNode
+    %% 4. STEP 3: EXECUTION & ACTUALS
+    S2 --> S3["<b>3. ดำเนินงานและบันทึกผลจริง (Execution & Actuals)</b><br/>👤 <i>อาจารย์ / ผู้รับผิดชอบ (Teacher)</i><br/>• ดำเนินกิจกรรมเชิงยุทธศาสตร์ในพื้นที่จริง<br/>• บันทึกงบประมาณใช้จริง + ผลผลิตสำเร็จที่ทำได้จริง<br/>• อัปโหลดภาพถ่ายกิจกรรมเพื่อเป็นหลักฐานเชิงประจักษ์"] :::teacherBox
 
-    Step4 --> Step5["<b>ขั้นตอนที่ 5 : ระบบประมวลผลอัตโนมัติ (Automated RAG Engine)</b><br/>• คำนวณ % ความก้าวหน้า (% Progress) และ % เบิกจ่ายงบประมาณ (% Burn Rate)<br/>• ประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต (Red Flag)<br/>• ล็อกแผนงานอัตโนมัติ (IsLocked) ป้องกันการเปลี่ยนแปลงเป้าหมายย้อนหลัง"] :::engineNode
+    %% 5. STEP 4: AUTOMATED ENGINE
+    S3 --> S4["<b>4. ประมวลผลและประเมินสถานะอัตโนมัติ (Automated Engine)</b><br/>⚙️ <i>ระบบประมวลผลกลาง (System Core)</i><br/>• คำนวณ % ความก้าวหน้าสะสม และ % การใช้จ่ายงบประมาณ<br/>• ประเมินสถานะสุขภาพโครงการ: 🟢 ปกติ | 🟡 เฝ้าระวัง | 🔴 วิกฤต<br/>• ล็อกแผนงาน (IsLocked) ป้องกันการแก้ไขเป้าหมายย้อนหลัง"] :::engineBox
 
-    Step5 --> Step6{"<b>ขั้นตอนที่ 6 : ตรวจสอบสถานะโครงการ (Project Health Review)</b><br/>ผู้บริหารตรวจพบโครงการล่าช้าหรือติดธงแดงหรือไม่?"} :::decisionNode
+    %% 6. STEP 5: GOVERNANCE & DIRECTIVES
+    S4 --> S5{"<b>5. กำกับติดตามและสั่งการ (Governance & Review)</b><br/>👤 <i>ผู้บริหาร (คณบดี Dean / อธิการบดี President)</i><br/>พบโครงการล่าช้าหรือติดธงแดงหรือไม่?"} :::execBox
 
     %% Branches
-    Step6 -->|🔴 พบปัญหา / ติดธงแดง| StepDirective["<b>ออกข้อสั่งการเร่งรัด (Executive Directives)</b><br/>• อธิการบดี / คณบดี พิมพ์ข้อสั่งการผ่านระบบ<br/>• แจ้งเตือนตรงถึงอาจารย์ผู้รับผิดชอบเพื่อปรับปรุงการทำงาน"] :::directiveNode
-    
-    StepDirective -->|เร่งรัดดำเนินงาน / บันทึกผลใหม่| Step4
+    S5 -->|🔴 พบปัญหา/ติดธงแดง| S5_Fix["<b>ออกข้อสั่งการเร่งรัด (Executive Directives)</b><br/>ผู้บริหารส่งคำสั่งกำชับตรงถึงอาจารย์ผู้รับผิดชอบโครงการ"] :::execBox
+    S5_Fix -->|ปรับปรุงการทำงาน & รายงานผลใหม่| S3
 
-    Step6 -->|🟢 ปกติ / เป็นไปตามแผน| Step7["<b>ขั้นตอนที่ 7 : สรุปผลสัมฤทธิ์และส่งออกรายงาน (Reporting & Outputs)</b><br/>• รายงานสรุปผลสัมฤทธิ์ตาม 6 ประเด็นยุทธศาสตร์ และ 10 โครงการหลัก<br/>• ส่งออกเอกสารทางการ: PDF มาตรฐานราชการ / Excel / พิมพ์ A4 Print Layout"] :::reportNode
+    S5 -->|🟢 ดำเนินงานปกติ| S6["<b>6. สรุปผลสัมฤทธิ์และส่งออกรายงาน (Reporting & Outputs)</b><br/>👥 <i>ผู้ใช้งานทุกระดับ</i><br/>• สรุปผลงานภาพรวมรายยุทธศาสตร์ S1-S6 เสนอสภามหาวิทยาลัย<br/>• ส่งออกไฟล์รายงานราชการ: PDF / Excel / พิมพ์แบบฟอร์ม A4"] :::reportBox
 
-    Step7 --> End([🏁 สิ้นสุด : ครบวงจรการติดตามและประเมินผล (End)]) :::startEnd
+    %% 7. END
+    S6 --> End([🏁 สิ้นสุด : สิ้นสุดรอบการประเมินยุทธศาสตร์ (End)]) :::startEnd
 ```
