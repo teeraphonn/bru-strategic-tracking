@@ -31,7 +31,8 @@ import {
   FiFolder,
   FiActivity,
   FiX,
-  FiAlertTriangle
+  FiAlertTriangle,
+  FiSave
 } from 'react-icons/fi';
 import { getImageUrl, compressImage } from '../../utils/imageUrl';
 
