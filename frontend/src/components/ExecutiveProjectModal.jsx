@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
@@ -7,14 +7,8 @@ import Swal from 'sweetalert2';
 import {
   FiX,
   FiAlertTriangle,
-  FiActivity,
-  FiBriefcase,
   FiUser,
-  FiCalendar,
   FiExternalLink,
-  FiCheckCircle,
-  FiDollarSign,
-  FiTarget,
   FiChevronLeft,
   FiChevronRight,
   FiSend
@@ -50,9 +44,7 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
     return () => { isMounted = false; };
   }, [project?.id]);
 
-  if (!project) return null;
-
-  const activeProject = liveProject ? { ...project, ...liveProject } : project;
+  const activeProject = liveProject ? { ...(project || {}), ...liveProject } : (project || {});
 
   const budgetNum = parseFloat(activeProject.totalBudget || 0);
   const spentNum = activeProject.totalSpent !== undefined 
@@ -166,6 +158,8 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
     onClose();
     navigate(`/executive-projects/${activeProject.id}`);
   };
+
+  if (!project) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
