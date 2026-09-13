@@ -215,106 +215,106 @@
 ```
 c:\St_bru\
 ├── 📁 database/                        (สคริปต์ DDL, Data Dictionary และ ERD)
-│   ├── DataDictionary.md
-│   ├── ERD.md
-│   ├── schema.sql
-│   └── seed.sql
+│   ├── DataDictionary.md               — เอกสารพจนานุกรมข้อมูล อธิบายโครงสร้างฟิลด์และชนิดข้อมูลของทั้ง 14 ตาราง
+│   ├── ERD.md                          — เอกสารแผนภาพความสัมพันธ์เอนทิตี (ER Diagram) ของฐานข้อมูล
+│   ├── schema.sql                      — สคริปต์ DDL ภาษา SQL ดั้งเดิมสำหรับสร้าง 14 ตารางบน MySQL
+│   └── seed.sql                        — สคริปต์ INSERT INTO ภาษา SQL สำหรับใส่ข้อมูลเริ่มต้นของระบบ
 │
-├── 📁 backend/                         (Node.js + Express + Prisma ORM)
-│   ├── .env
-│   ├── app.js
-│   ├── package.json / package-lock.json
-│   ├── seed-projects.js
-│   ├── verify-endpoints.js
-│   ├── 📁 config/
-│   │   ├── prisma.js
-│   │   └── cloudinary.js
-│   ├── 📁 middleware/
-│   │   ├── auth.middleware.js
-│   │   ├── validation.middleware.js
-│   │   └── upload.middleware.js
-│   ├── 📁 routes/
-│   │   ├── auth.routes.js
-│   │   ├── project.routes.js
-│   │   ├── activity.routes.js
-│   │   ├── dashboard.routes.js
-│   │   ├── directive.routes.js
-│   │   ├── master.routes.js
-│   │   ├── issue.routes.js
-│   │   └── report.routes.js
-│   ├── 📁 controllers/
-│   │   ├── auth.controller.js
-│   │   ├── project.controller.js
-│   │   ├── activity.controller.js
-│   │   ├── dashboard.controller.js
-│   │   ├── master.controller.js
-│   │   ├── issue.controller.js
-│   │   └── report.controller.js
-│   ├── 📁 prisma/
-│   │   ├── schema.prisma
-│   │   ├── seed.js
-│   │   ├── seed-strategic-plan.js
-│   │   ├── seed-admin-only.js
-│   │   ├── seed-production-masterdata.js
-│   │   ├── setup-4tiers.js
-│   │   └── 📁 migrations/
-│   └── 📁 uploads/                    (ที่จัดเก็บไฟล์รูปภาพหลักฐานกิจกรรม)
+├── 📁 backend/                         (ระบบเซิร์ฟเวอร์ Node.js + Express + Prisma ORM)
+│   ├── .env                            — ตัวแปรสภาพแวดล้อมระบบ (DATABASE_URL, JWT_SECRET, PORT)
+│   ├── app.js                          — จุดเริ่มต้นเซิร์ฟเวอร์ Express, รวม Middleware และเชื่อมต่อ Route หลัก
+│   ├── package.json / package-lock.json — กำหนด Dependencies และคำสั่งสคริปต์รันของ Backend
+│   ├── seed-projects.js                — สคริปต์สร้างข้อมูลโครงการและกิจกรรมจำลองสำหรับทดสอบ
+│   ├── verify-endpoints.js             — สคริปต์ทดสอบยิง API ตรวจสอบสถานะการทำงานของ Endpoint ต่างๆ
+│   ├── 📁 config/                      (การตั้งค่าระบบและการเชื่อมต่อภายนอก)
+│   │   ├── prisma.js                   — Singleton Instance ของ PrismaClient ป้องกัน Connection ซ้ำซ้อน
+│   │   └── cloudinary.js               — ตั้งค่าเชื่อมต่อบริการจัดเก็บรูปภาพ Cloudinary (ตัวเลือกเสริม)
+│   ├── 📁 middleware/                  (ตัวคัดกรองคำขอ Request ก่อนเข้า Controller)
+│   │   ├── auth.middleware.js          — ตรวจสอบ JWT Token (authenticate) และตรวจสิทธิ์ตาม Role (authorize)
+│   │   ├── validation.middleware.js    — ตรวจสอบความถูกต้องของข้อมูล Input ป้องกันข้อมูลผิดรูปแบบ
+│   │   └── upload.middleware.js        — ตัวจัดการ Multer ตรวจนามสกุลไฟล์ภาพและจำกัดขนาดไม่เกิน 5MB
+│   ├── 📁 routes/                      (กำหนดเส้นทาง Endpoint และจับคู่กับ Controller)
+│   │   ├── auth.routes.js              — เส้นทาง API ล็อกอิน, ตรวจสอบผู้ใช้ปัจจุบัน, และเปลี่ยนรหัสผ่าน
+│   │   ├── project.routes.js           — เส้นทาง API เพิ่ม ลบ แก้ไข ล็อกแผนงาน และค้นหาโครงการ
+│   │   ├── activity.routes.js          — เส้นทาง API เพิ่มกิจกรรมย่อย อัปโหลดรูปภาพ และคำนวณผลผลิต
+│   │   ├── dashboard.routes.js         — เส้นทาง API ดึงข้อมูลสรุปแดชบอร์ดตามบทบาทผู้ใช้งาน (Role)
+│   │   ├── directive.routes.js         — เส้นทาง API ส่งข้อสั่งการเร่งรัดงานของผู้บริหาร (Dean / President)
+│   │   ├── master.routes.js            — เส้นทาง API จัดการข้อมูลพื้นฐานระบบ 9 หมวด (ยุทธศาสตร์, คณะ, สาขา)
+│   │   ├── issue.routes.js             — เส้นทาง API ส่งเรื่องแจ้งปัญหาการใช้งานและอัปเดตสถานะปัญหา
+│   │   └── report.routes.js            — เส้นทาง API รวบรวมข้อมูลสรุปโครงการเพื่อจัดทำรายงาน
+│   ├── 📁 controllers/                 (ตรรกะทางธุรกิจ Business Logic และประมวลผลข้อมูล)
+│   │   ├── auth.controller.js          — ตรวจสอบรหัสผ่าน (Bcrypt), สร้าง JWT Token และจัดการสิทธิ์ผู้ใช้
+│   │   ├── project.controller.js       — คำนวณความก้าวหน้าโครงการ ระบบล็อกแผนงาน และตรวจสิทธิ์ IDOR
+│   │   ├── activity.controller.js      — บันทึกผลการดำเนินกิจกรรม คำนวณยอดเงินสะสม และจัดการรูปภาพหลักฐาน
+│   │   ├── dashboard.controller.js     — ประมวลผลสถิติ กรองโครงการติดธงแดง (Red Flags) ตามข้อยกเว้น MBE
+│   │   ├── master.controller.js        — ตรรกะจัดการเพิ่ม/ลบ/แก้ไขข้อมูลยุทธศาสตร์ 4 ระดับ และหน่วยงาน
+│   │   ├── issue.controller.js         — รับเรื่องแจ้งปัญหา บันทึกรายละเอียด และเปลี่ยนสถานะโดยผู้ดูแลระบบ
+│   │   └── report.controller.js        — คำนวณยอดรวมงบประมาณและผลผลิตตามยุทธศาสตร์เพื่อออกรายงาน
+│   ├── 📁 prisma/                      (การจัดการฐานข้อมูลด้วย Prisma ORM)
+│   │   ├── schema.prisma               — แบบจำลองฐานข้อมูล 14 ตาราง Enums ความสัมพันธ์ และกฎความปลอดภัย
+│   │   ├── seed.js                     — สคริปต์หลักสำหรับสร้าง Master Data และบัญชีทดสอบครบทุก Role
+│   │   ├── seed-strategic-plan.js      — สคริปต์นำเข้าโครงสร้างยุทธศาสตร์ 4 ระดับ (LDI, Plan, Sub, MP)
+│   │   ├── seed-admin-only.js          — สคริปต์สร้างบัญชีผู้ดูแลระบบ (Admin) โดยเฉพาะ
+│   │   ├── seed-production-masterdata.js — สคริปต์ตั้งค่า Master Data สำหรับใช้งานบนสภาพแวดล้อมจริง
+│   │   ├── setup-4tiers.js             — สคริปต์จัดหมวดยุทธศาสตร์ 4 ระดับให้ตรงตามแผนของมหาวิทยาลัย
+│   │   └── 📁 migrations/              — โฟลเดอร์เก็บประวัติและไฟล์สคริปต์การอัปเดตโครงสร้างฐานข้อมูล
+│   └── 📁 uploads/                     (โฟลเดอร์จัดเก็บไฟล์รูปภาพหลักฐานกิจกรรมที่อัปโหลดขึ้นเซิร์ฟเวอร์)
 │
-└── 📁 frontend/                        (React 19 + Vite + Tailwind CSS)
-    ├── index.html
-    ├── vite.config.js
-    ├── tailwind.config.js
-    ├── postcss.config.js
-    ├── vercel.json
-    ├── package.json / package-lock.json
-    └── 📁 src/
-        ├── main.jsx
-        ├── App.jsx
-        ├── index.css
-        ├── 📁 layouts/
-        │   └── AppLayout.jsx
-        ├── 📁 components/
-        │   ├── Topbar.jsx
-        │   ├── Sidebar.jsx
-        │   ├── CustomSelect.jsx
-        │   ├── ExecutiveProjectModal.jsx
-        │   ├── ProfileModal.jsx
-        │   ├── ReportIssueModal.jsx
-        │   └── ErrorBoundary.jsx
-        ├── 📁 contexts/
-        │   └── AuthContext.jsx
-        ├── 📁 services/
-        │   └── api.js
-        ├── 📁 utils/
-        │   ├── imageUrl.js
-        │   └── statusHelper.js
-        └── 📁 pages/
-            ├── 📁 auth/
-            │   └── Login.jsx
-            ├── 📁 teacher/
-            │   ├── Dashboard.jsx
-            │   ├── Projects.jsx
-            │   ├── ProjectForm.jsx
-            │   ├── ProjectDetails.jsx
-            │   ├── ActivitiesList.jsx
-            │   └── Gallery.jsx
-            ├── 📁 dean/
-            │   ├── Dashboard.jsx
-            │   ├── Projects.jsx
-            │   └── Reports.jsx
-            ├── 📁 president/
-            │   ├── Dashboard.jsx
-            │   ├── Projects.jsx
-            │   └── Reports.jsx
-            ├── 📁 admin/
-            │   ├── Dashboard.jsx
-            │   ├── MasterData.jsx
-            │   ├── Projects.jsx
-            │   ├── AdminActivities.jsx
-            │   ├── Issues.jsx
-            │   └── Reports.jsx
-            └── 📁 executive/
-                └── ProjectDetail.jsx
+└── 📁 frontend/                        (ระบบหน้าบ้าน React 19 + Vite + Tailwind CSS)
+    ├── index.html                      — โครงสร้าง HTML หลัก จุดติดตั้ง Root Element ของ React
+    ├── vite.config.js                  — กำหนดค่า Vite, ตั้งค่า Proxy เชื่อมต่อไปยัง Backend และพอร์ต
+    ├── tailwind.config.js              — กำหนดสีหลัก (primary: #6C3BFF) ฟอนต์ และ Utility คลาสของระบบ
+    ├── postcss.config.js               — ตั้งค่า PostCSS สำหรับคอมไพล์สไตล์ร่วมกับ Tailwind และ Autoprefixer
+    ├── vercel.json                     — กฎ Rewrite ส่งทุก URL ไปที่ index.html ป้องกันหน้า 404 บน Vercel
+    ├── package.json / package-lock.json — กำหนด Dependencies และคำสั่งสคริปต์รันของ Frontend
+    └── 📁 src/                         (โค้ดต้นฉบับฝั่งหน้าบ้าน)
+        ├── main.jsx                    — จุดเริ่มต้น React นำ App ไปเรนเดอร์ใน DOM และห่อหุ้มด้วย Router
+        ├── App.jsx                     — จัดการเส้นทาง URL (Routing) และระบบป้องกันสิทธิ์ (Role Guard)
+        ├── index.css                   — ไฟล์สไตล์ CSS หลัก และการตั้งค่าพื้นฐานของ Tailwind CSS
+        ├── 📁 layouts/                 (โครงสร้างหน้าจอหลัก)
+        │   └── AppLayout.jsx           — Master Layout รวม Sidebar + Topbar + Outlet (พื้นที่แสดงเนื้อหา)
+        ├── 📁 components/              (ชิ้นส่วน UI ที่นำมาใช้ซ้ำได้)
+        │   ├── Topbar.jsx              — แถบเมนูด้านบน แสดงข้อมูลระบบ แจ้งเตือน และโปรไฟล์ผู้ใช้
+        │   ├── Sidebar.jsx             — เมนูแถบข้างด้านซ้าย ปรับเปลี่ยนรายการตาม Role ของผู้ใช้โดยอัตโนมัติ
+        │   ├── CustomSelect.jsx        — Dropdown พิเศษที่รองรับการค้นหาตัวเลือก (Searchable Dropdown)
+        │   ├── ExecutiveProjectModal.jsx — หน้าต่าง Pop-up สรุปข้อมูลโครงการสำหรับผู้บริหาร
+        │   ├── ProfileModal.jsx        — หน้าต่าง Pop-up แสดงข้อมูลผู้ใช้และฟอร์มเปลี่ยนรหัสผ่าน
+        │   ├── ReportIssueModal.jsx    — หน้าต่าง Pop-up สำหรับกรอกและส่งเรื่องแจ้งปัญหาไปยังแอดมิน
+        │   └── ErrorBoundary.jsx       — ตัวดักจับข้อผิดพลาดของ UI เพื่อป้องกันไม่ให้หน้าเว็บล่มทั้งระบบ
+        ├── 📁 contexts/                (ตัวจัดการ State ส่วนกลางของระบบ)
+        │   └── AuthContext.jsx         — จัดการ State การล็อกอิน ข้อมูลผู้ใช้ สิทธิ์ และฟังก์ชัน Login/Logout
+        ├── 📁 services/                (การเชื่อมต่อ API หลังบ้าน)
+        │   └── api.js                  — กำหนดค่า Axios Client และดักแนบ JWT Token ในทุกคำขออัตโนมัติ
+        ├── 📁 utils/                   (ฟังก์ชันช่วยเหลือทั่วไป)
+        │   ├── imageUrl.js             — แปลง Path สัมพัทธ์ของรูปภาพให้เป็น Full URL สำหรับแสดงผลบนหน้าเว็บ
+        │   └── statusHelper.js         — ฟังก์ชันแปลงรหัสสถานะโครงการ/กิจกรรมเป็นสี Badge และข้อความภาษาไทย
+        └── 📁 pages/                   (หน้าจอแสดงผลตามบทบาทผู้ใช้)
+            ├── 📁 auth/                (หน้าจอสำหรับการยืนยันตัวตน)
+            │   └── Login.jsx           — หน้าจอกรอกชื่อผู้ใช้และรหัสผ่านเพื่อเข้าสู่ระบบ
+            ├── 📁 teacher/             (หน้าจอสำหรับอาจารย์ผู้รับผิดชอบโครงการ)
+            │   ├── Dashboard.jsx       — แดชบอร์ดสรุปภาพรวมโครงการเฉพาะที่ตนเองรับผิดชอบ
+            │   ├── Projects.jsx        — หน้ารายการโครงการทั้งหมดของตนเอง พร้อมปุ่มสร้างโครงการใหม่
+            │   ├── ProjectForm.jsx     — ฟอร์มเพิ่ม/แก้ไขโครงการ พร้อม Cascading Dropdown ยุทธศาสตร์ 4 ระดับ
+            │   ├── ProjectDetails.jsx  — หน้ารายละเอียดโครงการ บันทึกกิจกรรม และแสดงสถานะล็อกแผนงาน
+            │   ├── ActivitiesList.jsx  — หน้ารายการกิจกรรมย่อยทั้งหมดของโครงการ
+            │   └── Gallery.jsx         — หน้าแสดงอัลบั้มรูปภาพหลักฐานการลงพื้นที่จริงทั้งหมด
+            ├── 📁 dean/                (หน้าจอสำหรับคณบดี)
+            │   ├── Dashboard.jsx       — แดชบอร์ดสรุปผลงานระดับคณะ และปุ่มออกข้อสั่งการเร่งรัดงาน
+            │   ├── Projects.jsx        — หน้ารายการโครงการเฉพาะภายในคณะของตนเอง
+            │   └── Reports.jsx         — หน้ารายงานสรุปผลงาน เปรียบเทียบผลการดำเนินงานระหว่างสาขาวิชา
+            ├── 📁 president/           (หน้าจอสำหรับอธิการบดี/ผู้บริหารระดับสูง)
+            │   ├── Dashboard.jsx       — แดชบอร์ดรวมมหาวิทยาลัย รายการธงแดง และข้อสั่งการระดับนโยบาย
+            │   ├── Projects.jsx        — หน้ารายการโครงการทั้งหมดทุกคณะในมหาวิทยาลัย
+            │   └── Reports.jsx         — หน้ารายงานสถิติงบประมาณและการบรรลุเป้าหมายภาพรวมมหาวิทยาลัย
+            ├── 📁 admin/               (หน้าจอสำหรับผู้ดูแลระบบ)
+            │   ├── Dashboard.jsx       — แดชบอร์ดสถิติผู้ใช้งาน โครงการ และสถานะปัญหาในระบบ
+            │   ├── MasterData.jsx      — หน้าจัดการข้อมูลระบบ 9 หมวด (ยุทธศาสตร์, คณะ, สาขา, แหล่งเงินทุน)
+            │   ├── Projects.jsx        — หน้าบริหารจัดการโครงการทุกโครงการในระบบ
+            │   ├── AdminActivities.jsx — หน้าตรวจสอบและบริหารจัดการกิจกรรมย่อยของทุกโครงการ
+            │   ├── Issues.jsx          — หน้าระบบจัดการเรื่องร้องเรียน/แจ้งปัญหาการใช้งาน
+            │   └── Reports.jsx         — หน้ารวมรายงานเชิงสถิติขั้นสูงสำหรับผู้ดูแลระบบ
+            └── 📁 executive/           (หน้าจอรายละเอียดสำหรับระดับผู้บริหาร)
+                └── ProjectDetail.jsx   — หน้าจอเจาะลึกโครงการสำหรับผู้บริหาร ดูไทม์ไลน์และประวัติการสั่งการ
 ```
 
 ---
