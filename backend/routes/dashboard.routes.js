@@ -4,6 +4,7 @@ const dashboardController = require('../controllers/dashboard.controller');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
 
 router.get('/', authenticate, dashboardController.getDashboardStats);
+router.get('/executive', authenticate, authorize(['PRESIDENT', 'ADMIN', 'DEAN']), dashboardController.getPresidentDashboardStats);
 router.get('/dean', authenticate, authorize(['DEAN', 'ADMIN', 'PRESIDENT']), dashboardController.getDeanDashboardStats);
 router.get('/president', authenticate, authorize(['PRESIDENT', 'ADMIN', 'DEAN']), dashboardController.getPresidentDashboardStats);
 

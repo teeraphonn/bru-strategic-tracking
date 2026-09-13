@@ -32,6 +32,7 @@ const uploadImagesMiddleware = (req, res, next) => {
 
 router.put('/:id', authenticate, uploadImagesMiddleware, validate(progressTrackingSchema), activityController.updateActivity);
 router.put('/:id/progress', authenticate, uploadImagesMiddleware, validate(progressTrackingSchema), activityController.updateActivity);
+router.post('/:id/report', authenticate, uploadImagesMiddleware, validate(progressTrackingSchema), activityController.updateActivity);
 
 router.patch('/:id/toggle-lock', authenticate, authorize(['ADMIN']), activityController.toggleActivityLock);
 router.delete('/images/:imageId', authenticate, activityController.deleteActivityImage);

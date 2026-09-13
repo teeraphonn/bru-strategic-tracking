@@ -203,6 +203,7 @@ const getProjects = async (req, res) => {
           },
           indicator: true,
           department: { include: { faculty: true } },
+          faculty: true,
           users: { include: { user: { select: { id: true, name: true } } } },
           activities: {
             include: {
@@ -249,6 +250,7 @@ const getProject = async (req, res) => {
         },
         indicator: true,
         department: { include: { faculty: true } },
+        faculty: true,
         users: { include: { user: { select: { id: true, name: true, username: true } } } },
         activities: {
           include: {

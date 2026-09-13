@@ -232,7 +232,14 @@ const getDashboardStats = async (req, res) => {
           unitMap[key].actual += parseFloat(a.actualBudget || 0);
         });
       });
-    } else {
+      Object.keys(unitMap).forEach(key => {
+        barChartData.push({
+          unit: key,
+          budget: parseFloat(unitMap[key].budget.toFixed(2)),
+          actual: parseFloat(unitMap[key].actual.toFixed(2))
+        });
+      });
+    } else if (user.role === 'DEAN') {
       projects.forEach(p => {
         const key = p.department?.name || 'ไม่มีหน่วยงาน';
         if (!unitMap[key]) {
@@ -243,14 +250,52 @@ const getDashboardStats = async (req, res) => {
           unitMap[key].actual += parseFloat(a.actualBudget || 0);
         });
       });
+      Object.keys(unitMap).forEach(key => {
+        barChartData.push({
+          unit: key,
+          budget: parseFloat(unitMap[key].budget.toFixed(2)),
+          actual: parseFloat(unitMap[key].actual.toFixed(2))
+        });
+      });
+    } else {
+      // TEACHER / Project Level: Aggregate by Project (แยกตามโครงการ)
+      projects.forEach(p => {
+        const pBudget = parseFloat(p.totalBudget || 0);
+        const pActual = (p.activities || []).reduce((sum, a) => sum + parseFloat(a.actualBudget || 0), 0);
+        const pName = p.name || 'โครงการไม่ระบุชื่อ';
+        const label = pName.length > 25 ? pName.substring(0, 22) + '...' : pName;
+        barChartData.push({
+          projectId: p.id,
+          unit: label,
+          projectName: pName,
+          budget: parseFloat(pBudget.toFixed(2)),
+          actual: parseFloat(pActual.toFixed(2)),
+          remaining: parseFloat(Math.max(0, pBudget - pActual).toFixed(2)),
+          percentage: pBudget > 0 ? parseFloat(((pActual / pBudget) * 100).toFixed(2)) : 0,
+          progress: p.progress || 0
+        });
+      });
     }
 
-    Object.keys(unitMap).forEach(key => {
-      barChartData.push({
-        unit: key,
-        budget: parseFloat(unitMap[key].budget.toFixed(2)),
-        actual: parseFloat(unitMap[key].actual.toFixed(2))
-      });
+    const projectBudgets = projects.map(p => {
+      const pBudget = parseFloat(p.totalBudget || 0);
+      const pActual = (p.activities || []).reduce((sum, a) => sum + parseFloat(a.actualBudget || 0), 0);
+      const remaining = Math.max(0, pBudget - pActual);
+      const percentage = pBudget > 0 ? parseFloat(((pActual / pBudget) * 100).toFixed(2)) : 0;
+      return {
+        id: p.id,
+        name: p.name,
+        code: p.id,
+        totalBudget: pBudget,
+        actualBudget: pActual,
+        remainingBudget: parseFloat(remaining.toFixed(2)),
+        budgetPercentage: percentage,
+        progress: p.progress || 0,
+        activityCount: p.activities ? p.activities.length : 0,
+        completedActivities: (p.activities || []).filter(a => a.success).length,
+        department: p.department?.name || '',
+        faculty: p.faculty?.name || ''
+      };
     });
 
     // 7. Chart Data: Spending timeline (Line Chart)
@@ -305,7 +350,8 @@ const getDashboardStats = async (req, res) => {
         pie: Object.keys(progressBuckets).map(k => ({ status: k, count: progressBuckets[k] })),
         bar: barChartData,
         line: lineChartData
-      }
+      },
+      projectBudgets
     });
   } catch (error) {
     console.error('Dashboard statistics error:', error);

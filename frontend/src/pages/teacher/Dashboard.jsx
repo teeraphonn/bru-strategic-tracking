@@ -3,49 +3,15 @@ import { createPortal } from 'react-dom';
 import api from '../../services/api';
 import { AuthContext } from '../../contexts/AuthContext';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  PointElement,
-  LineElement
-} from 'chart.js';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
-import {
   FiFolder,
-  FiActivity,
-  FiCheckCircle,
-  FiClock,
-  FiDollarSign,
-  FiPieChart,
-  FiTrendingUp,
-  FiTarget,
   FiPlus,
   FiEye,
   FiChevronRight,
   FiChevronLeft,
-  FiBarChart2,
   FiUser
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { getImageUrl } from '../../utils/imageUrl';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 const TeacherDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -120,80 +86,8 @@ const TeacherDashboard = () => {
     summary = {}, 
     recentProjects = [], 
     recentActivities = [], 
-    latestImages = [], 
-    charts = { bar: [], pie: [], line: [] } 
+    latestImages = [] 
   } = data || {};
-
-  const pieList = Array.isArray(charts?.pie) ? charts.pie : [];
-  const barList = Array.isArray(charts?.bar) ? charts.bar : [];
-  const lineList = Array.isArray(charts?.line) ? charts.line : [];
-
-  const totalPieCount = pieList.reduce((sum, c) => sum + (c.count || 0), 0) || summary.totalProjects || 0;
-
-  const getProgressStatusColor = (status, idx) => {
-    if (status === '76-100%') return { hex: '#10B981', dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' };
-    if (status === '51-75%') return { hex: '#3B82F6', dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' };
-    if (status === '26-50%') return { hex: '#F59E0B', dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' };
-    if (status === '0-25%') return { hex: '#EF4444', dot: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50' };
-    const fallbacks = [
-      { hex: '#EF4444', dot: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50' },
-      { hex: '#F59E0B', dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
-      { hex: '#3B82F6', dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
-      { hex: '#10B981', dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' }
-    ];
-    return fallbacks[idx % fallbacks.length];
-  };
-
-  // Chart configuration: Doughnut (Progress Categories)
-  const doughnutData = {
-    labels: pieList.map(c => c.status),
-    datasets: [{
-      data: pieList.map(c => c.count),
-      backgroundColor: pieList.map((c, idx) => getProgressStatusColor(c.status, idx).hex),
-      borderWidth: 3,
-      borderColor: '#ffffff',
-      hoverOffset: 6
-    }]
-  };
-
-  // Chart configuration: Bar Chart (Budget vs Spent by Unit)
-  const barData = {
-    labels: barList.map(b => b.unit),
-    datasets: [
-      {
-        label: 'งบประมาณตามแผน',
-        data: barList.map(b => b.budget),
-        backgroundColor: '#DDD6FE',
-        borderRadius: 6,
-        barThickness: 16
-      },
-      {
-        label: 'งบประมาณใช้จ่ายจริง',
-        data: barList.map(b => b.actual),
-        backgroundColor: '#6C3BFF',
-        borderRadius: 6,
-        barThickness: 16
-      }
-    ]
-  };
-
-  // Chart configuration: Line Chart (Spent Timeline)
-  const lineData = {
-    labels: lineList.map(l => l.period),
-    datasets: [{
-      label: 'งบประมาณที่จ่ายจริง (บาท)',
-      data: lineList.map(l => l.spent),
-      borderColor: '#6C3BFF',
-      backgroundColor: 'rgba(108, 59, 255, 0.08)',
-      tension: 0.35,
-      fill: true,
-      pointBackgroundColor: '#6C3BFF',
-      pointBorderColor: '#ffffff',
-      pointBorderWidth: 2,
-      pointRadius: 5,
-      pointHoverRadius: 7
-    }]
-  };
 
   return (
     <div className="space-y-6 pb-12 animate-fadeIn">
@@ -250,7 +144,12 @@ const TeacherDashboard = () => {
                 <span className="text-xs text-sky-300 font-bold">{summary.totalActualBudget?.toLocaleString('th-TH')} ฿</span>
               </div>
             </div>
-            <div className="text-[10px] text-violet-300/70 mt-2 truncate">จากงบประมาณรวม {summary.totalBudget?.toLocaleString('th-TH')} ฿</div>
+            <div className="mt-2 flex items-center">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-amber-400/15 border border-amber-400/30 text-amber-200 text-[10px] font-bold shadow-sm">
+                <span className="text-violet-200/90 font-medium">จากงบประมาณรวม</span>
+                <span className="text-amber-300 font-black">{summary.totalBudget?.toLocaleString('th-TH')} ฿</span>
+              </span>
+            </div>
           </div>
 
           <div className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
@@ -261,9 +160,15 @@ const TeacherDashboard = () => {
                 <span className="text-xs text-violet-300 font-bold">โครงการของฉัน</span>
               </div>
             </div>
-            <div className="text-[10px] text-violet-300/80 mt-2 truncate flex items-center justify-between">
-              <span>กำลังดำเนินงาน {summary.inProgressProjects || 0} โครงการ</span>
-              <span>เสร็จ {summary.completedProjects || 0}</span>
+            <div className="mt-2 flex items-center justify-between gap-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-400/20 border border-amber-400/35 text-amber-300 text-[10px] font-black shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>กำลังดำเนินงาน {summary.inProgressProjects || 0} โครงการ</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-400/20 border border-emerald-400/35 text-emerald-300 text-[10px] font-black shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>เสร็จ {summary.completedProjects || 0}</span>
+              </span>
             </div>
           </div>
 
@@ -288,154 +193,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* 2. Visual Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart 1: Bar Chart (2 cols) */}
-        <div className="lg:col-span-2 p-6 bg-white rounded-3xl shadow-soft border border-slate-100 flex flex-col justify-between space-y-4">
-          <div className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                <FiBarChart2 className="w-4 h-4 text-primary shrink-0" />
-                <span>งบประมาณและผลการใช้จ่าย แยกตามโครงการ</span>
-              </h3>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">เปรียบเทียบงบประมาณตามแผนและงบประมาณที่เบิกจ่ายจริง</p>
-            </div>
-            <div className="flex items-center gap-3 text-[11px] font-bold">
-              <span className="inline-flex items-center gap-1.5 text-slate-600">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#DDD6FE]"></span>
-                <span>ตามแผน</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-primary">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#6C3BFF]"></span>
-                <span>จ่ายจริง</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="h-[290px] w-full flex items-center justify-center">
-            {barList.length > 0 ? (
-              <Bar 
-                data={barData} 
-                options={{ 
-                  responsive: true, 
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                      backgroundColor: '#1E1B4B',
-                      padding: 12,
-                      cornerRadius: 12,
-                      callbacks: {
-                        label: (ctx) => ` ${ctx.dataset.label}: ${Number(ctx.raw || 0).toLocaleString('th-TH')} บาท`
-                      }
-                    }
-                  },
-                  scales: {
-                    x: {
-                      grid: { display: false },
-                      ticks: { font: { size: 10, weight: 'bold' }, color: '#64748B', autoSkip: false, maxRotation: 25 }
-                    },
-                    y: {
-                      grid: { color: '#F1F5F9' },
-                      border: { dash: [4, 4] },
-                      ticks: {
-                        font: { size: 10 },
-                        color: '#94A3B8',
-                        callback: (v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
-                      }
-                    }
-                  }
-                }} 
-              />
-            ) : (
-              <span className="text-xs text-slate-400">ไม่มีข้อมูลเปรียบเทียบงบประมาณ</span>
-            )}
-          </div>
-
-          {/* Summary Badges Footer */}
-          <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-slate-500 font-medium">รวมงบประมาณตามแผน:</span>
-              <span className="font-extrabold text-slate-800">{summary.totalBudget?.toLocaleString('th-TH')} ฿</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-slate-500 font-medium">ใช้จ่ายจริงรวม:</span>
-              <span className="font-extrabold text-emerald-600">{summary.totalActualBudget?.toLocaleString('th-TH')} ฿ ({summary.budgetPercentage}%)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Chart 2: Doughnut Chart (1 col) */}
-        <div className="p-6 bg-white rounded-3xl shadow-soft border border-slate-100 flex flex-col justify-between space-y-4">
-          <div className="pb-3 border-b border-slate-100">
-            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-              <FiPieChart className="w-4 h-4 text-violet-600 shrink-0" />
-              <span>สัดส่วนระดับความสำเร็จโครงการ</span>
-            </h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">การกระจายตัวของระดับความก้าวหน้าโครงการ (%)</p>
-          </div>
-
-          <div className="h-[230px] w-full relative flex items-center justify-center my-auto">
-            {pieList.some(c => c.count > 0) ? (
-              <>
-                <Doughnut 
-                  data={doughnutData} 
-                  options={{ 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { display: false },
-                      tooltip: {
-                        backgroundColor: '#1E1B4B',
-                        padding: 12,
-                        cornerRadius: 12,
-                        callbacks: {
-                          label: (ctx) => {
-                            const total = totalPieCount || 1;
-                            const pct = ((ctx.raw / total) * 100).toFixed(1);
-                            return ` จำนวน: ${ctx.raw} โครงการ (${pct}%)`;
-                          }
-                        }
-                      }
-                    },
-                    cutout: '72%'
-                  }} 
-                />
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">โครงการของฉัน</span>
-                  <span className="text-2xl font-black text-slate-800 tracking-tight">{summary.totalProjects}</span>
-                  <span className="text-[10px] font-bold text-slate-500">โครงการ</span>
-                </div>
-              </>
-            ) : (
-              <span className="text-xs text-slate-400">ไม่มีข้อมูลสัดส่วนโครงการ</span>
-            )}
-          </div>
-
-          {/* Status Legend Badges Footer */}
-          <div className="pt-3 border-t border-slate-100">
-            <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">
-              {pieList.map((c, idx) => {
-                const clr = getProgressStatusColor(c.status, idx);
-                const total = totalPieCount || 1;
-                const pct = ((c.count / total) * 100).toFixed(0);
-                return (
-                  <div 
-                    key={c.status || idx} 
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl ${clr.bg} border border-slate-200/50 text-[11px] font-extrabold`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${clr.dot}`} />
-                    <span className="text-slate-700">{c.status}:</span>
-                    <span className={clr.text}>{c.count} ({pct}%)</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Operations: Recent Projects & Activity Photos */}
+      {/* 2. Operations: Recent Projects & Activity Photos */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Projects (5 cols) */}
         <div className="lg:col-span-5 p-6 bg-white rounded-3xl shadow-soft border border-slate-100 flex flex-col justify-between">

@@ -86,6 +86,7 @@ app.use('/api/master', require('./routes/master.routes'));
 app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/activities', require('./routes/activity.routes'));
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
+app.use('/api/directives', require('./routes/directive.routes'));
 app.use('/api/reports', require('./routes/report.routes'));
 app.use('/api/issues', require('./routes/issue.routes'));
 

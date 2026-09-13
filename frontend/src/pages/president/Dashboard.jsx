@@ -491,7 +491,7 @@ const PresidentDashboard = () => {
           </div>
 
           {/* 📊 Graph: Grouped Bar & Progress Line Chart */}
-          <div className="h-72 w-full no-print">
+          <div className="h-80 w-full no-print">
             <Bar
               data={{
                 labels: (strategicPillars || []).map((s, idx) => s.strategyCode || `S${idx + 1}`),
@@ -523,9 +523,17 @@ const PresidentDashboard = () => {
                     borderColor: '#10B981',
                     backgroundColor: '#10B981',
                     borderWidth: 3,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    tension: 0.3,
+                    pointBackgroundColor: '#10B981',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2.5,
+                    pointRadius: 6,
+                    pointHoverRadius: 9,
+                    pointHoverBackgroundColor: '#10B981',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 3,
+                    tension: 0.35,
+                    cubicInterpolationMode: 'monotone',
+                    clip: false,
                     yAxisID: 'y1'
                   }
                 ]
@@ -533,6 +541,14 @@ const PresidentDashboard = () => {
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                  padding: {
+                    top: 18,
+                    bottom: 12,
+                    left: 10,
+                    right: 10
+                  }
+                },
                 plugins: {
                   legend: {
                     position: 'top',
@@ -540,7 +556,8 @@ const PresidentDashboard = () => {
                     labels: {
                       font: { family: "'Prompt', sans-serif", size: 11, weight: 'bold' },
                       usePointStyle: true,
-                      boxWidth: 8
+                      boxWidth: 8,
+                      padding: 20
                     }
                   },
                   tooltip: {
@@ -573,6 +590,7 @@ const PresidentDashboard = () => {
                     type: 'linear',
                     position: 'left',
                     grid: { color: '#F1F5F9' },
+                    grace: '8%',
                     ticks: {
                       font: { family: "'Prompt', sans-serif", size: 10 },
                       callback: (v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
@@ -585,6 +603,7 @@ const PresidentDashboard = () => {
                     max: 100,
                     grid: { drawOnChartArea: false },
                     ticks: {
+                      stepSize: 20,
                       font: { family: "'Prompt', sans-serif", size: 10, weight: 'bold' },
                       callback: (v) => `${v}%`
                     }
@@ -1166,7 +1185,7 @@ const PresidentDashboard = () => {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Preserved Full Original Image Container */}
-              <div className="md:w-3/5 bg-black/95 flex flex-col items-center justify-center p-4 md:p-6 md:h-full justify-between relative">
+              <div className="md:w-3/5 bg-black/95 flex flex-col items-center justify-between p-4 md:p-6 md:h-full relative">
                 <div className="flex-1 flex items-center justify-center w-full min-h-[300px]">
                   <img 
                     src={getImageUrl(activePhoto.imageUrl)} 

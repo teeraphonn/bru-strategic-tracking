@@ -5,7 +5,21 @@ import api from '../../services/api';
 import { AuthContext } from '../../contexts/AuthContext';
 import CustomSelect from '../../components/CustomSelect';
 import Swal from 'sweetalert2';
-import { FiArrowLeft, FiSave, FiCompass, FiLayers, FiTarget, FiAward } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiCompass, FiLayers, FiLock } from 'react-icons/fi';
+
+const UNIT_OPTIONS = [
+  { value: 'กิจกรรม', label: 'กิจกรรม' },
+  { value: 'ครั้ง', label: 'ครั้ง' },
+  { value: 'คน', label: 'คน' },
+  { value: 'ชุมชน', label: 'ชุมชน' },
+  { value: 'หลักสูตร', label: 'หลักสูตร' },
+  { value: 'ผลิตภัณฑ์', label: 'ผลิตภัณฑ์' },
+  { value: 'นวัตกรรม', label: 'นวัตกรรม' },
+  { value: 'ร้อยละ', label: 'ร้อยละ' },
+  { value: '__custom__', label: 'ระบุอื่นๆ (พิมพ์เอง)...' }
+];
+
+const ESSENTIAL_UNITS = UNIT_OPTIONS.filter(o => o.value !== '__custom__').map(o => o.value);
 
 const ProjectForm = () => {
   const { user } = useContext(AuthContext);
@@ -15,6 +29,7 @@ const ProjectForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isCustomUnit, setIsCustomUnit] = useState(false);
 
   // Dropdown options arrays
   const [fiscalYears, setFiscalYears] = useState([]);
@@ -35,7 +50,28 @@ const ProjectForm = () => {
   // Project details if edit mode
   const [project, setProject] = useState(null);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+    defaultValues: {
+      name: '',
+      description: '',
+      fiscalYearId: '',
+      budgetSourceId: '',
+      strategyId: '',
+      subStrategyId: '',
+      indicatorId: '',
+      totalBudget: '',
+      targetCount: '',
+      unit: 'กิจกรรม',
+      startDate: '',
+      endDate: '',
+      userIds: []
+    }
+  });
+
+  const watchedFiscalYearId = watch('fiscalYearId');
+  const watchedBudgetSourceId = watch('budgetSourceId');
+  const watchedIndicatorId = watch('indicatorId');
+  const watchedUnit = watch('unit');
 
   // Load masters and users
   useEffect(() => {
@@ -52,18 +88,26 @@ const ProjectForm = () => {
           api.get('/master/local-issues')
         ]);
 
-        setFiscalYears(years.data);
-        setBudgetSources(sources.data);
-        setUsers(usrList.data.filter(u => u.role === 'TEACHER')); // only select teachers as responsibles
-        setStrategies(strats.data);
-        setSubStrategies(subStrats.data);
-        setIndicators(inds.data);
-        setLocalIssues(lIssues.data);
+        const yearsData = years.data || [];
+        const sourcesData = sources.data || [];
+        const usersData = usrList.data || [];
+        const stratsData = strats.data || [];
+        const subStratsData = subStrats.data || [];
+        const indsData = inds.data || [];
+        const lIssuesData = lIssues.data || [];
 
-        // Pre-select active fiscal year
-        const activeYear = years.data.find(y => y.active);
+        setFiscalYears(yearsData);
+        setBudgetSources(sourcesData);
+        setUsers(usersData.filter(u => u.role === 'TEACHER'));
+        setStrategies(stratsData);
+        setSubStrategies(subStratsData);
+        setIndicators(indsData);
+        setLocalIssues(lIssuesData);
+
+        // Pre-select active fiscal year if creating new
+        const activeYear = yearsData.find(y => y.active);
         if (activeYear && !isEdit) {
-          setValue('fiscalYearId', activeYear.id);
+          setValue('fiscalYearId', String(activeYear.id), { shouldValidate: true });
         }
 
         // If Edit Mode, load the project details
@@ -73,34 +117,45 @@ const ProjectForm = () => {
           setProject(proj);
 
           // Populate Form values
-          setValue('name', proj.name);
-          setValue('description', proj.description);
-          setValue('fiscalYearId', proj.fiscalYearId);
+          setValue('name', proj.name || '');
+          setValue('description', proj.description || '');
+          setValue('fiscalYearId', proj.fiscalYearId ? String(proj.fiscalYearId) : '', { shouldValidate: true });
+          setValue('budgetSourceId', proj.budgetSourceId ? String(proj.budgetSourceId) : '', { shouldValidate: true });
+
           const budgetVal = parseFloat(proj.totalBudget);
-          setValue('totalBudget', isNaN(budgetVal) ? '' : budgetVal.toLocaleString('en-US'));
-          setValue('targetCount', proj.targetCount);
-          setValue('unit', proj.unit);
-          setValue('startDate', proj.startDate.split('T')[0]);
-          setValue('endDate', proj.endDate.split('T')[0]);
+          setValue('totalBudget', isNaN(budgetVal) ? '' : budgetVal.toLocaleString('en-US'), { shouldValidate: true });
+          setValue('targetCount', proj.targetCount ?? '', { shouldValidate: true });
+
+          const projUnit = proj.unit || 'กิจกรรม';
+          setValue('unit', projUnit, { shouldValidate: true });
+          if (!ESSENTIAL_UNITS.includes(projUnit)) {
+            setIsCustomUnit(true);
+          } else {
+            setIsCustomUnit(false);
+          }
+
+          setValue('startDate', proj.startDate ? proj.startDate.split('T')[0] : '');
+          setValue('endDate', proj.endDate ? proj.endDate.split('T')[0] : '');
 
           // Set cascading values
-          const subStrat = subStrats.data.find(ss => ss.id === proj.subStrategyId);
+          const subStrat = subStratsData.find(ss => ss.id === proj.subStrategyId);
           if (subStrat) {
-            const strat = strats.data.find(s => s.id === subStrat.strategyId);
+            const strat = stratsData.find(s => s.id === subStrat.strategyId);
             if (strat && strat.localIssueId) {
               setSelectedLocalIssueId(String(strat.localIssueId));
             }
             setSelectedStrategyId(String(subStrat.strategyId));
-            setValue('strategyId', subStrat.strategyId);
+            setValue('strategyId', String(subStrat.strategyId), { shouldValidate: true });
           }
           setSelectedSubStrategyId(String(proj.subStrategyId));
-          setValue('subStrategyId', proj.subStrategyId);
-          setValue('indicatorId', proj.indicatorId || '');
+          setValue('subStrategyId', String(proj.subStrategyId), { shouldValidate: true });
+          setValue('indicatorId', proj.indicatorId ? String(proj.indicatorId) : '', { shouldValidate: true });
 
           // Multi-responsibles user mapping (exclude creator)
-          const assignedUserIds = proj.users
+          const assignedUserIds = (proj.users || [])
             .map(u => u.userId)
-            .filter(uId => uId !== proj.creatorId);
+            .filter(uId => uId !== proj.creatorId)
+            .map(String);
           setValue('userIds', assignedUserIds);
         }
       } catch (err) {
@@ -118,9 +173,9 @@ const ProjectForm = () => {
     setSelectedLocalIssueId(val);
     setSelectedStrategyId('');
     setSelectedSubStrategyId('');
-    setValue('strategyId', '');
-    setValue('subStrategyId', '');
-    setValue('indicatorId', '');
+    setValue('strategyId', '', { shouldValidate: true });
+    setValue('subStrategyId', '', { shouldValidate: true });
+    setValue('indicatorId', '', { shouldValidate: true });
   };
 
   // When Strategy changes, auto-sync Local Issue if applicable and reset downstream
@@ -132,25 +187,133 @@ const ProjectForm = () => {
       setSelectedLocalIssueId(String(chosenStrat.localIssueId));
     }
     setSelectedSubStrategyId('');
-    setValue('subStrategyId', '');
-    setValue('indicatorId', '');
+    setValue('subStrategyId', '', { shouldValidate: true });
+    setValue('indicatorId', '', { shouldValidate: true });
   };
 
   // When Sub-strategy changes, reset indicator
   const handleSubStrategyChange = (val) => {
     setSelectedSubStrategyId(val);
     setValue('subStrategyId', val, { shouldValidate: true });
-    setValue('indicatorId', '');
+    setValue('indicatorId', '', { shouldValidate: true });
   };
 
   const handleIndicatorChange = (val) => {
-    setValue('indicatorId', val);
+    setValue('indicatorId', val, { shouldValidate: true });
   };
+
+  // Filter lists based on selections
+  const filteredStrategies = selectedLocalIssueId
+    ? strategies.filter(s => s.localIssueId === parseInt(selectedLocalIssueId, 10))
+    : strategies;
+  const filteredSubStrategies = subStrategies.filter(ss => ss.strategyId === parseInt(selectedStrategyId, 10));
+  const filteredIndicators = indicators.filter(ind => ind.subStrategyId === parseInt(selectedSubStrategyId, 10));
+
+  // Active hierarchy path labels
+  const currentLocalIssue = localIssues.find(li => String(li.id) === String(selectedLocalIssueId));
+  const currentStrategy = strategies.find(s => String(s.id) === String(selectedStrategyId));
+  const currentSubStrategy = subStrategies.find(ss => String(ss.id) === String(selectedSubStrategyId));
+  const currentIndicator = indicators.find(ind => String(ind.id) === String(watchedIndicatorId));
+
+  // Faculty filtering & co-responsibles logic
+  const currentFacultyId = isEdit
+    ? (project?.facultyId || project?.department?.facultyId || user?.department?.facultyId)
+    : (user?.department?.facultyId || user?.department?.faculty?.id);
+
+  const currentFacultyName = isEdit
+    ? (project?.faculty?.name || project?.department?.faculty?.name || user?.department?.faculty?.name)
+    : (user?.department?.faculty?.name || user?.department?.facultyName);
+
+  const creatorUserId = isEdit ? project?.creatorId : user?.id;
+
+  const coResponsibles = users.filter(u => {
+    // 1. Exclude the creator
+    if (u.id === creatorUserId) return false;
+
+    // 2. Filter strictly to the same faculty if current user/project has a faculty
+    if (currentFacultyId) {
+      const uFacId = u.department?.facultyId || u.department?.faculty?.id;
+      return uFacId === currentFacultyId;
+    }
+
+    return true;
+  });
+
+  // Plan lock detection (if project has activities, total budget and target count cannot be changed by non-admins)
+  const hasActivities = isEdit && project?.activities && project.activities.length > 0;
+  const isPlanLocked = hasActivities && user?.role !== 'ADMIN';
 
   // Submit Handler
   const onSubmit = async (data) => {
-    // Basic verification on completed count vs new target count if edit
-    if (isEdit && project && project.completedCount > parseInt(data.targetCount) && user?.role !== 'ADMIN') {
+    // 1. Validate dates
+    if (!data.startDate || !data.endDate) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ข้อมูลวันที่ไม่ครบถ้วน',
+        text: 'กรุณาระบุวันเริ่มต้นและสิ้นสุดการดำเนินงาน'
+      });
+      return;
+    }
+
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      Swal.fire({
+        icon: 'error',
+        title: 'รูปแบบวันที่ไม่ถูกต้อง',
+        text: 'กรุณาระบุวันที่เริ่มต้นและสิ้นสุดโครงการให้ถูกต้อง'
+      });
+      return;
+    }
+
+    if (start > end) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'ช่วงเวลาดำเนินงานไม่ถูกต้อง',
+        text: 'วันที่สิ้นสุดโครงการต้องไม่น้อยกว่าวันที่เริ่มต้นดำเนินงาน'
+      });
+      return;
+    }
+
+    // 2. Parse and validate budget
+    const cleanBudgetStr = typeof data.totalBudget === 'string'
+      ? data.totalBudget.replace(/,/g, '').trim()
+      : String(data.totalBudget ?? '');
+    const totalBudget = parseFloat(cleanBudgetStr);
+    if (isNaN(totalBudget) || totalBudget < 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'งบประมาณไม่ถูกต้อง',
+        text: 'กรุณาระบุงบประมาณรวมเป็นตัวเลขที่มากกว่าหรือเท่ากับ 0'
+      });
+      return;
+    }
+
+    // 3. Parse and validate target count
+    const targetCount = parseInt(data.targetCount, 10);
+    if (isNaN(targetCount) || targetCount < 1) {
+      Swal.fire({
+        icon: 'error',
+        title: 'จำนวนเป้าหมายไม่ถูกต้อง',
+        text: 'กรุณาระบุจำนวนเป้าหมายเป็นตัวเลขจำนวนเต็มอย่างน้อย 1'
+      });
+      return;
+    }
+
+    // 4. Validate unit
+    const unit = (data.unit || '').trim();
+    if (!unit) {
+      Swal.fire({
+        icon: 'error',
+        title: 'หน่วยนับความสำเร็จ',
+        text: 'กรุณาเลือกหรือระบุหน่วยนับความสำเร็จ'
+      });
+      return;
+    }
+
+    // 5. Completed count verification vs new target count if edit
+    if (isEdit && project && project.completedCount > targetCount && user?.role !== 'ADMIN') {
       Swal.fire({
         icon: 'error',
         title: 'เป้าหมายไม่ถูกต้อง',
@@ -159,24 +322,32 @@ const ProjectForm = () => {
       return;
     }
 
+    // 6. Safe userIds normalization (handling array, string, number, or boolean single checkbox)
+    let normalizedUserIds = [];
+    if (Array.isArray(data.userIds)) {
+      normalizedUserIds = data.userIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+    } else if (typeof data.userIds === 'string' || typeof data.userIds === 'number') {
+      const parsed = parseInt(data.userIds, 10);
+      if (!isNaN(parsed)) normalizedUserIds = [parsed];
+    } else if (data.userIds === true && coResponsibles.length === 1) {
+      normalizedUserIds = [coResponsibles[0].id];
+    }
+
     setSaving(true);
     try {
-      // Clean comma from budget string before parsing
-      const rawBudget = typeof data.totalBudget === 'string' ? data.totalBudget.replace(/,/g, '') : data.totalBudget;
-
       const payload = {
-        name: data.name,
-        description: data.description,
-        fiscalYearId: parseInt(data.fiscalYearId),
-        budgetSourceId: parseInt(data.budgetSourceId),
-        subStrategyId: parseInt(data.subStrategyId),
-        indicatorId: data.indicatorId ? parseInt(data.indicatorId) : null,
-        totalBudget: parseFloat(rawBudget),
-        targetCount: parseInt(data.targetCount),
-        unit: data.unit,
-        startDate: new Date(data.startDate).toISOString(),
-        endDate: new Date(data.endDate).toISOString(),
-        userIds: data.userIds ? data.userIds.map(id => parseInt(id)) : []
+        name: (data.name || '').trim(),
+        description: data.description ? data.description.trim() : '',
+        fiscalYearId: parseInt(data.fiscalYearId, 10),
+        budgetSourceId: parseInt(data.budgetSourceId, 10),
+        subStrategyId: parseInt(data.subStrategyId, 10),
+        indicatorId: data.indicatorId ? parseInt(data.indicatorId, 10) : null,
+        totalBudget,
+        targetCount,
+        unit,
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+        userIds: normalizedUserIds
       };
 
       if (isEdit) {
@@ -196,7 +367,7 @@ const ProjectForm = () => {
         navigate(`/projects/${newProject.id}`, { state: { autoOpenAddActivity: true, isNewProject: true } });
       }
     } catch (err) {
-      console.error(err);
+      console.error('Project form submit error:', err);
       Swal.fire({
         icon: 'error',
         title: 'บันทึกไม่สำเร็จ',
@@ -206,19 +377,6 @@ const ProjectForm = () => {
       setSaving(false);
     }
   };
-
-  // Filter lists based on selections
-  const filteredStrategies = selectedLocalIssueId
-    ? strategies.filter(s => s.localIssueId === parseInt(selectedLocalIssueId))
-    : strategies;
-  const filteredSubStrategies = subStrategies.filter(ss => ss.strategyId === parseInt(selectedStrategyId));
-  const filteredIndicators = indicators.filter(ind => ind.subStrategyId === parseInt(selectedSubStrategyId));
-
-  // Active hierarchy path labels
-  const currentLocalIssue = localIssues.find(li => String(li.id) === String(selectedLocalIssueId));
-  const currentStrategy = strategies.find(s => String(s.id) === String(selectedStrategyId));
-  const currentSubStrategy = subStrategies.find(ss => String(ss.id) === String(selectedSubStrategyId));
-  const currentIndicator = indicators.find(ind => String(ind.id) === String(watch('indicatorId')));
 
   if (loading) {
     return (
@@ -244,8 +402,25 @@ const ProjectForm = () => {
         </div>
       </div>
 
+      {/* Plan Locked Notification Banner */}
+      {isPlanLocked && (
+        <div className="flex items-start sm:items-center gap-3 p-4 bg-amber-50/80 border border-amber-200 rounded-2xl text-amber-900 text-xs shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <FiLock className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-800">
+              โครงการนี้มีกิจกรรมในแผนงานแล้ว ({project.activities.length} กิจกรรม)
+            </div>
+            <div className="text-amber-800/90 text-[11px] mt-0.5">
+              งบประมาณโครงการรวมและจำนวนเป้าหมายถูกล็อกตามระบบควบคุมแผนงาน (Plan Locked) หากต้องการปรับเปลี่ยนกรุณาติดต่อผู้ดูแลระบบ (Admin)
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Form Container */}
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-xl shadow-soft border border-gray-100 p-6 sm:p-8 space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-soft border border-gray-100 p-6 sm:p-8 space-y-6">
 
         {/* Project Name */}
         <div>
@@ -260,13 +435,13 @@ const ProjectForm = () => {
           <input
             type="text"
             placeholder="เช่น โครงการพัฒนาระบบตรวจวัดคุณภาพน้ำชุมชนห้วยจระเข้มาก"
-            className={`w-full px-4 py-2.5 border ${errors.name ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all`}
+            className={`w-full px-4 py-2.5 border ${errors.name ? 'border-red-400 bg-red-50/20' : 'border-slate-200 bg-white'} rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 transition-all shadow-2xs`}
             {...register('name', { required: 'กรุณากรอกชื่อโครงการปฏิบัติการ' })}
           />
           <p className="text-[11px] text-slate-500 mt-1">
             💡 <strong>ข้อแนะนำ:</strong> ระบุชื่อโครงการเฉพาะของท่านหรือคณะที่จะลงมือปฏิบัติจริงในพื้นที่ โดยไม่ต้องคัดลอกชื่อโครงการหลัก (MP)
           </p>
-          {errors.name && <span className="text-xs text-red-500 mt-1 block">{errors.name.message}</span>}
+          {errors.name && <span className="text-xs text-red-500 mt-1 block font-semibold">{errors.name.message}</span>}
         </div>
 
         {/* Project Description */}
@@ -275,7 +450,7 @@ const ProjectForm = () => {
           <textarea
             rows="3"
             placeholder="รายละเอียดและวัตถุประสงค์โครงการ..."
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all"
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-medium text-slate-800 transition-all shadow-2xs"
             {...register('description')}
           />
         </div>
@@ -407,16 +582,19 @@ const ProjectForm = () => {
                 </span>
               </div>
               <CustomSelect
-                value={watch('indicatorId') || ''}
+                value={watchedIndicatorId || ''}
                 onChange={handleIndicatorChange}
                 disabled={!selectedSubStrategyId}
-                placeholder={selectedSubStrategyId ? '-- เลือกโครงการหลัก --' : 'กรุณาเลือกแผนงานย่อยก่อน'}
+                placeholder={selectedSubStrategyId ? '-- เลือกโครงการหลัก (ถ้ามี) --' : 'กรุณาเลือกแผนงานย่อยก่อน'}
                 multiline={true}
-                options={filteredIndicators.map(ind => ({
-                  value: String(ind.id),
-                  label: ind.name,
-                  badge: ind.code
-                }))}
+                options={[
+                  { value: '', label: '-- ไม่ระบุโครงการหลัก (ไม่เลือก) --', badge: 'OPTIONAL' },
+                  ...filteredIndicators.map(ind => ({
+                    value: String(ind.id),
+                    label: ind.name,
+                    badge: ind.code
+                  }))
+                ]}
               />
             </div>
           </div>
@@ -554,7 +732,7 @@ const ProjectForm = () => {
             <label className="block text-xs font-semibold text-gray-500">ปีงบประมาณ <span className="text-red-500">*</span></label>
             <input type="hidden" {...register('fiscalYearId', { required: 'กรุณาเลือกปีงบประมาณ' })} />
             <CustomSelect
-              value={watch('fiscalYearId') || ''}
+              value={watchedFiscalYearId || ''}
               onChange={(val) => setValue('fiscalYearId', val, { shouldValidate: true })}
               placeholder="-- เลือกปีงบประมาณ --"
               className={errors.fiscalYearId ? 'ring-2 ring-red-400 rounded-xl' : ''}
@@ -572,7 +750,7 @@ const ProjectForm = () => {
             <label className="block text-xs font-semibold text-gray-500">แหล่งที่มางบประมาณ <span className="text-red-500">*</span></label>
             <input type="hidden" {...register('budgetSourceId', { required: 'กรุณาเลือกแหล่งงบประมาณ' })} />
             <CustomSelect
-              value={watch('budgetSourceId') || ''}
+              value={watchedBudgetSourceId || ''}
               onChange={(val) => setValue('budgetSourceId', val, { shouldValidate: true })}
               placeholder="-- เลือกแหล่งงบประมาณ --"
               className={errors.budgetSourceId ? 'ring-2 ring-red-400 rounded-xl' : ''}
@@ -586,11 +764,22 @@ const ProjectForm = () => {
 
           {/* Total Budget */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">งบประมาณโครงการรวม (บาท) <span className="text-red-500">*</span></label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-gray-500">
+                งบประมาณโครงการรวม (บาท) <span className="text-red-500">*</span>
+              </label>
+              {isPlanLocked && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  <FiLock className="w-3 h-3" /> ล็อก
+                </span>
+              )}
+            </div>
             <input
               type="text"
               placeholder="0"
-              className={`w-full px-4 py-2 border ${errors.totalBudget ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all`}
+              readOnly={isPlanLocked}
+              disabled={isPlanLocked}
+              className={`w-full px-4 py-2.5 border ${errors.totalBudget ? 'border-red-400 bg-red-50/20' : 'border-slate-200 bg-white'} rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 transition-all shadow-2xs ${isPlanLocked ? 'bg-slate-100/80 text-slate-500 cursor-not-allowed' : ''}`}
               {...register('totalBudget', { 
                 required: 'กรุณากรอกงบประมาณรวม',
                 validate: (val) => {
@@ -600,45 +789,123 @@ const ProjectForm = () => {
                 }
               })}
               onChange={(e) => {
+                if (isPlanLocked) return;
                 const raw = e.target.value.replace(/[^0-9.]/g, '');
                 if (!raw) {
-                  setValue('totalBudget', '');
+                  setValue('totalBudget', '', { shouldValidate: true });
                   return;
                 }
                 const parts = raw.split('.');
                 parts[0] = Number(parts[0]).toLocaleString('en-US');
                 const formatted = parts.length > 1 ? `${parts[0]}.${parts[1].slice(0, 2)}` : parts[0];
-                setValue('totalBudget', formatted);
+                setValue('totalBudget', formatted, { shouldValidate: true });
               }}
             />
-            {errors.totalBudget && <span className="text-xs text-red-500 mt-1 block">{errors.totalBudget.message}</span>}
+            {errors.totalBudget && <span className="text-xs text-red-500 mt-1 block font-semibold">{errors.totalBudget.message}</span>}
           </div>
         </div>
 
-        {/* Target Achievements */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-primary-light/30 p-5 rounded-xl border border-primary-light">
+        {/* Target and Unit */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Target Count */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">จำนวนครั้ง/เป้าหมายการดำเนินงาน <span className="text-red-500">*</span></label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-gray-500">
+                จำนวนเป้าหมาย <span className="text-red-500">*</span>
+              </label>
+              {isPlanLocked && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  <FiLock className="w-3 h-3" /> ล็อก
+                </span>
+              )}
+            </div>
             <input
               type="number"
-              placeholder="เช่น 10, 20"
-              className={`w-full px-4 py-2 border ${errors.targetCount ? 'border-red-400' : 'border-gray-200'} bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all`}
-              {...register('targetCount', { required: 'กรุณากรอกเป้าหมายสะสม', min: { value: 1, message: 'เป้าหมายต้องเป็นบวก' } })}
+              min="1"
+              step="1"
+              placeholder="0"
+              readOnly={isPlanLocked}
+              disabled={isPlanLocked}
+              className={`w-full px-4 py-2.5 border ${errors.targetCount ? 'border-red-400 bg-red-50/20' : 'border-slate-200 bg-white'} rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 transition-all shadow-2xs ${isPlanLocked ? 'bg-slate-100/80 text-slate-500 cursor-not-allowed' : ''}`}
+              {...register('targetCount', { 
+                required: 'กรุณากรอกจำนวนเป้าหมาย', 
+                min: { value: 1, message: 'เป้าหมายต้องมากกว่า 0' },
+                validate: (val) => {
+                  const num = Number(val);
+                  if (!Number.isInteger(num)) return 'เป้าหมายต้องเป็นจำนวนเต็ม';
+                  return true;
+                }
+              })}
             />
-            {errors.targetCount && <span className="text-xs text-red-500 mt-1 block">{errors.targetCount.message}</span>}
+            {errors.targetCount && <span className="text-xs text-red-500 mt-1 block font-semibold">{errors.targetCount.message}</span>}
           </div>
 
           {/* Unit */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">หน่วยนับความสำเร็จ <span className="text-red-500">*</span></label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-gray-500">
+                หน่วยนับความสำเร็จ <span className="text-red-500">*</span>
+              </label>
+              {isCustomUnit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomUnit(false);
+                    setValue('unit', 'กิจกรรม', { shouldValidate: true });
+                  }}
+                  className="text-xs text-primary hover:underline cursor-pointer"
+                >
+                  ← เลือกจากรายการ
+                </button>
+              )}
+            </div>
+
+            {/* Hidden input registered with react-hook-form */}
             <input
-              type="text"
-              placeholder="กรอกหน่วยนับความสำเร็จ เช่น ครั้ง, คน, ชุมชน, ร้อยละ..."
-              className={`w-full px-4 py-2 border ${errors.unit ? 'border-red-400' : 'border-gray-200'} bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all`}
-              {...register('unit', { required: 'กรุณากรอกหน่วยนับความสำเร็จ' })}
+              type="hidden"
+              {...register('unit', { required: 'กรุณาเลือกหรือระบุหน่วยนับความสำเร็จ' })}
             />
-            {errors.unit && <span className="text-xs text-red-500 mt-1 block">{errors.unit.message}</span>}
+
+            {!isCustomUnit ? (
+              <CustomSelect
+                value={watchedUnit || ''}
+                onChange={(val) => {
+                  if (val === '__custom__') {
+                    setIsCustomUnit(true);
+                    setValue('unit', '', { shouldValidate: true });
+                  } else {
+                    setIsCustomUnit(false);
+                    setValue('unit', val, { shouldValidate: true });
+                  }
+                }}
+                placeholder="-- เลือกหน่วยนับ --"
+                searchable={false}
+                className={errors.unit ? 'ring-2 ring-red-400 rounded-xl' : ''}
+                options={UNIT_OPTIONS}
+              />
+            ) : (
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  autoFocus
+                  value={watchedUnit || ''}
+                  onChange={(e) => setValue('unit', e.target.value, { shouldValidate: true })}
+                  placeholder="พิมพ์ระบุหน่วยนับ เช่น แปลง, ครัวเรือน..."
+                  className={`w-full px-4 py-2.5 pr-16 border ${errors.unit ? 'border-red-400 bg-red-50/20' : 'border-slate-200 bg-white'} rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 transition-all shadow-2xs`}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomUnit(false);
+                    setValue('unit', 'กิจกรรม', { shouldValidate: true });
+                  }}
+                  className="absolute right-2 px-2.5 py-1 text-xs text-gray-400 hover:text-red-500 rounded cursor-pointer transition-colors"
+                >
+                  ยกเลิก
+                </button>
+              </div>
+            )}
+            {errors.unit && <span className="text-xs text-red-500 mt-1 block font-semibold">{errors.unit.message}</span>}
           </div>
         </div>
 
@@ -649,10 +916,10 @@ const ProjectForm = () => {
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">วันที่เริ่มดำเนินงาน <span className="text-red-500">*</span></label>
             <input
               type="date"
-              className={`w-full px-4 py-2 border ${errors.startDate ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all`}
+              className={`w-full px-4 py-2.5 border ${errors.startDate ? 'border-red-400 bg-red-50/20' : 'border-slate-200 bg-white'} rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 transition-all shadow-2xs`}
               {...register('startDate', { required: 'กรุณากรอกวันเริ่มต้นดำเนินโครงการ' })}
             />
-            {errors.startDate && <span className="text-xs text-red-500 mt-1 block">{errors.startDate.message}</span>}
+            {errors.startDate && <span className="text-xs text-red-500 mt-1 block font-semibold">{errors.startDate.message}</span>}
           </div>
 
           {/* End Date */}
@@ -660,30 +927,99 @@ const ProjectForm = () => {
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">วันที่สิ้นสุดการดำเนินงาน <span className="text-red-500">*</span></label>
             <input
               type="date"
-              className={`w-full px-4 py-2 border ${errors.endDate ? 'border-red-400' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all`}
+              className={`w-full px-4 py-2.5 border ${errors.endDate ? 'border-red-400 bg-red-50/20' : 'border-slate-200 bg-white'} rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 transition-all shadow-2xs`}
               {...register('endDate', { required: 'กรุณากรอกวันสิ้นสุดโครงการ' })}
             />
-            {errors.endDate && <span className="text-xs text-red-500 mt-1 block">{errors.endDate.message}</span>}
+            {errors.endDate && <span className="text-xs text-red-500 mt-1 block font-semibold">{errors.endDate.message}</span>}
           </div>
         </div>
 
-        {/* Multi-Responsibles Selection */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-2">
-            ผู้ประสานงาน / ผู้รับผิดชอบร่วม <span className="text-[10px] text-gray-400">(ท่านจะได้รับมอบสิทธิ์โดยอัตโนมัติ)</span>
-          </label>
-          <div className="max-h-48 overflow-y-auto border border-gray-100 rounded-lg p-3 space-y-2 bg-gray-50">
-            {users.map(u => (
-              <label key={u.id} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer p-1.5 hover:bg-gray-100 rounded">
+        {/* Responsible Person Section */}
+        <div className="space-y-4 pt-2">
+          {/* 1. Primary Responsible Person (Auto-selected from Creator) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-gray-700">
+                ผู้รับผิดชอบโครงการ (ผู้สร้างโครงการ) <span className="text-red-500">*</span>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between p-3.5 bg-gradient-to-r from-emerald-50/70 via-emerald-50/40 to-slate-50 border border-emerald-200/80 rounded-xl shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                  {isEdit && project?.creator ? project.creator.name?.charAt(0) : user?.name?.charAt(0) || 'U'}
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span>{isEdit && project?.creator ? project.creator.name : user?.name}</span>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200">
+                      ผู้รับผิดชอบหลัก
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">
+                    {isEdit && project?.department?.name 
+                      ? `${project.department.name} (${project.faculty?.name || project.department?.faculty?.name || 'มหาวิทยาลัย'})` 
+                      : `${user?.department?.name || 'ไม่ระบุภาควิชา/หน่วยงาน'} (${user?.department?.faculty?.name || 'มหาวิทยาลัย'})`}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pr-2">
                 <input
                   type="checkbox"
-                  value={u.id}
-                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                  {...register('userIds')}
+                  checked={true}
+                  readOnly
+                  disabled
+                  className="w-4 h-4 text-emerald-600 rounded border-emerald-300 accent-emerald-600 cursor-not-allowed"
                 />
-                <span>{u.name} ({u.department?.name || 'ไม่สังกัด'})</span>
+                <span className="text-[11px] font-bold text-emerald-700">เลือกแล้ว</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1 pl-1">
+              * บัญชีผู้สร้างโครงการจะได้รับสิทธิ์เป็นผู้รับผิดชอบโครงการโดยตรงโดยอัตโนมัติ
+            </p>
+          </div>
+
+          {/* 2. Co-Responsibles / Team Members (Optional) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-gray-700">
+                ผู้ประสานงาน / ผู้รับผิดชอบร่วม <span className="text-gray-400 font-normal">(ถ้ามี)</span>
               </label>
-            ))}
+              <span className="text-[10px] text-gray-400">เลือกได้มากกว่า 1 ท่าน (หากไม่มีไม่ต้องเลือก)</span>
+            </div>
+
+            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-2 space-y-1 bg-gray-50/60">
+              {coResponsibles.length > 0 ? (
+                coResponsibles.map(u => {
+                  const rawDept = u.department?.name || '';
+                  const deptDisplay = rawDept 
+                    ? (rawDept.includes('สาขา') || rawDept.includes('ภาควิชา') ? rawDept : `สาขา${rawDept}`)
+                    : 'ไม่ระบุสาขา';
+
+                  return (
+                    <label key={u.id} className="flex items-center justify-between gap-2.5 text-xs text-gray-700 cursor-pointer p-2 hover:bg-white hover:shadow-2xs rounded-lg transition-all border border-transparent hover:border-gray-200">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <input
+                          type="checkbox"
+                          value={String(u.id)}
+                          className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary accent-primary shrink-0"
+                          {...register('userIds')}
+                        />
+                        <span className="font-medium text-slate-800 truncate">{u.name}</span>
+                      </div>
+                      <span className="text-[11px] font-semibold text-primary/90 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100 shrink-0">
+                        {deptDisplay}
+                      </span>
+                    </label>
+                  );
+                })
+              ) : (
+                <div className="text-center py-4 text-xs text-slate-400 font-medium">
+                  {currentFacultyName ? `ไม่พบคณาจารย์ท่านอื่นใน${currentFacultyName} (ท่านเป็นผู้รับผิดชอบหลักของโครงการนี้)` : 'ไม่มีรายชื่อผู้ประสานงานอื่น'}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

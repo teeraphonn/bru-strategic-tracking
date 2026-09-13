@@ -21,6 +21,7 @@ const CustomSelect = ({
   className = '',
   disabled = false,
   multiline = false,
+  searchable = undefined,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,13 +79,15 @@ const CustomSelect = ({
     return () => document.removeEventListener('keydown', handleEsc);
   }, [isOpen]);
 
+  const showSearch = searchable !== undefined ? searchable : options.length > 6;
+
   // Position update & Auto-focus search input & auto-scroll to selected item when opened
   useEffect(() => {
     if (isOpen) {
       updatePosition();
       setSearchQuery('');
 
-      if (options.length > 6) {
+      if (showSearch) {
         setTimeout(() => searchInputRef.current?.focus(), 60);
       }
       if (selectedItemRef.current) {
@@ -101,7 +104,7 @@ const CustomSelect = ({
         window.removeEventListener('scroll', updatePosition, true);
       };
     }
-  }, [isOpen, options.length, updatePosition]);
+  }, [isOpen, options.length, showSearch, updatePosition]);
 
   const handleSelect = (val) => {
     onChange(val);
@@ -131,12 +134,10 @@ const CustomSelect = ({
 
   // ── Dropdown panel styles ───────────────────────────────────
   const panelLight = `
-    bg-white border border-slate-200/95 shadow-2xl
-    divide-y divide-slate-100/80 text-slate-800
+    bg-white shadow-xl text-slate-800
   `;
   const panelDark = `
-    bg-slate-900 border border-slate-700/90 shadow-2xl
-    divide-y divide-slate-800/80 text-white
+    bg-slate-900 shadow-xl text-white
   `;
 
   return (
@@ -183,9 +184,9 @@ const CustomSelect = ({
       {/* ── Dropdown Panel (Portal to document.body so it NEVER gets clipped by parent overflows) ── */}
       {isOpen && createPortal(
         <div className="fixed inset-0 z-[99999]">
-          {/* Backdrop with subtle dim to focus on the popped-up menu */}
+          {/* Backdrop with transparent background — click outside to close without dimming */}
           <div
-            className="fixed inset-0 bg-slate-950/20 backdrop-blur-[0.5px] transition-opacity duration-150 animate-fadeIn"
+            className="fixed inset-0 bg-transparent"
             onClick={() => setIsOpen(false)}
           />
 
@@ -200,15 +201,15 @@ const CustomSelect = ({
               zIndex: 100000,
             }}
             className={`
-              rounded-2xl overflow-hidden shadow-2xl flex flex-col
-              transition-all duration-150 transform scale-100 ease-out border ring-1 ring-black/10
+              rounded-2xl overflow-hidden shadow-xl flex flex-col p-1
+              transition-all duration-150 transform scale-100 ease-out border border-slate-200/90
               ${dropdownPos.openUpwards ? 'origin-bottom' : 'origin-top'}
               ${dark ? panelDark : panelLight}
             `}
           >
             {/* Quick Search bar when list has > 6 items */}
-            {options.length > 6 && (
-              <div className={`p-2.5 border-b shrink-0 ${dark ? 'border-slate-800 bg-slate-950/90' : 'border-slate-100 bg-slate-50/95'}`}>
+            {showSearch && (
+              <div className={`p-2 border-b shrink-0 rounded-xl mb-1 ${dark ? 'border-slate-800 bg-slate-950/90' : 'border-slate-100 bg-slate-50/95'}`}>
                 <div className="relative flex items-center">
                   <FiSearch className={`w-3.5 h-3.5 absolute left-3 ${dark ? 'text-slate-400' : 'text-slate-400'}`} />
                   <input
@@ -239,9 +240,9 @@ const CustomSelect = ({
 
             {/* Scrollable Items Container */}
             <div 
-              className="overflow-y-auto flex-1 scroll-smooth"
+              className="overflow-y-auto flex-1 scroll-smooth p-0.5 space-y-0.5"
               style={{
-                maxHeight: `${Math.max(140, dropdownPos.maxHeight - (options.length > 6 ? 56 : 0))}px`,
+                maxHeight: `${Math.max(140, dropdownPos.maxHeight - (showSearch ? 56 : 0))}px`,
                 scrollbarWidth: 'thin'
               }}
             >
@@ -259,17 +260,16 @@ const CustomSelect = ({
                       type="button"
                       onClick={() => handleSelect(opt.value)}
                       className={`
-                        w-full px-4 py-3 text-left text-xs font-semibold
+                        w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-semibold
                         flex items-center justify-between gap-3
-                        transition-colors duration-150 cursor-pointer border-b last:border-b-0
-                        ${dark ? 'border-slate-800/40' : 'border-slate-50'}
+                        transition-colors duration-150 cursor-pointer
                         ${isSelected
                           ? dark
                             ? 'bg-purple-600/30 text-white font-bold'
                             : 'bg-primary/10 text-primary font-bold'
                           : dark
                             ? 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
-                            : 'text-slate-700 hover:bg-slate-50/90 hover:text-slate-900'}
+                            : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'}
                       `}
                     >
                       <span className="flex items-start gap-2.5 min-w-0 flex-1">

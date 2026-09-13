@@ -496,7 +496,7 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
           <div 
             className="max-w-[92vw] w-full bg-slate-900 rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex flex-col md:flex-row relative z-[65] md:h-[82vh] h-auto"
           >
-            <div className="md:w-3/5 bg-black flex flex-col items-center justify-center p-6 md:h-full justify-between">
+            <div className="md:w-3/5 bg-black flex flex-col items-center justify-between p-6 md:h-full">
               <div className="flex-1 flex items-center justify-center w-full">
                 <img src={projectPhotos[activePhotoIndex].imageUrl} alt={projectPhotos[activePhotoIndex].activityName} className="max-w-full max-h-[62vh] object-contain rounded-lg animate-fadeIn" />
               </div>

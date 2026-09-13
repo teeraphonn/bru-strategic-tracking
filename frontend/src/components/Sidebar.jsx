@@ -97,7 +97,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
         style={{ background: 'linear-gradient(180deg, #2F1481 0%, #1E0A4A 100%)' }}
       >
         {/* ── Branding Header ── */}
-        <div className={`flex items-center justify-between border-b border-white/10 shrink-0 ${isCollapsed ? 'justify-center py-4 px-2' : 'px-4 py-4'}`}>
+        <div className={`flex items-center border-b border-white/10 shrink-0 ${isCollapsed ? 'justify-center py-4 px-2' : 'justify-between px-4 py-4'}`}>
           <div className="flex items-center gap-3">
             <img
               src="/logob.png"

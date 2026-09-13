@@ -1384,7 +1384,7 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Preserved Full Original Image Container */}
-              <div className="md:w-3/5 bg-black/95 flex flex-col items-center justify-center p-4 md:p-6 md:h-full justify-between relative">
+              <div className="md:w-3/5 bg-black/95 flex flex-col items-center justify-between p-4 md:p-6 md:h-full relative">
                 <div className="flex-1 flex items-center justify-center w-full min-h-[300px]">
                   <img 
                     src={getImageUrl(activePhoto.imageUrl)} 
