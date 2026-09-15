@@ -220,6 +220,11 @@ c:\St_bru\
 │   ├── schema.sql                      — สคริปต์ DDL ภาษา SQL ดั้งเดิมสำหรับสร้าง 14 ตารางบน MySQL
 │   └── seed.sql                        — สคริปต์ INSERT INTO ภาษา SQL สำหรับใส่ข้อมูลเริ่มต้นของระบบ
 │
+├── 📁 postman/                         (ชุดทดสอบ API สำหรับโปรแกรม Postman)
+│   ├── BRU_Strategic_Tracking_API_Test_Collection.postman_collection.json — รวมชุดทดสอบ API ทั้งหมด 8 หมวดหมู่ (25+ Requests) พร้อม Script เก็บ Token
+│   ├── BRU_Strategic_Tracking_Environment.postman_environment.json        — ตัวแปร Environment ทดสอบระบบ (base_url, token, บัญชี 4 Role)
+│   └── README.md                                                          — คู่มือการ Import และทดสอบ API ผ่าน Postman ใน 2 คลิก
+│
 ├── 📁 backend/                         (ระบบเซิร์ฟเวอร์ Node.js + Express + Prisma ORM)
 │   ├── .env                            — ตัวแปรสภาพแวดล้อมระบบ (DATABASE_URL, JWT_SECRET, PORT)
 │   ├── app.js                          — จุดเริ่มต้นเซิร์ฟเวอร์ Express, รวม Middleware และเชื่อมต่อ Route หลัก

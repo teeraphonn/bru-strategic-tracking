@@ -1,0 +1,982 @@
+{
+  "info": {
+    "_postman_id": "57319714-984cc94c-c49c-4df9-8e15-c045594b7285",
+    "name": "BRU Strategic Tracking - API Test Collection",
+    "description": "ชุดทดสอบ API (RESTful API Collection v2.1.0) สำหรับระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ มหาวิทยาลัยราชภัฏบุรีรัมย์\nครอบคลุมการตรวจสอบสิทธิ์ RBAC, CRUD โครงการ/กิจกรรม, แดชบอร์ดสรุปผล 4 บทบาท และการสั่งการผู้บริหาร",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "01. Authentication & Users",
+      "item": [
+        {
+          "name": "Login as Teacher (อ.สมชาย)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Has token and role is TEACHER', function () {",
+                  "    pm.expect(jsonData.token).to.be.a('string');",
+                  "    pm.expect(jsonData.user.role).to.eql('TEACHER');",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{teacher_username}}\",\n  \"password\": \"{{teacher_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "เข้าสู่ระบบด้วยบัญชีบทบาทอาจารย์ผู้รับผิดชอบโครงการ (Token จะถูกเก็บลง Environment 'token' อัตโนมัติ)"
+          }
+        },
+        {
+          "name": "Login as Dean (คณบดีคณะวิทย์)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Has token and role is DEAN', function () {",
+                  "    pm.expect(jsonData.token).to.be.a('string');",
+                  "    pm.expect(jsonData.user.role).to.eql('DEAN');",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{dean_username}}\",\n  \"password\": \"{{dean_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "เข้าสู่ระบบด้วยบัญชีบทบาทคณบดี เพื่อทดสอบสิทธิ์ระดับคณะ"
+          }
+        },
+        {
+          "name": "Login as President (อธิการบดี)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Has token and role is PRESIDENT', function () {",
+                  "    pm.expect(jsonData.token).to.be.a('string');",
+                  "    pm.expect(jsonData.user.role).to.eql('PRESIDENT');",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{president_username}}\",\n  \"password\": \"{{president_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "เข้าสู่ระบบด้วยบัญชีอธิการบดี เพื่อทดสอบสิทธิ์แดชบอร์ดมหาวิทยาลัยและการสั่งการระดับนโยบาย"
+          }
+        },
+        {
+          "name": "Login as Admin (ผู้ดูแลระบบ)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Has token and role is ADMIN', function () {",
+                  "    pm.expect(jsonData.token).to.be.a('string');",
+                  "    pm.expect(jsonData.user.role).to.eql('ADMIN');",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "เข้าสู่ระบบด้วยบัญชีผู้ดูแลระบบเพื่อทดสอบการจัดการ Master Data และปลดล็อกโครงการ"
+          }
+        },
+        {
+          "name": "Get Current User Profile (/auth/me)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Profile returned has valid user id', function () {",
+                  "    pm.expect(jsonData.user.id).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "ดึงข้อมูลโปรไฟล์ผู้ใช้ปัจจุบันจาก JWT Token"
+          }
+        },
+        {
+          "name": "Get Public Landing Stats (/auth/public-stats)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/public-stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "public-stats"
+              ]
+            },
+            "description": "ดึงข้อมูลสถิติสาธารณะสำหรับแสดงผลบนหน้า Login Page"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Dashboard API",
+      "item": [
+        {
+          "name": "Get Teacher / My Dashboard (/dashboard)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Contains summary cards', function () {",
+                  "    pm.expect(jsonData).to.have.property('stats');",
+                  "    pm.expect(jsonData).to.have.property('projects');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            },
+            "description": "แดชบอร์ดส่วนบุคคล สรุปเฉพาะโครงการที่ตนเองรับผิดชอบ"
+          }
+        },
+        {
+          "name": "Get Dean Dashboard (/dashboard/dean)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Has faculty scoped data and red flags', function () {",
+                  "    pm.expect(jsonData).to.have.property('facultyName');",
+                  "    pm.expect(jsonData).to.have.property('redFlags');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/dean",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "dean"
+              ]
+            },
+            "description": "แดชบอร์ดภาพรวมระดับคณะ (เห็นเฉพาะสาขาวิชาและโครงการในคณะตนเอง)"
+          }
+        },
+        {
+          "name": "Get President Dashboard (/dashboard/president)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Has university-wide KPI and strategic pillars', function () {",
+                  "    pm.expect(jsonData).to.have.property('strategicSummary');",
+                  "    pm.expect(jsonData).to.have.property('facultiesMatrix');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/president",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "president"
+              ]
+            },
+            "description": "แดชบอร์ดยุทธศาสตร์มหาวิทยาลัย (สถิติรวมทุกคณะ, 6 เสายุทธศาสตร์, โครงการติดธงแดง)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Projects API",
+      "item": [
+        {
+          "name": "Get All Projects (/projects)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.length > 0) {",
+                  "    pm.environment.set('project_id', jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/projects?fiscalYearId=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ],
+              "query": [
+                {
+                  "key": "fiscalYearId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "ดึงรายการโครงการทั้งหมดตามสิทธิ์ของผู้ใช้งาน (รองรับตัวกรองปีงบประมาณ)"
+          }
+        },
+        {
+          "name": "Get Project Details by ID (/projects/:id)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}"
+              ]
+            },
+            "description": "ดึงข้อมูลรายละเอียดโครงการ พร้อมกิจกรรมย่อย รูปภาพ และประวัติข้อสั่งการ"
+          }
+        },
+        {
+          "name": "Create Project (/projects)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 or 200', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.project && jsonData.project.id) {",
+                  "    pm.environment.set('created_project_id', jsonData.project.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"โครงการยกระดับเศรษฐกิจฐานรากและพัฒนาศักยภาพชุมชนท้องถิ่น\",\n  \"fiscalYearId\": 1,\n  \"budgetSourceId\": 1,\n  \"subStrategyId\": 1,\n  \"indicatorId\": 1,\n  \"totalBudget\": 150000,\n  \"targetCount\": 100,\n  \"unit\": \"คน\",\n  \"startDate\": \"2026-10-01T00:00:00.000Z\",\n  \"endDate\": \"2027-09-30T00:00:00.000Z\",\n  \"userIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "description": "สร้างโครงการใหม่ ผูกความเชื่อมโยงยุทธศาสตร์ 4 ระดับ (LDI, Strategy, Sub-strategy, Indicator)"
+          }
+        },
+        {
+          "name": "Update Project (/projects/:id)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"โครงการยกระดับเศรษฐกิจฐานรากและพัฒนาศักยภาพชุมชนท้องถิ่น (ฉบับปรับปรุง)\",\n  \"fiscalYearId\": 1,\n  \"budgetSourceId\": 1,\n  \"subStrategyId\": 1,\n  \"indicatorId\": 1,\n  \"totalBudget\": 150000,\n  \"targetCount\": 100,\n  \"unit\": \"คน\",\n  \"startDate\": \"2026-10-01T00:00:00.000Z\",\n  \"endDate\": \"2027-09-30T00:00:00.000Z\",\n  \"userIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}"
+              ]
+            },
+            "description": "แก้ไขข้อมูลโครงการ (หากโครงการมีกิจกรรมแล้ว ระบบจะล็อกงบและเป้าหมายไม่อนุญาตให้แก้ไข)"
+          }
+        },
+        {
+          "name": "Toggle Project Lock (ADMIN only)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/toggle-lock",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "toggle-lock"
+              ]
+            },
+            "description": "ปลดล็อก หรือล็อกแผนงานโครงการ (เฉพาะบทบาท ADMIN เท่านั้น)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Activities & Progress API",
+      "item": [
+        {
+          "name": "Get Activities by Project ID (/activities)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.length > 0) {",
+                  "    pm.environment.set('activity_id', jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/activities?projectId={{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "activities"
+              ],
+              "query": [
+                {
+                  "key": "projectId",
+                  "value": "{{project_id}}"
+                }
+              ]
+            },
+            "description": "ดึงรายการกิจกรรมย่อยทั้งหมดของโครงการ"
+          }
+        },
+        {
+          "name": "Create Activity (/activities)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 or 200', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.activity && jsonData.activity.id) {",
+                  "    pm.environment.set('created_activity_id', jsonData.activity.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": 1,\n  \"name\": \"จัดอบรมเชิงปฏิบัติการถ่ายทอดองค์ความรู้แก่ชุมชน\",\n  \"activityDate\": \"2026-11-15T09:00:00.000Z\",\n  \"budget\": 35000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/activities",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "activities"
+              ]
+            },
+            "description": "เพิ่มกิจกรรมย่อยในโครงการ (จะทริกเกอร์ระบบล็อกแผนงานของโครงการทันที)"
+          }
+        },
+        {
+          "name": "Update Activity Progress & Outcome (/activities/:id/progress)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"COMPLETED\",\n  \"actualBudget\": 34500,\n  \"targetCount\": 50,\n  \"progressDetail\": \"ดำเนินโครงการเสร็จสิ้น มีกลุ่มเกษตรกรเข้าร่วมครบตามเป้าหมาย 50 คน\",\n  \"problemDetail\": \"การเดินทางช่วงบ่ายมีฝนตกเล็กน้อยแต่แก้ไขโดยปรับสถานที่ในอาคาร\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/activities/{{activity_id}}/progress",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "activities",
+                "{{activity_id}}",
+                "progress"
+              ]
+            },
+            "description": "บันทึกผลการดำเนินงาน งบประมาณที่ใช้จริง และคำนวณ % ความก้าวหน้าโครงการใหม่อัตโนมัติ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Executive Directives API",
+      "item": [
+        {
+          "name": "Issue Dean Directive (/directives/dean)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Directive updated', function () {",
+                  "    pm.expect(jsonData).to.have.property('project');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": 1,\n  \"deanDirective\": \"ขอให้อาจารย์ผู้รับผิดชอบโครงการเร่งรัดการเบิกจ่ายงวดที่ 1 ภายในสิ้นเดือนนี้\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/directives/dean",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "directives",
+                "dean"
+              ]
+            },
+            "description": "ข้อสั่งการระดับคณบดี (มีระบบป้องกัน IDOR ตรวจสอบว่าโครงการต้องอยู่ภายใต้คณะของคณบดีท่านนั้น)"
+          }
+        },
+        {
+          "name": "Issue President Directive (/directives/president)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": 1,\n  \"presidentDirective\": \"มอบหมายให้คณะติดตามผลสัมฤทธิ์ของผลผลิต และรายงานต่อที่ประชุม กบม. ในรอบถัดไป\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/directives/president",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "directives",
+                "president"
+              ]
+            },
+            "description": "ข้อสั่งการระดับอธิการบดีสำหรับสั่งการโครงการเชิงยุทธศาสตร์ภาพรวมมหาวิทยาลัย"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Master Data API",
+      "item": [
+        {
+          "name": "Get Local Issues (ประเด็นการพัฒนาท้องถิ่น)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/master/local-issues",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "master",
+                "local-issues"
+              ]
+            },
+            "description": "ดึงข้อมูลประเด็นการพัฒนาท้องถิ่น (ชั้นที่ 1 ของ Cascading Dropdown)"
+          }
+        },
+        {
+          "name": "Get Strategies (แผนงานหลัก)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/master/strategies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "master",
+                "strategies"
+              ]
+            },
+            "description": "ดึงยุทธศาสตร์หลัก 6 ด้านของมหาวิทยาลัยราชภัฏบุรีรัมย์"
+          }
+        },
+        {
+          "name": "Get Sub-Strategies (แผนงานย่อย)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/master/sub-strategies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "master",
+                "sub-strategies"
+              ]
+            },
+            "description": "ดึงแผนงานย่อยที่สังกัดภายใต้แผนงานหลัก"
+          }
+        },
+        {
+          "name": "Get Indicators / Main Projects (โครงการหลัก MP)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/master/indicators",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "master",
+                "indicators"
+              ]
+            },
+            "description": "ดึงโครงการหลัก 10 โครงการ (Main Projects)"
+          }
+        },
+        {
+          "name": "Get Faculties & Departments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/master/faculties",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "master",
+                "faculties"
+              ]
+            },
+            "description": "ดึงโครงสร้าง 9 คณะ และภาควิชา/สาขาวิชาทั้งหมดในมหาวิทยาลัย"
+          }
+        },
+        {
+          "name": "Get Fiscal Years",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/master/fiscal-years",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "master",
+                "fiscal-years"
+              ]
+            },
+            "description": "ดึงรายชื่อปีงบประมาณ (เช่น 2569)"
+          }
+        },
+        {
+          "name": "Get Budget Sources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/master/budget-sources",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "master",
+                "budget-sources"
+              ]
+            },
+            "description": "ดึงแหล่งเงินงบประมาณ (งบแผ่นดิน, งบรายได้, กองทุนวิจัย ฯลฯ)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Issue Management API",
+      "item": [
+        {
+          "name": "Report Issue (/issues)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"พบปัญหาไม่สามารถดาวน์โหลดเอกสาร PDF บนมือถือได้\",\n  \"description\": \"เมื่อกดดาวน์โหลดรายงานสรุปในหน้าแดชบอร์ดผ่านเบราว์เซอร์ Safari หน้าจอหมุนค้าง\",\n  \"priority\": \"MEDIUM\",\n  \"category\": \"SYSTEM_BUG\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/issues",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "issues"
+              ]
+            },
+            "description": "ผู้ใช้ส่งเรื่องแจ้งปัญหาหรือข้อเสนอแนะในการใช้งานระบบ"
+          }
+        },
+        {
+          "name": "Get My Issues (/issues/my)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/issues/my",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "issues",
+                "my"
+              ]
+            },
+            "description": "ตรวจสอบสถานะปัญหาที่ตนเองเคยส่งเรื่องไว้"
+          }
+        },
+        {
+          "name": "Get All Issues (ADMIN only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/issues",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "issues"
+              ]
+            },
+            "description": "ผู้ดูแลระบบตรวจสอบรายการปัญหาทั้งหมด เพื่อเปลี่ยนสถานะเป็น IN_PROGRESS หรือ RESOLVED"
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Reports & Exports API",
+      "item": [
+        {
+          "name": "Get Strategic Report Summary (/reports)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports?fiscalYearId=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports"
+              ],
+              "query": [
+                {
+                  "key": "fiscalYearId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "ดึงข้อมูลสรุปผลงานและงบประมาณตามยุทธศาสตร์สำหรับแสดงผลหน้าจอรายงาน"
+          }
+        },
+        {
+          "name": "Export Projects to CSV (/reports/export/csv)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/export/csv?fiscalYearId=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "export",
+                "csv"
+              ],
+              "query": [
+                {
+                  "key": "fiscalYearId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "ส่งออกข้อมูลโครงการและงบประมาณเป็นไฟล์ CSV (UTF-8 BOM สำหรับ Excel ภาษาไทย)"
+          }
+        },
+        {
+          "name": "Export Projects to Excel (/reports/export/excel)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/export/excel?fiscalYearId=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "export",
+                "excel"
+              ],
+              "query": [
+                {
+                  "key": "fiscalYearId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "ส่งออกข้อมูลโครงการเป็นไฟล์ Excel (.xlsx) พร้อมจัดรูปแบบตารางและสรุปยอดรวม"
+          }
+        }
+      ]
+    }
+  ]
+}
