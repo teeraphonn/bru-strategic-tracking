@@ -1327,15 +1327,15 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
         </div>
 
         {recentPhotos && recentPhotos.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-5 auto-rows-fr">
             {recentPhotos.map((photo, index) => (
               <div 
                 key={photo.id || index} 
                 onClick={() => setActivePhotoIndex(index)}
-                className="bg-white rounded-3xl border border-slate-100 hover:border-violet-200 shadow-soft hover:shadow-xl transition-all duration-300 active:scale-[0.98] overflow-hidden flex flex-col justify-between cursor-pointer group h-full"
+                className="bg-white rounded-2xl border border-slate-200/80 hover:border-violet-300 shadow-sm hover:shadow-lg transition-all duration-300 active:scale-[0.98] overflow-hidden flex flex-col justify-between cursor-pointer group h-full"
               >
-                {/* 1. Unobstructed Pure Photo Container (Fixed 16:10 Ratio) */}
-                <div className="relative aspect-16/10 w-full shrink-0 overflow-hidden bg-slate-900">
+                {/* 1. Guaranteed Equal Height Photo Container (h-44) */}
+                <div className="relative h-44 w-full shrink-0 overflow-hidden bg-slate-900">
                   <img 
                     src={getImageUrl(photo.imageUrl)} 
                     alt={photo.activityName} 

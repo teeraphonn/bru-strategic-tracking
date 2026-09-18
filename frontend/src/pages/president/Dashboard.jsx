@@ -1259,15 +1259,15 @@ const PresidentDashboard = () => {
 
           {/* Photo Grid */}
           {filteredPhotos && filteredPhotos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 auto-rows-fr">
               {filteredPhotos.map((photo, index) => (
                 <div
                   key={photo.id || index}
                   onClick={() => setActivePhotoIndex(index)}
-                  className="bg-white rounded-3xl border border-slate-100 hover:border-violet-300 shadow-soft hover:shadow-xl transition-all duration-300 active:scale-[0.98] overflow-hidden flex flex-col justify-between cursor-pointer group h-full"
+                  className="bg-white rounded-2xl border border-slate-200/80 hover:border-violet-400 shadow-sm hover:shadow-lg transition-all duration-300 active:scale-[0.98] overflow-hidden flex flex-col justify-between cursor-pointer group h-full"
                 >
-                  {/* Photo Container with 16:10 aspect ratio */}
-                  <div className="relative aspect-16/10 w-full shrink-0 overflow-hidden bg-slate-900">
+                  {/* Photo Container with Guaranteed Equal Height (h-44) */}
+                  <div className="relative h-44 w-full shrink-0 overflow-hidden bg-slate-900">
                     <img
                       src={getImageUrl(photo.imageUrl)}
                       alt={photo.activityName}
@@ -1279,9 +1279,9 @@ const PresidentDashboard = () => {
                     />
                     {/* Faculty Badge Overlay */}
                     <div className="absolute top-2.5 left-2.5">
-                      <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-slate-950/80 backdrop-blur-md text-white border border-white/20 shadow-md flex items-center gap-1.5">
+                      <span className="text-[10px] font-black px-2.5 py-0.5 rounded-lg bg-slate-950/80 backdrop-blur-md text-white border border-white/20 shadow-md flex items-center gap-1.5">
                         <span>🏛️</span>
-                        <span className="truncate max-w-[140px]">{photo.facultyName || 'มหาวิทยาลัย'}</span>
+                        <span className="truncate max-w-[130px]">{photo.facultyName || 'มหาวิทยาลัย'}</span>
                       </span>
                     </div>
 
@@ -1294,20 +1294,20 @@ const PresidentDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Details Body */}
-                  <div className="p-4 flex flex-col justify-between flex-1 space-y-2.5 bg-white">
+                  {/* Details Body (Locked Heights for 100% Equal Size) */}
+                  <div className="p-4 flex flex-col justify-between flex-1 bg-white space-y-2">
                     <div className="space-y-1.5">
-                      {/* Department Tag & Date */}
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold">
+                      {/* Department Tag & Date (Fixed Height h-6) */}
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold h-6 shrink-0">
                         <span className="text-violet-700 bg-violet-50 font-black px-2 py-0.5 rounded-md border border-violet-100 truncate max-w-[65%]" title={photo.departmentName}>
                           🏢 {photo.departmentName || 'ส่วนกลาง'}
                         </span>
-                        <span>
+                        <span className="shrink-0 text-[10px]">
                           {new Date(photo.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}
                         </span>
                       </div>
 
-                      {/* Activity Name */}
+                      {/* Activity Name (Fixed Height h-10 with line-clamp-2) */}
                       <div className="h-10 flex items-start overflow-hidden">
                         <h4 className="font-black text-slate-800 text-xs group-hover:text-primary transition-colors leading-snug line-clamp-2" title={photo.activityName}>
                           {photo.activityName}
@@ -1315,9 +1315,9 @@ const PresidentDashboard = () => {
                       </div>
                     </div>
 
-                    {/* Project Name & Drill-down Action Button at Bottom */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] h-7 shrink-0">
-                      <span className="font-semibold text-slate-500 truncate max-w-[78%]" title={photo.projectName}>
+                    {/* Project Name & Action at Bottom (Fixed Height h-8) */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] h-8 shrink-0">
+                      <span className="font-semibold text-slate-500 truncate max-w-[75%]" title={photo.projectName}>
                         📌 {photo.projectName || 'โครงการ'}
                       </span>
                       {photo.projectId && (
@@ -1327,7 +1327,7 @@ const PresidentDashboard = () => {
                             e.stopPropagation();
                             handleOpenPhotoProject(photo);
                           }}
-                          className="p-1 rounded-lg bg-violet-50 hover:bg-primary hover:text-white text-primary transition-all cursor-pointer shadow-3xs active:scale-95"
+                          className="p-1.5 rounded-lg bg-violet-50 hover:bg-primary hover:text-white text-primary transition-all cursor-pointer shadow-3xs active:scale-95 shrink-0"
                           title="เจาะลึกโครงการและออกข้อสั่งการ"
                         >
                           <FiEye className="w-3.5 h-3.5" />
