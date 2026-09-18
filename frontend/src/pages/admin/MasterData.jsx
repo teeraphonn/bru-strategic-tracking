@@ -24,26 +24,49 @@ import {
   FiX
 } from 'react-icons/fi';
 
+/**
+ * ====================================================================================
+ * คอมโพเนนต์: MasterData (การบริหารจัดการข้อมูลพื้นฐานระบบ)
+ * บทบาทผู้ใช้งาน: ADMIN (ผู้ดูแลระบบสูงสุด)
+ * หน้าที่หลัก:
+ *   1. จัดการข้อมูลโครงสร้างพื้นฐาน 9 หมวดหมู่ (ผู้ใช้งาน, ประเด็นท้องถิ่น, แผนงานหลัก,
+ *      แผนงานย่อย, โครงการหลัก, ปีงบประมาณ, แหล่งเงิน, คณะ, ภาควิชา/หน่วยงาน)
+ *   2. กำหนดสิทธิ์และบัญชีผู้ใช้งาน (RBAC: ADMIN, PRESIDENT, DEAN, TEACHER)
+ *   3. รันระบบรหัสลำดับชั้นอัตโนมัติ (Hierarchical Coding: คณะ 2 หลัก -> สาขา 4 หลัก -> บุคลากร 6 หลัก)
+ *   4. มีระบบค้นหา กรองข้อมูลตามสังกัด และส่งออกรายงานตารางเป็นไฟล์ PDF
+ * ====================================================================================
+ */
 const MasterData = () => {
+  // ----------------------------------------------------------------------------------
+  // [1] ส่วนจัดการ URL Query Params & แท็บเมนูการทำงาน (Active Tab)
+  // ----------------------------------------------------------------------------------
   const [searchParams, setSearchParams] = useSearchParams();
+  // ดึงชื่อแท็บปัจจุบันจาก URL (ค่าเริ่มต้นคือแท็บ 'user')
   const activeTab = searchParams.get('tab') || 'user';
+  // ฟังก์ชันเปลี่ยนแท็บและอัปเดต Query String ใน URL อัตโนมัติ
   const setActiveTab = (tabId) => {
     setSearchParams({ tab: tabId });
   };
 
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [userSortOrder, setUserSortOrder] = useState('id');
+  // ----------------------------------------------------------------------------------
+  // [2] State สำหรับการแสดงผลข้อมูลหลัก ตาราง การโหลด และการค้นหา
+  // ----------------------------------------------------------------------------------
+  const [data, setData] = useState([]);                     // ข้อมูลรายการในแท็บปัจจุบันที่ดึงมาจาก API
+  const [loading, setLoading] = useState(false);             // สถานะการโหลดข้อมูล (แสดง Spinner ขณะรอ API)
+  const [search, setSearch] = useState('');                  // ข้อความค้นหาในช่อง Search Input
+  const [userSortOrder, setUserSortOrder] = useState('id');  // ลำดับการเรียงลำดับข้อมูลผู้ใช้
 
-  // Filters for User management
-  const [filterFacultyId, setFilterFacultyId] = useState('');
-  const [filterDepartmentId, setFilterDepartmentId] = useState('');
+  // ----------------------------------------------------------------------------------
+  // [3] State สำหรับตัวกรองขั้นสูง (Cascading Filters)
+  // ----------------------------------------------------------------------------------
+  // ตัวกรองเฉพาะแท็บจัดการผู้ใช้ (User Management)
+  const [filterFacultyId, setFilterFacultyId] = useState('');       // กรองผู้ใช้งานตามสังกัดคณะ
+  const [filterDepartmentId, setFilterDepartmentId] = useState(''); // กรองผู้ใช้งานตามสังกัดภาควิชา
 
-  // Filters for Department management
-  const [filterDeptFacultyId, setFilterDeptFacultyId] = useState('');
+  // ตัวกรองเฉพาะแท็บจัดการภาควิชา/หน่วยงาน (Department Management)
+  const [filterDeptFacultyId, setFilterDeptFacultyId] = useState(''); // กรองภาควิชาตามสังกัดคณะ
 
-  // Fixed role ranking for strict sorting
+  // ลำดับความสำคัญของบทบาทผู้ใช้งาน สำหรับใช้ในการจัดเรียงความสำคัญ (Hierarchy Ranking)
   const ROLE_RANK = {
     PRESIDENT: 1,
     ADMIN: 2,
@@ -51,7 +74,7 @@ const MasterData = () => {
     TEACHER: 4
   };
 
-  // Modal specific state for dynamic dependent dropdowns
+  // State พักค่าคณะที่เลือกในหน้าต่าง Modal (เพื่อกรองตัวเลือกภาควิชาให้สัมพันธ์กันแบบ Dynamic)
   const [modalFacultyId, setModalFacultyId] = useState('');
 
   const roleWeights = {
@@ -61,13 +84,25 @@ const MasterData = () => {
     TEACHER: 4
   };
 
-  const [faculties, setFaculties] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [localIssues, setLocalIssues] = useState([]);
-  const [strategies, setStrategies] = useState([]);
-  const [subStrategies, setSubStrategies] = useState([]);
+  // ----------------------------------------------------------------------------------
+  // [4] State เก็บข้อมูลตารางอ้างอิงความสัมพันธ์ (Relational Reference Data)
+  // ----------------------------------------------------------------------------------
+  const [faculties, setFaculties] = useState([]);         // รายการคณะทั้งหมด (สำหรับ Dropdown)
+  const [departments, setDepartments] = useState([]);     // รายการภาควิชาทั้งหมด (สำหรับ Dropdown)
+  const [localIssues, setLocalIssues] = useState([]);     // รายการประเด็นพัฒนาท้องถิ่น (สำหรับ Dropdown)
+  const [strategies, setStrategies] = useState([]);       // รายการแผนงานหลัก (สำหรับ Dropdown)
+  const [subStrategies, setSubStrategies] = useState([]); // รายการแผนงานย่อย (สำหรับ Dropdown)
 
-  // Calculate dynamic 2-digit faculty codes (00 for "ส่วนกลาง", 01+ for others)
+  // ----------------------------------------------------------------------------------
+  // [5] Helper Functions: ระบบคำนวณรหัสลำดับชั้นอัตโนมัติ (Hierarchical Auto-Coding)
+  // ----------------------------------------------------------------------------------
+
+  /**
+   * ฟังก์ชัน: getFacultyCode
+   * หน้าที่: คำนวณรหัสคณะอัตโนมัติ 2 หลัก
+   * - กรณี "ส่วนกลาง" กำหนดรหัสเป็น "00"
+   * - คณะอื่น ๆ เรียงตาม ID และแปลงเป็นเลข 2 หลัก เช่น 01, 02, 03...
+   */
   const getFacultyCode = (fac) => {
     if (!fac) return '00';
     if (fac.name === 'ส่วนกลาง') return '00';
@@ -79,7 +114,11 @@ const MasterData = () => {
     return String(seq).padStart(2, '0');
   };
 
-  // Calculate dynamic hierarchical department codes based on faculty (4 digits)
+  /**
+   * ฟังก์ชัน: getDeptCode
+   * หน้าที่: คำนวณรหัสภาควิชาอัตโนมัติ 4 หลัก
+   * โครงสร้างรหัส: [รหัสคณะ 2 หลัก] + [ลำดับภาควิชาภายในคณะนั้น 2 หลัก] เช่น "0101", "0102"
+   */
   const getDeptCode = (dept) => {
     if (!dept) return '';
     const facId = dept.facultyId || 0;
@@ -94,7 +133,12 @@ const MasterData = () => {
     return `${facCode}${seq}`;
   };
 
-  // Calculate dynamic personnel code: [Dept Code][Seq Number] (Total 6 digits)
+  /**
+   * ฟังก์ชัน: getUserCode
+   * หน้าที่: คำนวณรหัสบุคลากรอัตโนมัติ 6 หลัก
+   * โครงสร้างรหัส: [รหัสภาควิชา 4 หลัก] + [ลำดับผู้ใช้งานในภาควิชานั้น 2 หลัก] เช่น "010101"
+   * กรณีไม่สังกัดภาควิชาจะขึ้นต้นด้วย "0000" ตามด้วยลำดับ 2 หลัก
+   */
   const getUserCode = (usr) => {
     if (!usr) return '';
     const deptId = usr.departmentId || 0;
@@ -116,10 +160,14 @@ const MasterData = () => {
     }
   };
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({});
+  // ----------------------------------------------------------------------------------
+  // [6] State สำหรับหน้าต่าง Modal จัดการข้อมูล (CRUD Modal)
+  // ----------------------------------------------------------------------------------
+  const [modalOpen, setModalOpen] = useState(false); // ควบคุมการเปิด/ปิดหน้าต่าง Modal
+  const [editId, setEditId] = useState(null);         // เก็บ ID ของรายการที่กำลังแก้ไข (ถ้าเป็น null คือโหมดสร้างใหม่)
+  const [formData, setFormData] = useState({});       // เก็บข้อมูลฟอร์มที่กรอกใน Modal
 
+  // โครงสร้างเมนูแท็บทั้ง 9 หมวดหมู่ของ Master Data
   const tabs = [
     { id: 'user', name: 'ผู้ใช้งาน', icon: <FiUsers /> },
     { id: 'local-issue', name: 'ประเด็นการพัฒนาท้องถิ่น', icon: <FiGlobe /> },
@@ -132,6 +180,19 @@ const MasterData = () => {
     { id: 'department', name: 'ภาควิชา/หน่วยงาน', icon: <FiLayers /> },
   ];
 
+  // ==================================================================================
+  // [7] ฟังก์ชันดึงข้อมูลจาก API (Data Fetching Functions)
+  // ==================================================================================
+
+  /**
+   * ฟังก์ชัน: fetchData
+   * หน้าที่: ดึงข้อมูลรายการหลักของแท็บปัจจุบันที่เปิดอยู่ (ตามค่า activeTab)
+   * กระบวนการทำงาน:
+   *   1. ตั้งค่า loading = true เพื่อแสดงสถานะหมุนโหลด
+   *   2. เลือกว่าจะเรียก API Endpoint ไหนตามแท็บ เช่น /master/users, /master/faculties
+   *   3. นำข้อมูลที่ได้จาก API เก็บลงใน state `data`
+   *   4. หากเกิดข้อผิดพลาด จะแสดง SweetAlert2 แจ้งสาเหตุให้ผู้ใช้ทราบ
+   */
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -160,6 +221,12 @@ const MasterData = () => {
     }
   };
 
+  /**
+   * ฟังก์ชัน: fetchRelations
+   * หน้าที่: ดึงข้อมูลความสัมพันธ์ทั้งหมดเพื่อนำมาใช้เป็นตัวเลือกใน Dropdown (คณะ, สาขา, แผนงาน ฯลฯ)
+   * เทคนิค: ใช้ `Promise.allSettled` เพื่อยิง API ทั้ง 5 ตารางพร้อมกันแบบ Asynchronous Parallel
+   * ข้อดี: โหลดข้อมูลเร็วขึ้น และถ้ามี endpoint ใดล้มเหลว ตารางอื่น ๆ ก็ยังคงโหลดได้ตามปกติ
+   */
   const fetchRelations = async () => {
     try {
       const results = await Promise.allSettled([
@@ -179,6 +246,14 @@ const MasterData = () => {
     }
   };
 
+  /**
+   * Hook: useEffect (Lifecycle Component)
+   * หน้าที่: ทำงานทุกครั้งที่ผู้ใช้สลับแท็บ (เมื่อ activeTab เปลี่ยนแปลง)
+   * การทำงาน:
+   *   1. เรียก fetchData() เพื่อโหลดข้อมูลของแท็บนั้น
+   *   2. เรียก fetchRelations() เพื่ออัปเดตตัวเลือกใน Dropdown
+   *   3. ล้างค่าตัวกรองคณะ/ภาควิชา ให้กลับเป็นค่าว่าง
+   */
   useEffect(() => {
     fetchData();
     fetchRelations();
@@ -187,6 +262,19 @@ const MasterData = () => {
     setFilterDeptFacultyId('');
   }, [activeTab]);
 
+  // ==================================================================================
+  // [8] ฟังก์ชันจัดการฟอร์มและเหตุการณ์ CRUD (Create, Read, Update, Delete Handlers)
+  // ==================================================================================
+
+  /**
+   * ฟังก์ชัน: handleCreate
+   * หน้าที่: เตรียมเปิดหน้าต่าง Modal สำหรับ "เพิ่มข้อมูลใหม่"
+   * กระบวนการ:
+   *   1. รีเซ็ต editId เป็น null (แสดงว่าเป็นโหมดสร้างใหม่ ไม่ใช่โหมดแก้ไข)
+   *   2. กำหนดค่าเริ่มต้นของแต่ละแท็บ เช่น แท็บปีงบประมาณให้ใช้วันที่ปัจจุบันแปลงเป็น พ.ศ.
+   *   3. สำหรับแท็บผู้ใช้ กำหนด Role เริ่มต้นเป็น 'TEACHER'
+   *   4. เปิดหน้าต่าง Modal (setModalOpen(true))
+   */
   const handleCreate = () => {
     setEditId(null);
     const initialForm = {};
@@ -201,6 +289,16 @@ const MasterData = () => {
     setModalOpen(true);
   };
 
+  /**
+   * ฟังก์ชัน: handleEdit
+   * หน้าที่: เตรียมเปิดหน้าต่าง Modal สำหรับ "แก้ไขข้อมูลเดิม"
+   * พารามิเตอร์: item = วัตถุข้อมูลของแถวที่ต้องการแก้ไข
+   * กระบวนการ:
+   *   1. บันทึก ID รายการไว้ใน `editId`
+   *   2. คัดลอกข้อมูลเดิมใส่ใน `formData` เพื่อแสดงในช่อง Input อัตโนมัติ
+   *   3. ถ้าเป็นผู้ใช้ ให้เคลียร์ช่องรหัสผ่าน และตั้งค่าสังกัดคณะเพื่อกรองภาควิชาให้ถูกต้อง
+   *   4. เปิดหน้าต่าง Modal
+   */
   const handleEdit = (item) => {
     setEditId(item.id);
     const form = { ...item };
@@ -218,6 +316,18 @@ const MasterData = () => {
     setModalOpen(true);
   };
 
+  /**
+   * ฟังก์ชัน: handleSubmit (ฟอร์มบันทึกข้อมูลหลัก)
+   * หน้าที่: ตรวจสอบความถูกต้องและส่งข้อมูลฟอร์มไปยัง API Backend
+   * กระบวนการ:
+   *   1. e.preventDefault() ป้องกันการรีเฟรชหน้าเว็บ
+   *   2. ทำ Data Cleansing / Type Casting: แปลง Foreign Keys (เช่น facultyId, strategyId) ให้เป็น Integer
+   *   3. ตรวจสอบโหมด:
+   *      - ถ้ามี editId ➔ ส่งคำขอแบบ PUT ไปยัง `/master/.../${editId}` (อัปเดต)
+   *      - ถ้าไม่มี editId ➔ ส่งคำขอแบบ POST ไปยัง `/master/...` (สร้างใหม่)
+   *   4. แสดงกล่อง SweetAlert2 แจ้งผลลัพธ์
+   *   5. ปิด Modal และสั่ง fetchData() รีเฟรชตารางทันที
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -233,6 +343,7 @@ const MasterData = () => {
 
       const payload = { ...formData };
 
+      // Type Casting: ตรวจสอบและแปลง Foreign Key ให้เป็นประเภทตัวเลข (Integer)
       if (payload.localIssueId && !isNaN(parseInt(payload.localIssueId))) payload.localIssueId = parseInt(payload.localIssueId);
       else delete payload.localIssueId;
 
@@ -250,6 +361,7 @@ const MasterData = () => {
 
       if (payload.year && !isNaN(parseInt(payload.year))) payload.year = parseInt(payload.year);
 
+      // ยิง API บันทึกข้อมูล
       if (editId) {
         await api.put(`${endpoint}/${editId}`, payload);
         Swal.fire({ icon: 'success', title: 'อัปเดตข้อมูลสำเร็จ', showConfirmButton: false, timer: 1200 });
@@ -267,6 +379,14 @@ const MasterData = () => {
     }
   };
 
+  /**
+   * ฟังก์ชัน: handleDelete
+   * หน้าที่: ลบข้อมูลรายการตาม ID
+   * ความปลอดภัย:
+   *   1. มีกล่อง SweetAlert2 ยืนยันก่อนลบ ป้องกันการกดผิด
+   *   2. ส่งคำขอ DELETE ไปยัง Backend API
+   *   3. หากข้อมูลนี้ถูกใช้งานอยู่ในตารางอื่น (ติด Foreign Key Constraint) Backend จะตอบกลับ Error และแสดงแจ้งเตือนความปลอดภัย
+   */
   const handleDelete = async (id) => {
     Swal.fire({
       title: 'ต้องการลบข้อมูลนี้?',
@@ -302,7 +422,11 @@ const MasterData = () => {
     });
   };
 
-  // Quick reset user password
+  /**
+   * ฟังก์ชัน: handleResetPassword
+   * หน้าที่: ช่วยให้ Admin รีเซ็ตรหัสผ่านของผู้ใช้งานรายบุคคลเป็นค่าเริ่มต้น ("123456") ได้ทันที
+   * ประโยชน์: แก้ปัญหาอาจารย์หรือผู้บริหารลืมรหัสผ่านเข้าระบบ
+   */
   const handleResetPassword = (usr) => {
     Swal.fire({
       title: 'ยืนยันรีเซ็ตรหัสผ่าน?',
@@ -335,7 +459,11 @@ const MasterData = () => {
     });
   };
 
-  // Clear system cache & maintenance
+  /**
+   * ฟังก์ชัน: handleClearSystemCache
+   * หน้าที่: ล้างแคชในระบบและสั่งเซิร์ฟเวอร์ซิงก์สถานะล่าสุด
+   * ใช้เมื่อ: มีการอัปเดตข้อมูลโครงสร้างแล้วต้องการให้ระบบดึงข้อมูลสดใหม่ทันที
+   */
   const handleClearSystemCache = async () => {
     try {
       await api.post('/master/system/clear-cache');
@@ -354,7 +482,14 @@ const MasterData = () => {
     }
   };
 
-  // Export current table view as decorated A4 PDF
+  /**
+   * ฟังก์ชัน: handleExportPDF
+   * หน้าที่: ดาวน์โหลดข้อมูลตารางในแท็บปัจจุบันออกเป็นรายงานเอกสาร PDF ขนาด A4
+   * การทำงาน:
+   *   1. ยิง GET Request แบบ responseType: 'blob' ไปยัง backend
+   *   2. แปลง binary stream เป็น Blob URL ชั่วคราว
+   *   3. สร้างแท็ก <a> เพื่อ trigger ให้เบราว์เซอร์ดาวน์โหลดไฟล์อัตโนมัติ
+   */
   const handleExportPDF = async () => {
     try {
       const response = await api.get(`/reports/export/master-pdf?tab=${activeTab}`, {
@@ -375,10 +510,18 @@ const MasterData = () => {
     }
   };
 
+  // ==================================================================================
+  // [9] ส่วนประมวลผลการกรองและเรียงลำดับข้อมูล (Filtering & Sorting Pipeline)
+  // ==================================================================================
+
+  /**
+   * ตัวแปร: filteredData
+   * หน้าที่: กรองข้อมูลในตารางตามคำค้นหา (search) และตัวกรอง Dropdown (คณะ / สาขา)
+   */
   const filteredData = data.filter(item => {
     const text = search.toLowerCase();
 
-    // Affiliation filtering for User tab
+    // ตัวกรองสังกัดสำหรับแท็บผู้ใช้งาน (User Tab)
     if (activeTab === 'user') {
       if (filterFacultyId && item.department?.facultyId !== parseInt(filterFacultyId)) {
         return false;
@@ -388,13 +531,14 @@ const MasterData = () => {
       }
     }
 
-    // Faculty filtering for Department tab
+    // ตัวกรองคณะสำหรับแท็บภาควิชา (Department Tab)
     if (activeTab === 'department') {
       if (filterDeptFacultyId && item.facultyId !== parseInt(filterDeptFacultyId)) {
         return false;
       }
     }
 
+    // ค้นหาตามชื่อ รหัส บัญชีผู้ใช้ หรือปีงบประมาณ
     return (
       (item.name && item.name.toLowerCase().includes(text)) ||
       (item.code && item.code.toLowerCase().includes(text)) ||
@@ -403,6 +547,14 @@ const MasterData = () => {
     );
   });
 
+  /**
+   * ฟังก์ชัน: getSortedData
+   * หน้าที่: นำข้อมูลที่ผ่านการกรองแล้วมาจัดเรียงลำดับอย่างเป็นมืออาชีพ
+   * - ผู้ใช้: เรียงตามรหัสบุคลากร 6 หลัก (getUserCode)
+   * - ภาควิชา: เรียงตามรหัสภาควิชา 4 หลัก (getDeptCode)
+   * - คณะ: เรียงตามรหัสคณะ 2 หลัก (getFacultyCode)
+   * - อื่น ๆ: เรียงตาม ID
+   */
   const getSortedData = () => {
     if (activeTab === 'user') {
       return [...filteredData].sort((a, b) => {
@@ -424,7 +576,13 @@ const MasterData = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
-      {/* 1. Top Header Banner */}
+      {/* ---------------------------------------------------------------------------- */}
+      {/* [10] ส่วนหัวแบนเนอร์ด้านบน (Top Header Banner & Action Buttons)               */}
+      {/* หน้าที่: แสดงชื่อหน้า แนะนำภาพรวม และมีปุ่มคำสั่งหลัก 3 ปุ่ม:                     */}
+      {/* 1. ล้างแคชระบบ (handleClearSystemCache)                                       */}
+      {/* 2. พิมพ์รายงาน PDF (handleExportPDF)                                         */}
+      {/* 3. เพิ่มข้อมูลใหม่ (handleCreate) - สลับข้อความตามแท็บ เช่น "เพิ่มคณะ"           */}
+      {/* ---------------------------------------------------------------------------- */}
       <div className="p-6 md:p-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white rounded-3xl shadow-xl border border-indigo-500/20 relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="relative z-10">
@@ -441,6 +599,7 @@ const MasterData = () => {
         </div>
 
         <div className="flex items-center flex-wrap gap-2.5 self-start sm:self-center shrink-0">
+          {/* ปุ่มที่ 1: ล้างแคชระบบ */}
           <button
             onClick={handleClearSystemCache}
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-bold text-slate-200 bg-white/10 hover:bg-white/20 hover:text-white rounded-2xl border border-white/15 backdrop-blur-md active:scale-95 transition-all cursor-pointer shadow-sm"
@@ -450,6 +609,7 @@ const MasterData = () => {
             <span className="hidden sm:inline">ล้างแคชระบบ</span>
           </button>
 
+          {/* ปุ่มที่ 2: ดาวน์โหลดรายงาน PDF */}
           <button
             onClick={handleExportPDF}
             className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-2xl shadow-sm border border-rose-200 active:scale-95 transition-all cursor-pointer"
@@ -459,6 +619,7 @@ const MasterData = () => {
             <span>พิมพ์รายงาน PDF</span>
           </button>
 
+          {/* ปุ่มที่ 3: เปิด Modal เพิ่มข้อมูลใหม่ */}
           <button
             onClick={handleCreate}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-extrabold text-white bg-gradient-to-r from-primary via-violet-600 to-indigo-600 hover:from-primary-dark hover:to-indigo-700 rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl active:scale-95 transition-all cursor-pointer"
@@ -469,7 +630,10 @@ const MasterData = () => {
         </div>
       </div>
 
-      {/* 2. Master Data In-Page Horizontal Tab Navigation Ribbon */}
+      {/* ---------------------------------------------------------------------------- */}
+      {/* [11] แถบสลับแท็บข้อมูลหลัก 9 หมวดหมู่ (Tab Navigation Ribbon)                 */}
+      {/* หน้าที่: นำทางระหว่าง 9 กลุ่มข้อมูล พร้อมไอคอนและเอฟเฟกต์ Active State         */}
+      {/* ---------------------------------------------------------------------------- */}
       <div className="bg-white p-2 rounded-3xl border border-slate-100 shadow-soft overflow-x-auto">
         <div className="flex items-center gap-1.5 min-w-max">
           {[
@@ -503,9 +667,12 @@ const MasterData = () => {
         </div>
       </div>
 
-      {/* 3. Filter and Sorting Panel */}
+      {/* ---------------------------------------------------------------------------- */}
+      {/* [12] ส่วนค้นหาและตัวกรองข้อมูล (Search & Cascading Filter Panel)              */}
+      {/* หน้าที่: ค้นหาคำ และมี Dropdown กรองแบบเจาะจงสังกัดคณะ/ภาควิชา                */}
+      {/* ---------------------------------------------------------------------------- */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Search Input */}
+        {/* ช่องค้นหาข้อความแบบเรียลไทม์ (Search Input) */}
         <div className="flex items-center gap-3 bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-soft max-w-md w-full">
           <FiSearch className="text-slate-400 w-4 h-4" />
           <input
@@ -572,8 +739,14 @@ const MasterData = () => {
         )}
       </div>
 
-      {/* Main Grid or Table Content */}
+      {/* ---------------------------------------------------------------------------- */}
+      {/* [13] ส่วนแสดงผลข้อมูลหลัก (Main Content: Grid View หรือ Table View)             */}
+      {/* - หากเลือกแท็บ 'faculty' (คณะ) ➔ แสดงผลเป็นการ์ดแบบ 3 คอลัมน์ (Card Grid)       */}
+      {/* - หากเลือกแท็บอื่น ๆ ➔ แสดงผลเป็นตารางรายการสากล (Universal Responsive Table)     */}
+      {/* ---------------------------------------------------------------------------- */}
+
       {activeTab === 'faculty' ? (
+        /* โครงสร้างที่ 1: การ์ดแสดงข้อมูลคณะ (Faculty Card Grid) */
         loading ? (
           <div className="flex justify-center items-center py-20 bg-white rounded-xl shadow-soft border border-gray-100">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -585,16 +758,16 @@ const MasterData = () => {
                 key={item.id} 
                 className="bg-white rounded-xl border border-gray-100 shadow-soft p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden group"
               >
-                {/* Visual decoration top color line */}
+                {/* แถบสีตกแต่งด้านบนการ์ด */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-violet-500"></div>
 
                 <div>
-                  {/* Faculty Name */}
+                  {/* ชื่อคณะ */}
                   <h3 className="text-base font-bold text-gray-800 tracking-tight group-hover:text-primary transition-colors">
                     {item.name}
                   </h3>
 
-                  {/* Faculty Details */}
+                  {/* สรุปข้อมูลตัวเลขของคณะ: รหัสคณะ, คณบดี, จำนวนภาควิชา, จำนวนโครงการ */}
                   <div className="mt-4 space-y-2.5 text-xs text-gray-500 font-semibold">
                     <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg">
                       <span className="text-gray-400">รหัสคณะ:</span>
@@ -614,7 +787,7 @@ const MasterData = () => {
                     </div>
                   </div>
 
-                  {/* Progress bar */}
+                  {/* แถบหลอดความก้าวหน้ารวมของโครงการในคณะ (Progress Bar) */}
                   <div className="mt-5 space-y-1.5">
                     <div className="flex justify-between text-[11px] font-bold text-gray-500">
                       <span>ความก้าวหน้ารวม:</span>
@@ -629,7 +802,7 @@ const MasterData = () => {
                   </div>
                 </div>
 
-                {/* Actions Panel */}
+                {/* แผงปุ่มคำสั่งใต้การ์ดคณะ: ดูรายละเอียดโครงการ, แก้ไข, ลบ */}
                 <div className="flex gap-2.5 justify-end pt-5 mt-6 border-t border-slate-50">
                   <Link
                     to={`/projects?facultyId=${item.id}`}
@@ -661,6 +834,7 @@ const MasterData = () => {
           </div>
         )
       ) : (
+        /* โครงสร้างที่ 2: ตารางข้อมูลสากลสำหรับแท็บอื่น ๆ 8 แท็บ (Universal Data Table) */
         <div className="bg-white rounded-3xl shadow-soft border border-gray-100 overflow-hidden w-full">
           {/* Mobile swipe hint banner */}
           <div className="sm:hidden px-4 py-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100/70 text-[11px] font-bold text-primary flex items-center justify-between">
@@ -929,7 +1103,10 @@ const MasterData = () => {
         </div>
       )}
 
-      {/* CRUD Modal dialog */}
+      {/* ---------------------------------------------------------------------------- */}
+      {/* [14] หน้าต่างป๊อปอัปสำหรับสร้างและแก้ไขข้อมูล (CRUD Modal Dialog via React Portal)*/}
+      {/* หน้าที่: เป็นฟอร์มกลางที่สลับช่อง Input ตามแท็บปัจจุบันที่เปิดอยู่ (9 ฟอร์ม)       */}
+      {/* ---------------------------------------------------------------------------- */}
       {modalOpen && createPortal(
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-fadeIn"
@@ -939,6 +1116,7 @@ const MasterData = () => {
             className={`w-full ${activeTab === 'user' ? 'max-w-2xl' : 'max-w-md'} ${activeTab === 'user' ? 'bg-slate-900 text-white' : 'bg-white text-gray-800'} rounded-3xl shadow-2xl border ${activeTab === 'user' ? 'border-slate-800' : 'border-gray-100'} overflow-hidden max-h-[90vh] flex flex-col my-auto`}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* ส่วนหัวของ Modal (Modal Header): แสดงชื่อแท็บ และปุ่มปิด */}
             <div className={`flex items-center justify-between px-6 py-4 border-b ${activeTab === 'user' ? 'border-slate-800' : 'border-gray-100'} shrink-0`}>
               <h3 className={`text-base font-bold ${activeTab === 'user' ? 'text-white' : 'text-gray-800'}`}>
                 {editId ? `แก้ไขข้อมูล (${tabs.find(t => t.id === activeTab)?.name})` : `เพิ่มข้อมูล (${tabs.find(t => t.id === activeTab)?.name})`}
@@ -953,7 +1131,13 @@ const MasterData = () => {
               </button>
             </div>
 
+            {/* ฟอร์มรับข้อมูล (Form Body): สลับแสดงผลตาม activeTab */}
             <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
+              
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 1: จัดการข้อมูลคณะ (Faculty Form)                             */}
+              {/* ฟิลด์: name (ชื่อคณะ เช่น คณะครุศาสตร์, คณะวิทยาศาสตร์)               */}
+              {/* ==================================================================== */}
               {activeTab === 'faculty' && (
                 <div>
                   <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อคณะ</label>
@@ -968,6 +1152,10 @@ const MasterData = () => {
                 </div>
               )}
 
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 2: จัดการข้อมูลภาควิชา/หน่วยงาน (Department Form)             */}
+              {/* ฟิลด์: name (ชื่อภาควิชา), facultyId (สังกัดคณะ - เป็นคีย์นอก Foreign Key) */}
+              {/* ==================================================================== */}
               {activeTab === 'department' && (
                 <>
                   <div>
@@ -996,6 +1184,11 @@ const MasterData = () => {
                 </>
               )}
 
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 3: จัดการประเด็นการพัฒนาท้องถิ่น (Local Development Issue Form) */}
+              {/* ลำดับขั้น: ยุทธศาสตร์ระดับ 1                                           */}
+              {/* ฟิลด์: code (รหัส เช่น LDI1), name (ชื่อประเด็นการพัฒนาท้องถิ่น)       */}
+              {/* ==================================================================== */}
               {activeTab === 'local-issue' && (
                 <>
                   <div>
@@ -1023,6 +1216,11 @@ const MasterData = () => {
                 </>
               )}
 
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 4: จัดการแผนงานหลัก (Strategy Form)                          */}
+              {/* ลำดับขั้น: ยุทธศาสตร์ระดับ 2                                           */}
+              {/* ฟิลด์: localIssueId (ผูกประเด็นท้องถิ่น), code (รหัส เช่น S1), name      */}
+              {/* ==================================================================== */}
               {activeTab === 'strategy' && (
                 <>
                   <div>
@@ -1065,6 +1263,11 @@ const MasterData = () => {
                 </>
               )}
 
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 5: จัดการแผนงานย่อย/กลยุทธ์ (Sub-Strategy Form)              */}
+              {/* ลำดับขั้น: ยุทธศาสตร์ระดับ 3                                           */}
+              {/* ฟิลด์: strategyId (ผูกแผนงานหลัก), code (รหัส เช่น SS1.1), name         */}
+              {/* ==================================================================== */}
               {activeTab === 'sub-strategy' && (
                 <>
                   <div>
@@ -1104,6 +1307,11 @@ const MasterData = () => {
                 </>
               )}
 
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 6: จัดการโครงการหลัก (Indicator / Main Project MP Form)       */}
+              {/* ลำดับขั้น: ยุทธศาสตร์ระดับ 4                                           */}
+              {/* ฟิลด์: subStrategyId (ผูกแผนงานย่อย), code (รหัส เช่น MP1.1), name     */}
+              {/* ==================================================================== */}
               {activeTab === 'indicator' && (
                 <>
                   <div>
@@ -1143,6 +1351,16 @@ const MasterData = () => {
                 </>
               )}
 
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 7: จัดการบัญชีผู้ใช้งานและสิทธิ์ (User & RBAC Form)            */}
+              {/* ฟิลด์:                                                              */}
+              {/*   - name: ชื่อ-สกุลจริง                                              */}
+              {/*   - role: สิทธิ์ (ADMIN, PRESIDENT, DEAN, TEACHER)                     */}
+              {/*   - username: บัญชีผู้ใช้ (ไม่ให้แก้เมื่ออยู่ในโหมดแก้ไข)                 */}
+              {/*   - password: รหัสผ่าน (กรอกเมื่อสร้างใหม่ / เว้นว่างได้ถ้าแก้ไข)          */}
+              {/*   - modalFacultyId: เลือกคณะเพื่อโหลดรายชื่อภาควิชาให้สัมพันธ์กัน         */}
+              {/*   - departmentId: สังกัดภาควิชา (Foreign Key)                         */}
+              {/* ==================================================================== */}
               {activeTab === 'user' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
                   <div>
@@ -1235,6 +1453,10 @@ const MasterData = () => {
                 </div>
               )}
 
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 8: จัดการปีงบประมาณ (Fiscal Year Form)                         */}
+              {/* ฟิลด์: year (ปี พ.ศ. เช่น 2569), active (กำหนดเป็นปีงบประมาณหลัก)         */}
+              {/* ==================================================================== */}
               {activeTab === 'fiscal-year' && (
                 <>
                   <div>
@@ -1263,6 +1485,10 @@ const MasterData = () => {
                 </>
               )}
 
+              {/* ==================================================================== */}
+              {/* ฟอร์มที่ 9: จัดการแหล่งงบประมาณ (Budget Source Form)                    */}
+              {/* ฟิลด์: name (ชื่อแหล่งเงิน เช่น งบประมาณแผ่นดิน, งบรายได้)                 */}
+              {/* ==================================================================== */}
               {activeTab === 'budget-source' && (
                 <div>
                   <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">ชื่อแหล่งงบประมาณ</label>
@@ -1277,6 +1503,9 @@ const MasterData = () => {
                 </div>
               )}
 
+              {/* -------------------------------------------------------------------- */}
+              {/* ส่วนปุ่มกดยืนยัน/ยกเลิกท้าย Modal (Modal Action Footer)               */}
+              {/* -------------------------------------------------------------------- */}
               <div className={`flex gap-3 justify-end pt-4 border-t ${activeTab === 'user' ? 'border-slate-800' : 'border-gray-100'}`}>
                 <button
                   type="button"
