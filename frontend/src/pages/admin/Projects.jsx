@@ -247,7 +247,7 @@ const AdminProjects = () => {
             >
               {/* Main Left Card Body */}
               <div className="p-6 md:p-7 flex-1 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 flex-wrap">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-black px-3 py-1 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center gap-1.5 shadow-2xs">
                       <FiCalendar className="w-3.5 h-3.5 text-primary" />

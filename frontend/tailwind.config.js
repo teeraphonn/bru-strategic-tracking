@@ -35,6 +35,9 @@ export default {
       boxShadow: {
         'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03), 0 10px 15px -3px rgba(108, 59, 255, 0.05)',
         'card': '0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04)',
+      },
+      spacing: {
+        '4.5': '1.125rem',
       }
     },
   },

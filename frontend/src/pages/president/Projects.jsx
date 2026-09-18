@@ -180,7 +180,7 @@ const PresidentProjects = () => {
             >
               {/* Main Left Card Body */}
               <div className="p-6 md:p-7 flex-1 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 flex-wrap">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-black px-3 py-1 rounded-xl bg-purple-50 text-purple-700 border border-purple-200">
                       ปีงบประมาณ พ.ศ. {project.fiscalYear?.year}
