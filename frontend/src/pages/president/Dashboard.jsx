@@ -106,6 +106,18 @@ const PresidentDashboard = () => {
     ? allPhotos.filter(p => String(p.facultyId) === String(selectedPhotoFaculty))
     : allPhotos;
 
+  // รายการตัวเลือกคณะสำหรับกรองภาพถ่ายความสำเร็จในมุมมองอธิการบดี
+  const photoFacultyOptions = [
+    { value: '', label: `🏛️ ทุกคณะในมหาวิทยาลัย (${allPhotos.length} ภาพ)` },
+    ...facultiesList.map(f => {
+      const count = allPhotos.filter(p => String(p.facultyId) === String(f.id)).length;
+      return {
+        value: String(f.id),
+        label: `${f.name} (${count} ภาพ)`
+      };
+    })
+  ];
+
   /**
    * ดึงรายการโครงการทั้งหมดของคณะที่คลิกเลือก
    * @param {number} facultyId - รหัสคณะ
@@ -190,6 +202,27 @@ const PresidentDashboard = () => {
     setSelectedProjectModal(enrichedProject);
     setSelectedFacultyName('');
     setFacultyProjects(null);
+  };
+
+  /**
+   * เปิดโมดอลรายละเอียดโครงการจากรูปภาพผลงาน (สำหรับอธิการบดีเจาะลึกและออกข้อสั่งการ)
+   * @param {Object} photo - วัตถุรูปภาพที่มี projectId
+   */
+  const handleOpenPhotoProject = async (photo) => {
+    if (!photo?.projectId) return;
+    try {
+      const res = await api.get(`/projects/${photo.projectId}`);
+      if (res.data?.project) {
+        handleOpenDetailModal(res.data.project);
+      }
+    } catch (err) {
+      console.error('Failed to load project from photo:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่สามารถเปิดข้อมูลโครงการที่เกี่ยวข้องได้'
+      });
+    }
   };
 
   const handlePrevPhoto = () => {
@@ -1182,6 +1215,142 @@ const PresidentDashboard = () => {
           </div>
         </div>
 
+        {/* 6. Recent University Evidence & Showcase Gallery (President Perspective) */}
+        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border border-slate-100 space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 text-violet-700 text-xs font-black border border-violet-100/80 mb-0.5">
+                <FiImage className="w-3.5 h-3.5 text-primary" />
+                <span>มุมมองอธิการบดี (Institutional Showcase & Evidence-based Monitoring)</span>
+              </div>
+              <h2 className="text-base md:text-lg font-black text-slate-800 flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+                <span>ภาพผลงานเชิงประจักษ์และความสำเร็จของโครงการทั่วมหาวิทยาลัย</span>
+              </h2>
+              <p className="text-xs text-slate-500 font-medium">
+                กำกับติดตามผลสัมฤทธิ์และการดำเนินงานจริงในพื้นที่ของทุกคณะ เพื่อประเมินความก้าวหน้าเชิงยุทธศาสตร์สถาบัน
+              </p>
+            </div>
+
+            {/* Faculty Filter & Action Controls */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="w-72">
+                <CustomSelect
+                  value={selectedPhotoFaculty}
+                  onChange={(val) => setSelectedPhotoFaculty(val)}
+                  options={photoFacultyOptions}
+                  placeholder="เลือกคณะเพื่อดูภาพ"
+                  icon={FiFilter}
+                />
+              </div>
+
+              {filteredPhotos && filteredPhotos.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setActivePhotoIndex(0)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-violet-600 to-primary hover:from-violet-700 hover:to-primary-dark text-white rounded-xl font-extrabold text-xs transition-all shadow-md shadow-primary/20 cursor-pointer active:scale-95 shrink-0"
+                >
+                  <FiMaximize2 className="w-3.5 h-3.5" />
+                  <span>ดูภาพสไลด์โชว์ ({filteredPhotos.length} ภาพ)</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Photo Grid */}
+          {filteredPhotos && filteredPhotos.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {filteredPhotos.map((photo, index) => (
+                <div
+                  key={photo.id || index}
+                  onClick={() => setActivePhotoIndex(index)}
+                  className="bg-white rounded-3xl border border-slate-100 hover:border-violet-300 shadow-soft hover:shadow-xl transition-all duration-300 active:scale-[0.98] overflow-hidden flex flex-col justify-between cursor-pointer group h-full"
+                >
+                  {/* Photo Container with 16:10 aspect ratio */}
+                  <div className="relative aspect-16/10 w-full shrink-0 overflow-hidden bg-slate-900">
+                    <img
+                      src={getImageUrl(photo.imageUrl)}
+                      alt={photo.activityName}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                    {/* Faculty Badge Overlay */}
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-slate-950/80 backdrop-blur-md text-white border border-white/20 shadow-md flex items-center gap-1.5">
+                        <span>🏛️</span>
+                        <span className="truncate max-w-[140px]">{photo.facultyName || 'มหาวิทยาลัย'}</span>
+                      </span>
+                    </div>
+
+                    {/* Hover Hint */}
+                    <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                      <span className="bg-slate-950/80 backdrop-blur-xs text-white text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl border border-white/10">
+                        <FiMaximize2 className="w-3.5 h-3.5 text-violet-400" />
+                        <span>คลิกขยายดูภาพ</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Details Body */}
+                  <div className="p-4 flex flex-col justify-between flex-1 space-y-2.5 bg-white">
+                    <div className="space-y-1.5">
+                      {/* Department Tag & Date */}
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold">
+                        <span className="text-violet-700 bg-violet-50 font-black px-2 py-0.5 rounded-md border border-violet-100 truncate max-w-[65%]" title={photo.departmentName}>
+                          🏢 {photo.departmentName || 'ส่วนกลาง'}
+                        </span>
+                        <span>
+                          {new Date(photo.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}
+                        </span>
+                      </div>
+
+                      {/* Activity Name */}
+                      <div className="h-10 flex items-start overflow-hidden">
+                        <h4 className="font-black text-slate-800 text-xs group-hover:text-primary transition-colors leading-snug line-clamp-2" title={photo.activityName}>
+                          {photo.activityName}
+                        </h4>
+                      </div>
+                    </div>
+
+                    {/* Project Name & Drill-down Action Button at Bottom */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] h-7 shrink-0">
+                      <span className="font-semibold text-slate-500 truncate max-w-[78%]" title={photo.projectName}>
+                        📌 {photo.projectName || 'โครงการ'}
+                      </span>
+                      {photo.projectId && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenPhotoProject(photo);
+                          }}
+                          className="p-1 rounded-lg bg-violet-50 hover:bg-primary hover:text-white text-primary transition-all cursor-pointer shadow-3xs active:scale-95"
+                          title="เจาะลึกโครงการและออกข้อสั่งการ"
+                        >
+                          <FiEye className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-10 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+              <FiImage className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+              <div className="text-sm font-extrabold text-slate-700">ยังไม่มีภาพถ่ายผลงานเชิงประจักษ์ในหมวดหมู่นี้</div>
+              <div className="text-xs text-slate-400 mt-1">
+                {selectedPhotoFaculty 
+                  ? 'คณะที่เลือกยังไม่ได้อัปโหลดภาพถ่ายกิจกรรมความสำเร็จเข้าระบบ' 
+                  : 'ภาพถ่ายที่อัปโหลดโดยผู้รับผิดชอบโครงการทั่วมหาวิทยาลัยจะแสดงผลที่นี่โดยอัตโนมัติ'}
+              </div>
+            </div>
+          )}
+        </div>
+
       {/* Lightbox Modal (Full Gallery View - Preserves 100% Original Photo Dimensions) */}
       {activePhotoIndex !== null && filteredPhotos[activePhotoIndex] && (() => {
         const activePhoto = filteredPhotos[activePhotoIndex];
@@ -1288,6 +1457,24 @@ const PresidentDashboard = () => {
                     <div className="space-y-2.5">
                       <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider">รายละเอียดผลงาน</h4>
                       <p className="text-xs font-medium text-slate-300 leading-relaxed max-h-48 overflow-y-auto pr-2 scrollbar-thin">{activePhoto.description}</p>
+                    </div>
+                  )}
+
+                  {/* Executive Action Button */}
+                  {activePhoto.projectId && (
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActivePhotoIndex(null);
+                          handleOpenPhotoProject(activePhoto);
+                        }}
+                        className="w-full py-2.5 px-4 bg-gradient-to-r from-violet-600 to-primary hover:from-violet-500 hover:to-primary-dark text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-95 transition-all cursor-pointer"
+                      >
+                        <FiSend className="w-3.5 h-3.5" />
+                        <span>เจาะลึกโครงการและออกข้อสั่งการ (Directive)</span>
+                      </button>
                     </div>
                   )}
                 </div>

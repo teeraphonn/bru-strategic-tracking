@@ -50,7 +50,16 @@ const extractRecentPhotos = (projects, req, targetFacultyId = null) => {
             imageUrl,
             activityName: a.name,
             description: a.description || '',
+            projectId: p.id,
             projectName: p.name,
+            project: {
+              id: p.id,
+              name: p.name,
+              totalBudget: p.totalBudget,
+              progress: p.progress,
+              targetCount: p.targetCount,
+              completedCount: p.completedCount
+            },
             facultyId: p.facultyId || p.department?.facultyId || p.faculty?.id,
             facultyName: p.faculty?.name || 'ส่วนกลาง',
             departmentName: p.department?.name || 'ส่วนกลาง',
