@@ -69,20 +69,9 @@ const DeanProjects = () => {
     }
   };
 
-  const getDeptCode = (dept) => {
-    if (!dept) return '';
-    const facId = dept.facultyId || 0;
-    const siblingDepts = departments
-      .filter(d => (d.facultyId || 0) === facId)
-      .sort((a, b) => a.id - b.id);
-    const index = siblingDepts.findIndex(d => d.id === dept.id);
-    const seq = String(index !== -1 ? index + 1 : 1).padStart(2, '0');
-    const facCode = facId ? String(facId).padStart(2, '0') : '00';
-    return `${facCode}${seq}`;
-  };
-
   useEffect(() => {
     fetchProjects(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, fiscalYearId, departmentId]);
 
   return (

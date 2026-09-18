@@ -78,32 +78,8 @@ const PresidentProjects = () => {
 
   useEffect(() => {
     fetchProjects(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, fiscalYearId, departmentId, facultyId]);
-
-  const getFacultyCode = (fac) => {
-    if (!fac) return '00';
-    if (fac.name === 'ส่วนกลาง') return '00';
-    const nonCentral = faculties
-      .filter(f => f.name !== 'ส่วนกลาง')
-      .sort((a, b) => a.id - b.id);
-    const idx = nonCentral.findIndex(f => f.id === fac.id);
-    const seq = idx !== -1 ? idx + 1 : fac.id;
-    return String(seq).padStart(2, '0');
-  };
-
-  const getDeptCode = (dept) => {
-    if (!dept) return '';
-    const facId = dept.facultyId || 0;
-    const fac = faculties.find(f => f.id === facId);
-    const facCode = getFacultyCode(fac);
-    
-    const siblingDepts = departments
-      .filter(d => (d.facultyId || 0) === facId)
-      .sort((a, b) => a.id - b.id);
-    const index = siblingDepts.findIndex(d => d.id === dept.id);
-    const seq = String(index !== -1 ? index + 1 : 1).padStart(2, '0');
-    return `${facCode}${seq}`;
-  };
 
   return (
     <div className="space-y-6 animate-fadeIn pb-12">

@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
-import { AuthContext } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
 import CustomSelect from '../../components/CustomSelect';
 import { 
@@ -10,8 +9,6 @@ import {
   FiEdit, 
   FiTrash2, 
   FiCalendar, 
-  FiCheckCircle, 
-  FiClock, 
   FiArrowRight,
   FiBriefcase,
   FiLock,
@@ -20,7 +17,6 @@ import {
 } from 'react-icons/fi';
 
 const AdminProjects = () => {
-  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -81,33 +77,9 @@ const AdminProjects = () => {
     }
   };
 
-  const getFacultyCode = (fac) => {
-    if (!fac) return '0000';
-    if (fac.name === 'ส่วนกลาง') return '0000';
-    const nonCentral = faculties
-      .filter(f => f.name !== 'ส่วนกลาง')
-      .sort((a, b) => a.id - b.id);
-    const idx = nonCentral.findIndex(f => f.id === fac.id);
-    const seq = idx !== -1 ? idx + 1 : fac.id;
-    return String(seq).padStart(4, '0');
-  };
-
-  const getDeptCode = (dept) => {
-    if (!dept) return '';
-    const facId = dept.facultyId || 0;
-    const fac = faculties.find(f => f.id === facId);
-    const facCode = getFacultyCode(fac);
-    
-    const siblingDepts = departments
-      .filter(d => (d.facultyId || 0) === facId)
-      .sort((a, b) => a.id - b.id);
-    const index = siblingDepts.findIndex(d => d.id === dept.id);
-    const seq = String(index !== -1 ? index + 1 : 1).padStart(2, '0');
-    return `${facCode}${seq}`;
-  };
-
   useEffect(() => {
     fetchProjects(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, fiscalYearId, departmentId, facultyId]);
 
   const handleDelete = async (e, id) => {

@@ -17,12 +17,8 @@ import {
   FiDollarSign,
   FiAlertTriangle,
   FiFolder,
-  FiTrendingUp,
   FiLayers,
-  FiPieChart,
   FiClock,
-  FiTarget,
-  FiFilter,
   FiEye,
   FiDownload
 } from 'react-icons/fi';
@@ -99,6 +95,7 @@ const TeacherProjects = () => {
 
   useEffect(() => {
     fetchProjects(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, fiscalYearId, statusFilter]);
 
   // Handle Delete Project / Send Deletion Request
