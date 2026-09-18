@@ -1,139 +1,81 @@
-# Prompt สำหรับสร้าง Data ER Diagram ใน Canva (Canva ERD Master Prompt)
+# Prompt สร้าง Data ER Diagram สำหรับสไลด์ Canva (1 หน้าเดี่ยวจบ - Single Slide)
 ## ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ มหาวิทยาลัยราชภัฏบุรีรัมย์ (BRU Strategic Tracking System)
 
----
-
-## 📌 วิธีนำไปใช้งานใน Canva
-
-คุณสามารถนำ Prompt ด้านล่างไปใช้ใน Canva ได้ **2 รูปแบบหลัก**:
-1. **สร้างเป็นหน้าสไลด์นำเสนอ (Canva Presentation 16:9):** คัดลอก [Prompt แบบที่ 1](#แบบที่-1-prompt-สำหรับสร้างสไลด์-er-diagram-ใน-canva-presentation) ไปวางใน **Canva Magic Design** เพื่อสร้างสไลด์สรุปโครงสร้างฐานข้อมูล 4 โซน
-2. **สร้างเป็นผัง ERD บนไวท์บอร์ด (Canva Whiteboard / Flowchart):** คัดลอก [Prompt แบบที่ 2](#แบบที่-2-prompt-สำหรับ-canva-whiteboard--diagram-maker) ไปวางเพื่อสร้างกล่องเอนทิตี (Entities) และเส้นเชื่อมโยงความสัมพันธ์ (Connectors)
+เอกสารนี้จัดทำขึ้นสำหรับนำไป **แทรกเป็นสไลด์ 1 หน้า** ในชุดงานนำเสนอเดิมของคุณ โดยจัดเนื้อหาให้พอดีกับสไลด์ขนาด 16:9 สวยงาม กระชับ และครบทั้ง 14 ตาราง
 
 ---
 
-## แบบที่ 1: Prompt สำหรับสร้างสไลด์ ER Diagram ใน Canva Presentation
-> **แนะนำ:** สำหรับใช้สร้างสไลด์นำเสนอหน้า **"สถาปัตยกรรมฐานข้อมูลและผังความสัมพันธ์ (Database Architecture & ER Diagram)"**  
-> ให้เลือก Canva Presentation ➔ กด **Canva Magic Design / AI Presentation** ➔ วาง Prompt นี้:
+## 🎯 ส่วนที่ 1: Prompt สั่ง Canva AI เจนสไลด์ 1 หน้าทันที (Canva Magic Design)
+
+> **วิธีใช้งาน:**  
+> 1. ใน Canva เปิดงานนำเสนอเดิมของคุณ แล้ว **กดเพิ่มหน้าใหม่ (Add Page)** 1 หน้า  
+> 2. กดที่เครื่องมือ **Canva Magic Design / AI** (หรือ Magic Switch)  
+> 3. คัดลอก Prompt ด้านล่างนี้ไปวาง แล้วกดสร้างได้ทันที:
 
 ```text
-สร้างหน้าสไลด์นำเสนอเชิงวิชาการและเทคโนโลยีระดับมืออาชีพ (16:9) ในหัวข้อ "สถาปัตยกรรมฐานข้อมูลและผังความสัมพันธ์ (Database ER Diagram)" ของระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ มหาวิทยาลัยราชภัฏบุรีรัมย์ 
+สร้างสไลด์นำเสนอเชิงวิชาการและสถาปัตยกรรมซอฟต์แวร์ 1 หน้าเดี่ยว (Single Slide 16:9) หัวข้อ: "สถาปัตยกรรมฐานข้อมูลและผังความสัมพันธ์ (Database ER Diagram)" ของระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ มหาวิทยาลัยราชภัฏบุรีรัมย์
 
-ธีมการออกแบบ:
-- โทนสีม่วงสถาบัน (Royal Purple #6B21A8) และสีขาวทันสมัย (Clean White & Slate)
-- จัดเลย์เอาต์แบบ Infographic แบ่งเป็น 4 การ์ดสี่เหลี่ยมโค้งมน (4 Functional Entity Cards) พร้อมไอคอนกำกับแต่ละกลุ่ม:
+ธีมและดีไซน์:
+- โทนสีม่วงสถาบัน (#6B21A8) และสีขาว คลีน ทันสมัย สไตล์ Modern Tech
+- จัดเลย์เอาต์หน้าจอแบ่งเป็น 4 การ์ดสี่เหลี่ยม (4 Functional Box Cards) แสดง 14 ตารางหลักและความสัมพันธ์ (1:N, N:M):
 
-[การ์ดที่ 1: โครงสร้างองค์กรและผู้ใช้งาน (Organization & Users)]
-- faculties (คณะ) [1] ────< [N] departments (สาขาวิชา)
-- departments [1] ────< [N] users (ผู้ใช้งาน: ADMIN, TEACHER, DEAN, PRESIDENT)
-- จุดเด่น: รองรับ Data Isolation แยกสิทธิ์ตามคณะและสาขาวิชา
+[กล่องที่ 1: โครงสร้างองค์กรและผู้ใช้งาน (Organization & Users)]
+• faculties (คณะ) [1] ───< [N] departments (สาขาวิชา)
+• departments [1] ───< [N] users (ผู้ใช้งาน 4 Roles: ADMIN, TEACHER, DEAN, PRESIDENT)
+• จุดเด่น: รองรับ Data Isolation แยกสิทธิ์กำกับดูแลตามคณะและสาขา
 
-[การ์ดที่ 2: ยุทธศาสตร์แบบ Cascading 4 ขั้น (Cascading Strategy & Master Data)]
-- local_development_issues (ประเด็นพัฒนาท้องถิ่น) [1] ────< [N] strategies (ยุทธศาสตร์)
-- strategies [1] ────< [N] sub_strategies (แผนงานย่อย)
-- sub_strategies [1] ────< [N] indicators (ตัวชี้วัด)
-- ข้อมูลพื้นฐานร่วม: fiscal_years (ปีงบประมาณ), budget_sources (แหล่งเงิน)
+[กล่องที่ 2: ยุทธศาสตร์ 4 ระดับ (Cascading Strategy & Master Data)]
+• local_development_issues [1] ───< [N] strategies (ยุทธศาสตร์หลัก)
+• strategies [1] ───< [N] sub_strategies (แผนงานย่อย)
+• sub_strategies [1] ───< [N] indicators (ตัวชี้วัดความสำเร็จ)
+• ข้อมูลพื้นฐานร่วม: fiscal_years (ปีงบประมาณ), budget_sources (แหล่งเงิน)
 
-[การ์ดที่ 3: โครงการ กิจกรรม และหลักฐาน (Core Projects & Evidence)]
-- projects (โครงการหลัก): ผูกโยงกับ sub_strategies, indicators, คณะ, สาขา และผู้สร้าง
-- projects [1] ────< [N] activities (กิจกรรมย่อย คำนวณความก้าวหน้าอัตโนมัติ)
-- activities [1] ────< [N] activity_images (รูปภาพหลักฐานจริงเชิงประจักษ์)
-- projects [N] ──── [M] users (เชื่อมโยงทีมงานผ่าน project_users)
-- จุดเด่น: มีระบบ Plan Locking ล็อกแผนงานเมื่อเริ่มกิจกรรม และระบบ Executive Directives
+[กล่องที่ 3: โครงการ กิจกรรม และหลักฐาน (Projects & Evidence)]
+• projects (โครงการหลัก): ผูก sub_strategies, คณะ, สาขา, ผู้สร้าง
+• projects [1] ───< [N] activities (กิจกรรมย่อย คำนวณความก้าวหน้าอัตโนมัติ)
+• activities [1] ───< [N] activity_images (รูปภาพหลักฐานจริงเชิงประจักษ์)
+• projects [N] ─── [M] users (เชื่อมโยงทีมงานผ่าน project_users)
+• จุดเด่น: Plan Locking ล็อกแผนงานเมื่อเริ่มกิจกรรม และบันทึกข้อสั่งการผู้บริหาร
 
-[การ์ดที่ 4: การดูแลระบบและสนับสนุน (Support & Maintenance)]
-- users [1] ────< [N] issue_reports (แจ้งปัญหาและบันทึกการแก้ไขจากผู้ดูแลระบบ)
+[กล่องที่ 4: ระบบสนับสนุนและแจ้งปัญหา (Support & Logs)]
+• users [1] ───< [N] issue_reports (แจ้งปัญหาการใช้งาน บันทึกผลโดย Admin)
 
-ด้านล่างของสไลด์: มีแถบสรุปตัวชี้วัดสถาปัตยกรรม:
-- รวมทั้งหมด 14 ตาราง (14 Relational Tables)
-- รองรับ Cascading 4 ระดับสมบูรณ์แบบ
-- มีระบบ Foreign Keys และ Cascade Delete ป้องกันข้อมูลกำพร้า
+แถบสรุปด้านล่าง (Footer Stats):
+✓ 14 Normalized Relational Tables (MySQL & Prisma ORM)  |  ✓ 4-Tier Cascading Alignment  |  ✓ Referential Integrity with Cascade Delete
 ```
 
 ---
 
-## แบบที่ 2: Prompt สำหรับ Canva Whiteboard / Diagram Maker
-> **แนะนำ:** สำหรับใช้วาดผังตาราง ER Diagram กล่องสี่เหลี่ยมเชื่อมโยงเส้นสายบนกระดานไวท์บอร์ด Canva:
+## 📋 ส่วนที่ 2: ข้อความสำเร็จรูปสำหรับคัดลอกไปแปะลงสไลด์ 1 หน้าด้วยตนเอง (Manual Copy-Paste)
 
-```text
-Create an interactive Entity-Relationship Diagram (ERD) flowchart on a whiteboard layout with a modern purple tech palette for "BRU Strategic Tracking System". 
-Display 14 database entity boxes connected with standard Crow's Foot / ER notation connectors (1-to-many and many-to-many):
+> หากใน Canva มีเทมเพลตสไลด์เปล่าอยู่แล้ว และต้องการ **ก็อปปี้ข้อความไปวางใส่กล่อง 4 กล่องทันที**:
 
-1. Organization Cluster (Top-Left):
-   - Table "faculties": (PK id, UK name)
-   - Table "departments": (PK id, UK name, FK faculty_id)
-   - Table "users": (PK id, UK username, password, name, role, FK department_id, avatar)
-   Connections: faculties (1) to departments (N), departments (1) to users (N).
-
-2. Strategic Cascading Cluster (Top-Right):
-   - Table "local_development_issues": (PK id, UK code, name)
-   - Table "strategies": (PK id, UK code, name, FK local_issue_id)
-   - Table "sub_strategies": (PK id, UK code, name, FK strategy_id)
-   - Table "indicators": (PK id, UK code, name, FK sub_strategy_id)
-   - Table "fiscal_years": (PK id, UK year, active)
-   - Table "budget_sources": (PK id, UK name)
-   Connections: Sequential 1-to-N cascade down from local_issues -> strategies -> sub_strategies -> indicators.
-
-3. Execution & Tracking Cluster (Center & Bottom):
-   - Table "projects": (PK id, name, FK sub_strategy_id, FK indicator_id, FK faculty_id, FK department_id, FK creator_id, FK fiscal_year_id, FK budget_source_id, total_budget, target_count, progress, is_locked, directives)
-   - Table "project_users": (Composite PK: project_id, user_id)
-   - Table "activities": (PK id, FK project_id, name, budget, actual_budget, completed_count, is_locked)
-   - Table "activity_images": (PK id, FK activity_id, file_path)
-   Connections: sub_strategies (1) to projects (N), projects (1) to activities (N), activities (1) to activity_images (N), projects (N) to (M) users via project_users.
-
-4. System Support Cluster (Bottom-Right):
-   - Table "issue_reports": (PK id, FK user_id, title, description, priority, status, admin_note)
-   Connections: users (1) to issue_reports (N).
-
-Design Style:
-- Clean rounded rectangle entity cards with dark purple headers and white body.
-- Visible PK, FK labels and clean arrow connectors.
-```
+### หัวข้อสไลด์ (Slide Header):
+* **หัวข้อหลัก (Title):** สถาปัตยกรรมฐานข้อมูลและผังความสัมพันธ์ (Database ER Diagram)
+* **หัวข้อย่อย (Subtitle):** โครงสร้าง 14 ตารางเชิงสัมพันธ์ (Relational Schema) ภายใต้สถาปัตยกรรม Cascading 4 ระดับ
 
 ---
 
-## แบบที่ 3: Prompt ภาษาอังกฤษ (Canva Magic Design / AI Presentation)
-> สำหรับ Canva บัญชีที่ใช้เมนูภาษาอังกฤษ หรือโปรแกรมสร้างสไลด์ AI สากล (Gamma / Beautiful.ai / Tome):
+### เนื้อหาในการ์ดทั้ง 4 กล่อง:
 
-```text
-Design a high-tech academic slide titled "Database Entity-Relationship Architecture (ERD)" for Buriram Rajabhat University's Strategic Tracking System.
+| กล่องที่ 1: โครงสร้างองค์กรและผู้ใช้งาน | กล่องที่ 2: แผนยุทธศาสตร์ Cascading 4 ขั้น |
+| :--- | :--- |
+| **Organization & Users**<br>• `faculties` (คณะ)<br>&nbsp;&nbsp;&nbsp;└── (1:N) ➔ `departments` (สาขาวิชา)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── (1:N) ➔ `users` (ผู้ใช้งานระบบ)<br><br>• **4 Roles:** ADMIN, TEACHER, DEAN, PRESIDENT<br>• **ความปลอดภัย:** แยกสิทธิ์และข้อมูลตามคณะ (Data Isolation) | **Cascading Strategy & Master Data**<br>• `local_development_issues` (ประเด็นพัฒนาท้องถิ่น)<br>&nbsp;&nbsp;&nbsp;└── (1:N) ➔ `strategies` (ยุทธศาสตร์มหาวิทยาลัย)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── (1:N) ➔ `sub_strategies` (แผนงานย่อย)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── (1:N) ➔ `indicators` (ตัวชี้วัด)<br><br>• **ตารางร่วม:** `fiscal_years` (ปีงบฯ), `budget_sources` (แหล่งเงิน) |
 
-Color Scheme:
-- Theme: Elegant Academic Royal Purple (#6B21A8), Lavender accents, and Clean White background.
-
-Layout Structure (4 Strategic Functional Columns/Cards):
-1. User & Organizational Hierarchy:
-   - faculties (1) -> (N) departments (1) -> (N) users (Roles: ADMIN, TEACHER, DEAN, PRESIDENT).
-   - Enforces faculty-level multi-tenant data isolation.
-
-2. 4-Tier Cascading Strategy Engine:
-   - local_development_issues (1) -> (N) strategies (1) -> (N) sub_strategies (1) -> (N) indicators.
-   - Master data tables: fiscal_years, budget_sources.
-
-3. Core Project & Evidence Tracking:
-   - projects mapped to sub_strategies, departments, and fiscal years.
-   - projects (1) -> (N) activities (1) -> (N) activity_images (Photo Evidence).
-   - projects (N) <-> (M) users via project_users table.
-   - Core Features: Plan-Locking flag, automated % progress rollup, and Executive Directives.
-
-4. Governance & System Support:
-   - issue_reports linked to users with resolution workflows and priority status.
-
-Footer Metrics:
-- 14 Normalized Relational Tables (MySQL / Prisma ORM)
-- Referential Integrity with Cascade Deletion
-- Strict Role-Based Access Control (RBAC) & IDOR Protection
-```
+| กล่องที่ 3: โครงการ กิจกรรม และหลักฐานเชิงประจักษ์ | กล่องที่ 4: การดูแลระบบและสนับสนุน |
+| :--- | :--- |
+| **Core Projects & Evidence**<br>• `projects` (โครงการหลัก) ผูกยุทธศาสตร์ 4 ระดับ<br>&nbsp;&nbsp;&nbsp;├── (1:N) ➔ `activities` (กิจกรรมย่อย)<br>&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;└── (1:N) ➔ `activity_images` (ภาพหลักฐานจริง)<br>&nbsp;&nbsp;&nbsp;└── (N:M) ➔ `users` (ทีมงานผ่าน `project_users`)<br><br>• **ฟังก์ชันเด่น:** Plan Locking ป้องกันลดเป้าหมายย้อนหลัง<br>• **Directives:** บันทึกข้อสั่งการจากคณบดีและอธิการบดี | **Support & Maintenance**<br>• `users`<br>&nbsp;&nbsp;&nbsp;└── (1:N) ➔ `issue_reports` (แจ้งปัญหาระบบ)<br><br>• **ระบบติดตามปัญหา:** ระบุระดับความสำคัญ (Priority) และสถานะการแก้ไขโดย Admin พร้อมบันทึก Admin Note |
 
 ---
 
-## 💡 เคล็ดลับเพิ่มเติมในการใส่ ER Diagram ใน Canva ให้ดูมืออาชีพที่สุด
+### แถบสรุปท้ายสไลด์ (Footer Highlights):
+* **14 ตารางเชิงสัมพันธ์ (Relational Tables)** ผ่านการนอร์มัลไลซ์ (Normalization) ไร้ข้อมูลซ้ำซ้อน
+* **Cascading Alignment 4 ระดับ** เชื่อมโยงเป้าหมายมหาวิทยาลัยลงสู่ระดับกิจกรรมจริง 100%
+* **Cascade Delete & Data Integrity** มี Foreign Keys ควบคุมความถูกต้องและป้องกันข้อมูลกำพร้า
 
-หากต้องการให้แผนภาพบน Canva ออกมาคมชัดระดับเวกเตอร์ 100% โดยไม่ต้องจัดกล่องทีละตัวใน Canva:
+---
 
-1. **นำเข้าจาก dbdiagram.io (แนะนำมากที่สุด):**
-   - คัดลอกโค้ด DBML จากไฟล์ [database_er_prompt.md](file:///c:/St_bru/database_er_prompt.md) ไปวางที่ [https://dbdiagram.io](https://dbdiagram.io)
-   - กดปุ่ม **Export ➔ Export to PNG หรือ PDF**
-   - นำไฟล์รูปภาพที่ได้ลากมาวางลงในสไลด์ Canva แล้วใส่กรอบเงา (Shadow) หรือ Mockup จอคอมพิวเตอร์
-2. **ใช้ Canva Magic Switch:**
-   - นำ Prompt แบบที่ 1 ไปใส่ใน Canva Docs
-   - กดปุ่ม **"แปลง (Transform)" ➔ "แปลงเป็นงานนำเสนอ (Docs to Presentation)"** Canva จะจัดสไลด์ให้อัตโนมัติใน 1 วินาที!
+## 💡 ทริคเสริม: ใส่ภาพ ER Diagram สวยๆ ใน 30 วินาที
+1. เข้าเว็บฟรี **[dbdiagram.io](https://dbdiagram.io)**
+2. คัดลอกโค้ด DBML จากไฟล์ [database_er_prompt.md](file:///c:/St_bru/database_er_prompt.md) ไปวาง
+3. กด **Export to PNG** แล้วนำภาพมาวางคู่กับข้อความในการ์ดบน Canva ได้ทันที
