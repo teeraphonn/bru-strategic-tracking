@@ -1575,24 +1575,6 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
                       <p className="text-xs font-medium text-slate-300 leading-relaxed max-h-48 overflow-y-auto pr-2 scrollbar-thin">{activePhoto.description}</p>
                     </div>
                   )}
-
-                  {/* Executive Action Button for Dean */}
-                  {activePhoto.projectId && (
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActivePhotoIndex(null);
-                          handleOpenPhotoProject(activePhoto);
-                        }}
-                        className="w-full py-2.5 px-4 bg-gradient-to-r from-violet-600 to-primary hover:from-violet-500 hover:to-primary-dark text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-95 transition-all cursor-pointer"
-                      >
-                        <FiSend className="w-3.5 h-3.5" />
-                        <span>เจาะลึกโครงการและออกข้อสั่งการคณบดี (Directive)</span>
-                      </button>
-                    </div>
-                  )}
                 </div>
                 <div className="border-t border-slate-800 pt-5 flex items-center justify-between text-slate-400 text-[10px] font-black tracking-wide">
                   <span>{activePhoto.departmentName}</span>
