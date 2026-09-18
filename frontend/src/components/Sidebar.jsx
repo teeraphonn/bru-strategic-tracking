@@ -1,3 +1,16 @@
+/** ==============================================================================
+ * 📦 COMPONENT: SIDEBAR (แถบเมนูด้านข้างระบบ ติดตามการขับเคลื่อนยุทธศาสตร์ BRU)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   เมนูนำทางหลักของระบบ แสดงตามสิทธิ์ของผู้ใช้งาน (RBAC - Role-Based Access Control)
+ *   - ADMIN: แดชบอร์ดภาพรวม, จัดการข้อมูลระบบ (Master Data 11 แท็บ), รายงานสรุป, รายงานปัญหา
+ *   - PRESIDENT: แดชบอร์ดภาพรวมสถาบัน, Strategic Heatmap โครงการ, รายงานสรุปยุทธศาสตร์
+ *   - DEAN: แดชบอร์ดภาพรวมคณะ, โครงการ & Red Flags คณะ, รายงานสรุประดับคณะ
+ *   - TEACHER: แดชบอร์ดงานของฉัน, รายการโครงการ, รายการกิจกรรม, แกลเลอรีภาพกิจกรรม
+ *   - รองรับการย่อ/ขยายแถบเมนู (Collapse Mode) และรองรับ Responsive Drawer บนอุปกรณ์มือถือ
+ * ==============================================================================
+ */
+
 import React, { useContext, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
@@ -22,7 +35,11 @@ import {
 } from 'react-icons/fi';
 import { getImageUrl } from '../utils/imageUrl';
 
-// Role label helper
+/**
+ * ฟังก์ชันแปลงรหัสบทบาทเป็นชื่อภาษาไทยที่เข้าใจง่าย
+ * @param {string} role
+ * @returns {string}
+ */
 const getRoleLabel = (role) => {
   switch (role) {
     case 'ADMIN': return 'ผู้ดูแลระบบ';
@@ -33,12 +50,22 @@ const getRoleLabel = (role) => {
   }
 };
 
+/**
+ * คอมโพเนนต์แถบเมนูด้านข้าง (Sidebar)
+ * @param {Object} props
+ * @param {boolean} props.isOpen - สถานะการเปิด/ปิด Drawer บนมือถือ
+ * @param {Function} props.toggleSidebar - สลับสถานะเปิด/ปิด Drawer
+ * @param {boolean} props.isCollapsed - สถานะการย่อแถบเมนูบนเดสก์ท็อป
+ * @param {Function} props.toggleCollapse - สลับสถานะย่อ/ขยายบนเดสก์ท็อป
+ */
 const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
-  const { user, logout } = useContext(AuthContext);
-  const location = useLocation();
-  const [masterExpanded, setMasterExpanded] = useState(true);
+  const { user, logout } = useContext(AuthContext); // ข้อมูลผู้ใช้และฟังก์ชันออกจากระบบ
+  const location = useLocation();                    // สำหรับตรวจสอบ Path ปัจจุบัน
+  const [masterExpanded, setMasterExpanded] = useState(true); // สถานะเปิด/ปิดเมนูย่อยของ Master Data
 
+  // ─── กำหนดรายการเมนูตามบทบาทผู้ใช้งาน (Role-Based Menu Items) ───
   const navItems = user?.role === 'ADMIN' ? [
+    // เมนูสำหรับผู้ดูแลระบบ (Admin)
     { to: '/',             name: 'แดชบอร์ดภาพรวมระบบ', shortName: 'แดชบอร์ด', icon: <FiGrid className="w-5 h-5" />,          roles: ['ADMIN'] },
     {
       to: '/master-data',
@@ -63,20 +90,24 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, toggleCollapse }) => {
     { to: '/reports',      name: 'รายงานสรุป',        shortName: 'รายงาน',   icon: <FiPieChart className="w-5 h-5" />,      roles: ['ADMIN'] },
     { to: '/admin/issues', name: 'รายงานปัญหาระบบ',  shortName: 'ปัญหา',    icon: <FiAlertTriangle className="w-5 h-5" />, roles: ['ADMIN'] },
   ] : user?.role === 'TEACHER' ? [
+    // เมนูสำหรับอาจารย์ / เจ้าหน้าที่ผู้รับผิดชอบโครงการ (Teacher)
     { to: '/',           name: 'แดชบอร์ดงานของฉัน',   shortName: 'แดชบอร์ด', icon: <FiGrid className="w-5 h-5" />,      roles: ['TEACHER'] },
     { to: '/projects',   name: 'รายการโครงการ',       shortName: 'โครงการ',   icon: <FiBriefcase className="w-5 h-5" />, roles: ['TEACHER'] },
     { to: '/activities', name: 'รายการกิจกรรม',       shortName: 'กิจกรรม',  icon: <FiActivity className="w-5 h-5" />,  roles: ['TEACHER'] },
     { to: '/gallery',    name: 'แกลเลอรีภาพกิจกรรม', shortName: 'แกลเลอรี', icon: <FiImage className="w-5 h-5" />,     roles: ['TEACHER'] },
   ] : user?.role === 'DEAN' ? [
+    // เมนูสำหรับคณบดี (Dean)
     { to: '/',         name: 'แดชบอร์ดภาพรวมคณะ',       shortName: 'แดชบอร์ด', icon: <FiGrid className="w-5 h-5" />,     roles: ['DEAN'] },
     { to: '/projects', name: 'โครงการ & Red Flags คณะ', shortName: 'โครงการ',  icon: <FiBriefcase className="w-5 h-5" />, roles: ['DEAN'] },
     { to: '/reports',  name: 'รายงานสรุประดับคณะ',      shortName: 'รายงาน',   icon: <FiPieChart className="w-5 h-5" />,  roles: ['DEAN'] },
   ] : [
+    // เมนูสำหรับอธิการบดี / ผู้บริหารระดับสูง (President)
     { to: '/',         name: 'แดชบอร์ดภาพรวมสถาบัน',      shortName: 'แดชบอร์ด', icon: <FiGrid className="w-5 h-5" />,     roles: ['PRESIDENT'] },
     { to: '/projects', name: 'Strategic Heatmap โครงการ', shortName: 'โครงการ',  icon: <FiBriefcase className="w-5 h-5" />, roles: ['PRESIDENT'] },
     { to: '/reports',  name: 'รายงานสรุปยุทธศาสตร์',      shortName: 'รายงาน',   icon: <FiPieChart className="w-5 h-5" />,  roles: ['PRESIDENT'] },
   ];
 
+  // กรองเมนูเฉพาะรายการที่บทบาทของผู้ใช้ได้รับอนุญาต
   const filteredItems = navItems.filter(item => item.roles.includes(user?.role));
 
   return (

@@ -1,9 +1,29 @@
+/**
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: backend/controllers/dashboard.controller.js
+ * หน้าที่: คอนโทรลเลอร์สำหรับรวบรวมและวิเคราะห์สถิติแดชบอร์ด (Dashboard Controller)
+ *          - ดึงภาพถ่ายกิจกรรมล่าสุดพร้อมแปลง URL อัตโนมัติ (extractRecentPhotos)
+ *          - สรุปสถิติภาพรวมพื้นฐานสำหรับอาจารย์/ผู้ใช้ทั่วไป (getDashboardStats)
+ *          - คำนวณสัญญาณไฟสถานะ RAG (Red/Yellow/Green) สำหรับการบริหารแบบ Exception (calculateProjectRAG)
+ *          - แดชบอร์ดกำกับติดตามระดับคณะสำหรับคณบดี (getDeanDashboardStats)
+ *          - แดชบอร์ดยุทธศาสตร์มหาวิทยาลัยภาพรวมสำหรับอธิการบดี (getPresidentDashboardStats)
+ * ============================================================================
+ */
+
 const prisma = require('../config/prisma');
 
+/**
+ * ฟังก์ชันช่วยดึงรูปภาพกิจกรรมล่าสุด พร้อมจัดรูปแบบ URL ให้สมบูรณ์
+ * @param {Array} projects - รายการโครงการพร้อมกิจกรรมและรูปภาพ
+ * @param {Object} req - Express Request
+ * @param {number|null} targetFacultyId - รหัสคณะที่ต้องการกรอง (ถ้ามี)
+ * @returns {Array} รายการรูปภาพเรียงตามเวลาล่าสุด
+ */
 const extractRecentPhotos = (projects, req, targetFacultyId = null) => {
   const photos = [];
   projects.forEach(p => {
-    // Strict isolation: verify project belongs to target faculty
+    // แยกสิทธิ์ตามคณะอย่างเข้มงวด: ตรวจสอบสังกัดคณะของโครงการ
     const pFacId = p.facultyId || p.department?.facultyId;
     if (targetFacultyId && pFacId && pFacId !== targetFacultyId) {
       return;
@@ -12,8 +32,7 @@ const extractRecentPhotos = (projects, req, targetFacultyId = null) => {
       if (a.images && a.images.length > 0) {
         a.images.forEach(img => {
           if (!img.filePath) return;
-          // If filePath is already a full URL (Cloudinary, http, https, data:), use as-is
-          // Otherwise prepend the backend host (legacy local /uploads/... paths)
+          // แปลง Path รูปภาพ: หากเป็น Cloudinary URL ให้ใช้ตามเดิม หากเป็น Path ในเครื่องให้เติมโฮสต์
           let imageUrl;
           if (
             img.filePath.startsWith('http://') ||
@@ -44,6 +63,11 @@ const extractRecentPhotos = (projects, req, targetFacultyId = null) => {
   return photos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 };
 
+/**
+ * สรุปสถิติภาพรวมสำหรับหน้าแดชบอร์ดทั่วไป (General Dashboard Statistics)
+ * GET /api/dashboard
+ * คำนวณสรุปโครงการ กิจกรรม งบประมาณจัดสรร งบเบิกจ่ายจริง กราฟเส้น และชาร์ตวงกลม
+ */
 const getDashboardStats = async (req, res) => {
   try {
     const user = req.user;
@@ -359,7 +383,15 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-// Helper to calculate RAG Flag for Executive Exception Management
+/**
+ * ฟังก์ชันคำนวณสัญญาณไฟสถานะ RAG (Red, Amber/Yellow, Green)
+ * ใช้สำหรับการกำกับติดตามโครงการแบบ Management by Exception
+ * - RED: วิกฤต/ล่าช้ากว่า 40% หรือมีกิจกรรมเบิกจ่ายเกินงบ หรือใช้งบเกิน 90% แต่ผลงานไม่ถึง 50%
+ * - YELLOW: เฝ้าระวัง/ความก้าวหน้า 40-74% หรืออัตราการเบิกจ่ายไม่สอดคล้องกับผลงาน (> 25%)
+ * - GREEN: ปกติ/การดำเนินงานเป็นไปตามแผนที่กำหนด
+ * @param {Object} project - ข้อมูลโครงการพร้อมกิจกรรม
+ * @returns {Object} ข้อมูล RAG Status, Label, BadgeColor, Reason
+ */
 const calculateProjectRAG = (project) => {
   const target = project.targetCount || 1;
   const completed = project.completedCount || 0;
@@ -411,7 +443,13 @@ const calculateProjectRAG = (project) => {
   };
 };
 
-// GET /api/dashboard/dean - Faculty Executive Health Check & Exception Management
+/**
+ * แดชบอร์ดกำกับติดตามระดับคณะสำหรับคณบดี (Dean Executive Dashboard)
+ * GET /api/dashboard/dean
+ * - สรุปโครงการติดธงแดง (Red Flag Projects)
+ * - ประสิทธิภาพรายภาควิชา (Department Performance)
+ * - สรุปตามประเด็นยุทธศาสตร์ 4 เสาหลัก (Strategic Pillars)
+ */
 const getDeanDashboardStats = async (req, res) => {
   try {
     const user = req.user;
@@ -740,7 +778,16 @@ const getDeanDashboardStats = async (req, res) => {
   }
 };
 
-// GET /api/dashboard/president - University Executive Health Check & Strategic Heatmap
+/**
+ * แดชบอร์ดยุทธศาสตร์มหาวิทยาลัยภาพรวมสำหรับอธิการบดี (President Executive Dashboard)
+ * GET /api/dashboard/president
+ * - ภาพรวมสุขภาพโครงการทั้งมหาวิทยาลัย (University Health)
+ * - เมทริกซ์ผลงานข้ามคณะ (Cross-Faculty Matrix Heatmap)
+ * - วิเคราะห์ผลตามประเด็นการพัฒนาท้องถิ่น (Local Issues) และ 4 เสาหลัก (Strategic Pillars)
+ * - สรุปโครงการหลัก (Main Projects Summary)
+ * - คอขวดโครงการวิกฤต (Critical Bottlenecks: Red Flag Projects)
+ * - คลังภาพถ่ายความสำเร็จล่าสุด (Recent Activity Photos)
+ */
 const getPresidentDashboardStats = async (req, res) => {
   try {
     const { fiscalYearId, budgetSourceId } = req.query;

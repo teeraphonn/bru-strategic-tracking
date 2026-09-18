@@ -1,3 +1,17 @@
+/** ==============================================================================
+ * 📦 COMPONENT: EXECUTIVE PROJECT MODAL (หน้าต่างป๊อปอัปเจาะลึกโครงการระดับผู้บริหาร)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   โมดอลสำหรับผู้บริหาร (อธิการบดี / คณบดี / แอดมิน) เพื่อดูรายละเอียดสรุปผลโครงการแบบ 30 วินาที
+ *   - แสดงสถานะ RAG (Red / Yellow / Green) พร้อมเหตุผลวิกฤต (Root Cause)
+ *   - แผนผังยุทธศาสตร์ 4 ระดับ (4-Tier Strategic Alignment: ประเด็น -> แผนหลัก -> แผนย่อย -> โครงการหลัก)
+ *   - ตัวชี้วัดสำคัญ (งบประมาณ, เบิกจ่าย, ความคืบหน้า KPI)
+ *   - ดูแกลเลอรีภาพถ่ายกิจกรรม พร้อมระบบ Lightbox ดูภาพขยายใหญ่
+ *   - บันทึกและส่งข้อสั่งการตรงของผู้บริหาร (Executive Directives) ถึงผู้รับผิดชอบโครงการ
+ *   - ลิงก์เจาะลึกไปยังหน้ารายงานฉบับเต็ม (Layer 3 Strategic Deep Dive)
+ * ==============================================================================
+ */
+
 import { useState, useEffect, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -15,15 +29,24 @@ import {
 } from 'react-icons/fi';
 import { getImageUrl } from '../utils/imageUrl';
 
+/**
+ * คอมโพเนนต์โมดอลเจาะลึกโครงการสำหรับผู้บริหาร
+ * @param {Object} props
+ * @param {Object} props.project - อ็อบเจกต์ข้อมูลโครงการเบื้องต้น
+ * @param {Function} props.onClose - ฟังก์ชันปิดหน้าต่างโมดอล
+ * @param {Function} [props.onProjectUpdated] - Callback เมื่อมีการอัปเดตข้อมูลโครงการ (เช่น ออกข้อสั่งการ)
+ */
 const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext); // ข้อมูลผู้ใช้งานที่ล็อกอินอยู่ปัจจุบัน
 
-  const [directiveText, setDirectiveText] = useState('');
-  const [savingDirective, setSavingDirective] = useState(false);
-  const [liveProject, setLiveProject] = useState(null);
-  const [loadingLive, setLoadingLive] = useState(false);
+  // ─── States สำหรับการจัดการข้อมูลและสถานะในโมดอล ───
+  const [directiveText, setDirectiveText] = useState('');      // ข้อความข้อสั่งการที่ผู้บริหารพิมพ์
+  const [savingDirective, setSavingDirective] = useState(false); // สถานะกำลังส่ง/บันทึกข้อสั่งการ
+  const [liveProject, setLiveProject] = useState(null);          // ข้อมูลโครงการแบบละเอียดสดที่ดึงมาจาก API
+  const [loadingLive, setLoadingLive] = useState(false);        // สถานะกำลังโหลดข้อมูลล่าสุดจาก API
 
+  // ─── โหลดข้อมูลโครงการฉบับเต็มเมื่อเปิดโมดอลหรือเปลี่ยนโครงการ ───
   useEffect(() => {
     if (!project?.id) return;
     let isMounted = true;
@@ -44,23 +67,26 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
     return () => { isMounted = false; };
   }, [project?.id]);
 
+  // รวมข้อมูลโครงการจาก prop และข้อมูลล่าสุดที่ fetch มา
   const activeProject = liveProject ? { ...(project || {}), ...liveProject } : (project || {});
 
-  const budgetNum = parseFloat(activeProject.totalBudget || 0);
+  // ─── คำนวณตัวชี้วัดทางการเงินและผลสัมฤทธิ์ (Financial & KPI Calculations) ───
+  const budgetNum = parseFloat(activeProject.totalBudget || 0); // งบประมาณที่ได้รับจัดสรร
   const spentNum = activeProject.totalSpent !== undefined 
     ? activeProject.totalSpent 
-    : (activeProject.activities || []).reduce((sum, a) => sum + parseFloat(a.actualBudget || 0), 0);
+    : (activeProject.activities || []).reduce((sum, a) => sum + parseFloat(a.actualBudget || 0), 0); // งบประมาณเบิกจ่ายจริง
 
-  const targetVal = activeProject.targetCount || 0;
-  const completedVal = activeProject.completedCount || 0;
+  const targetVal = activeProject.targetCount || 0;       // ค่าเป้าหมายตัวชี้วัด
+  const completedVal = activeProject.completedCount || 0; // ผลการดำเนินงานที่ทำได้จริง
   const progressPct = activeProject.progressPct !== undefined
     ? activeProject.progressPct
-    : (targetVal > 0 ? parseFloat(((completedVal / targetVal) * 100).toFixed(2)) : (activeProject.progress || 0));
+    : (targetVal > 0 ? parseFloat(((completedVal / targetVal) * 100).toFixed(2)) : (activeProject.progress || 0)); // ร้อยละความคืบหน้า
 
   const burnRatePct = activeProject.burnRatePct !== undefined
     ? activeProject.burnRatePct
-    : (budgetNum > 0 ? parseFloat(((spentNum / budgetNum) * 100).toFixed(2)) : 0);
+    : (budgetNum > 0 ? parseFloat(((spentNum / budgetNum) * 100).toFixed(2)) : 0); // อัตราการเบิกจ่ายงบประมาณ (%)
 
+  // สถานะ RAG (Red-Amber-Green) สำหรับเตือนสถานะโครงการ
   const rag = activeProject.rag || {
     status: progressPct < 40 ? 'RED' : progressPct < 75 ? 'YELLOW' : 'GREEN',
     badgeColor: progressPct < 40 
@@ -70,6 +96,10 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
         : 'bg-emerald-50 text-emerald-700 border-emerald-200'
   };
 
+  /**
+   * ฟังก์ชันบันทึกและส่งข้อสั่งการของผู้บริหาร (Executive Directive)
+   * ส่งตรงไปยังผู้รับผิดชอบโครงการผ่านระบบแจ้งเตือน
+   */
   const handleSaveDirective = async () => {
     if (!directiveText.trim()) return;
     try {
@@ -106,6 +136,7 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
     }
   };
 
+  // ─── รวบรวมรูปภาพกิจกรรมทั้งหมดจากโครงการเพื่อแสดงในแกลเลอรี ───
   const projectPhotos = [];
   if (activeProject.activities) {
     activeProject.activities.forEach(a => {
@@ -123,20 +154,28 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
     });
   }
 
+  // State เก็บ index ของภาพที่กำลังดูในโหมด Lightbox เต็มจอ
   const [activePhotoIndex, setActivePhotoIndex] = useState(null);
 
+  /**
+   * เลื่อนดูรูปภาพก่อนหน้า
+   */
   const handlePrevPhoto = (e) => {
     e.stopPropagation();
     if (activePhotoIndex === null || !projectPhotos.length) return;
     setActivePhotoIndex((prev) => (prev - 1 + projectPhotos.length) % projectPhotos.length);
   };
 
+  /**
+   * เลื่อนดูรูปภาพถัดไป
+   */
   const handleNextPhoto = (e) => {
     e.stopPropagation();
     if (activePhotoIndex === null || !projectPhotos.length) return;
     setActivePhotoIndex((prev) => (prev + 1) % projectPhotos.length);
   };
 
+  // ดักจับคีย์บอร์ด (ArrowLeft, ArrowRight, Escape) สำหรับควบคุมรูปภาพในโหมด Lightbox
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (activePhotoIndex === null) return;
@@ -154,6 +193,9 @@ const ExecutiveProjectModal = ({ project, onClose, onProjectUpdated }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activePhotoIndex, projectPhotos.length]);
 
+  /**
+   * นำทางไปยังหน้ารายละเอียดเชิงลึกระดับ Layer 3
+   */
   const handleOpenLayer3 = () => {
     onClose();
     navigate(`/executive-projects/${activeProject.id}`);

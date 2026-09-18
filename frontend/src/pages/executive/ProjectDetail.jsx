@@ -1,3 +1,16 @@
+/** ==============================================================================
+ * หน้ารายละเอียดโครงการสำหรับผู้บริหาร (Executive Project Detail View)
+ * ------------------------------------------------------------------------------
+ * นำเสนอข้อมูลโครงการเชิงลึกสำหรับผู้บริหารระดับสูง (อธิการบดี / คณบดี):
+ *   - โหมดอ่านอย่างเดียว (Executive Read-Only Mode) ป้องกันการแก้ไขข้อมูลโดยไม่ตั้งใจ
+ *   - ประเมินสถานะความเสี่ยงอัตโนมัติ (RAG Status: Red, Yellow, Green)
+ *   - วิเคราะห์สาเหตุความล่าช้า/ปัญหาการเบิกจ่าย (Root Cause Analysis)
+ *   - แสดงความเชื่อมโยงตามสายยุทธศาสตร์ 4 ระดับ (4-Tier Strategic Alignment)
+ *   - สมุดบันทึกและส่งข้อสั่งการผู้บริหาร (Executive Directive Panel) แยกตามบทบาท
+ *   - ตารางความก้าวหน้ากิจกรรมย่อย (Read-Only Activity Timeline)
+ *   - รองรับการพิมพ์เอกสารสรุปโครงการขนาด A4 (Official A4 Printable Summary)
+ * ============================================================================== */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -20,25 +33,34 @@ import {
   FiLayers
 } from 'react-icons/fi';
 
+/**
+ * คอมโพเนนต์หน้ารายละเอียดและข้อสั่งการโครงการระดับผู้บริหาร
+ * @returns {JSX.Element}
+ */
 const ExecutiveProjectDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams();                   // รหัสโครงการจาก URL
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);     // ข้อมูลผู้บริหารที่ล็อกอินอยู่ (DEAN หรือ PRESIDENT)
 
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // ─── State ข้อมูลโครงการและสถานะการทำงาน ───
+  const [project, setProject] = useState(null);       // ข้อมูลโครงการจาก API
+  const [loading, setLoading] = useState(true);       // สถานะกำลังโหลดข้อมูล
+  const [error, setError] = useState(null);           // ข้อความแสดงข้อผิดพลาด
 
-  // Executive Directive Form State
-  const [directiveText, setDirectiveText] = useState('');
-  const [submittingDirective, setSubmittingDirective] = useState(false);
+  // ─── State สำหรับฟอร์มข้อสั่งการผู้บริหาร (Executive Directive) ───
+  const [directiveText, setDirectiveText] = useState('');                 // ข้อความข้อสั่งการ
+  const [submittingDirective, setSubmittingDirective] = useState(false); // สถานะกำลังส่งข้อสั่งการ
 
+  /**
+   * ดึงข้อมูลรายละเอียดโครงการ กิจกรรมย่อย และข้อสั่งการเดิมที่มีอยู่
+   */
   const fetchProjectData = async () => {
     try {
       setLoading(true);
       const res = await api.get(`/projects/${id}`);
       const data = res.data;
       setProject(data);
+      // โหลดข้อสั่งการเดิมตามบทบาทของผู้ใช้
       if (user?.role === 'DEAN') {
         setDirectiveText(data.deanDirective || '');
       } else if (user?.role === 'PRESIDENT') {
@@ -55,12 +77,17 @@ const ExecutiveProjectDetail = () => {
     }
   };
 
+  // ดึงข้อมูลใหม่เมื่อ ID โครงการหรือผู้ใช้เปลี่ยน
   useEffect(() => {
     if (user) {
       fetchProjectData();
     }
   }, [id, user]);
 
+  /**
+   * บันทึกข้อสั่งการของผู้บริหารเข้าสู่ระบบและส่งการแจ้งเตือนไปยังผู้รับผิดชอบโครงการ
+   * @param {Event} e - ซับมิตอีเวนต์
+   */
   const handleSaveDirective = async (e) => {
     e.preventDefault();
     if (!directiveText.trim()) {
@@ -122,8 +149,9 @@ const ExecutiveProjectDetail = () => {
     );
   }
 
-  // Calculate RAG Flag metrics
+  // ─── การคำนวณประเมินสถานะความเสี่ยงโครงการ (RAG Status Assessment) ───
   const rawActivities = project.activities || [];
+  // จัดเรียงกิจกรรมตามวันที่จัด
   const activities = [...rawActivities].sort((a, b) => {
     const tA = new Date(a.activityDate || a.createdAt).getTime();
     const tB = new Date(b.activityDate || b.createdAt).getTime();
@@ -137,12 +165,14 @@ const ExecutiveProjectDetail = () => {
   const completedCount = project.completedCount || 0;
   const progressPct = targetCount > 0 ? parseFloat(((completedCount / targetCount) * 100).toFixed(1)) : 0;
 
+  // ตรวจสอบว่ามีกิจกรรมใดเบิกจ่ายเกินงบประมาณที่ตั้งไว้หรือไม่
   const overBudgetItem = activities.find(a => parseFloat(a.actualBudget || 0) > parseFloat(a.budget || 0));
 
-  let ragStatus = 'GREEN';
+  let ragStatus = 'GREEN';                                                  // ค่าเริ่มต้น: ปกติ (เขียว)
   let ragBadge = 'bg-emerald-50 text-emerald-700 border-emerald-200';
   let ragReason = 'การดำเนินงานและเบิกจ่ายงบประมาณเป็นไปตามแผนที่กำหนด';
 
+  // ตรวจสอบเงื่อนไขสถานะสีแดง (RED FLAG - วิกฤต)
   if (progressPct < 40 || (burnRatePct > 90 && progressPct < 50) || overBudgetItem) {
     ragStatus = 'RED';
     ragBadge = 'bg-rose-50 text-rose-700 border-rose-200';
@@ -154,6 +184,7 @@ const ExecutiveProjectDetail = () => {
       ragReason = `ความก้าวหน้าโครงการล่าช้ากว่ากำหนดมาก (${progressPct}%)`;
     }
   } else if (progressPct < 75 || Math.abs(burnRatePct - progressPct) > 25) {
+    // เงื่อนไขสถานะสีเหลือง (YELLOW - เฝ้าระวัง)
     ragStatus = 'YELLOW';
     ragBadge = 'bg-amber-50 text-amber-700 border-amber-200';
     ragReason = 'ความก้าวหน้าโครงการอยู่ในระดับเฝ้าระวัง';

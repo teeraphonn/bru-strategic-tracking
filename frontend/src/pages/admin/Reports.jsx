@@ -1,3 +1,20 @@
+/** ==============================================================================
+ * 📑 PAGE: ADMIN REPORTS (ศูนย์ประมวลผลและส่งออกรายงานสรุปยุทธศาสตร์ระดับสถาบัน)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   ศูนย์รวมรายงานเชิงสถิติและการประมวลผลข้อมูลระดับมหาวิทยาลัยสำหรับ Admin
+ *   - รูปแบบรายงาน 5 มิติ:
+ *     1. รายงานติดตามผลการดำเนินโครงการ (Project Report)
+ *     2. รายงานความสำเร็จแบ่งรายคณะ (Faculty Report)
+ *     3. รายงานความสำเร็จแบ่งรายภาควิชา/หน่วยงาน (Department Report)
+ *     4. รายงานเปรียบเทียบเบิกจ่ายงบประมาณ (Budget Report)
+ *     5. รายงานยุทธศาสตร์หลักมหาวิทยาลัย (University Report)
+ *   - กรองตามปีงบประมาณ และสถานะความเสี่ยง RAG (ปกติ / เฝ้าระวัง / วิกฤต Red Flags)
+ *   - แสดงตัวอย่างรายงานแบบ Interactive Table พร้อมสรุปผลรวม (Totals)
+ *   - ส่งออกเอกสาร 3 รูปแบบ: PDF, Excel (.xlsx) และ CSV
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import Swal from 'sweetalert2';
@@ -8,11 +25,17 @@ import {
 import CustomSelect from '../../components/CustomSelect';
 import { getProjectWarningState } from '../../utils/statusHelper';
 
+/**
+ * คอมโพเนนต์หน้าประมวลผลและส่งออกรายงานของผู้ดูแลระบบ
+ */
 const AdminReports = () => {
-  const [reportType, setReportType] = useState('project');
-  const [fiscalYearId, setFiscalYearId] = useState('');
-  const [fiscalYears, setFiscalYears] = useState([]);
+  // ─── States สำหรับการตั้งค่ารายงานและตัวกรอง ───
+  const [reportType, setReportType] = useState('project');     // ประเภทรายงาน: project, faculty, department, budget, university
+  const [fiscalYearId, setFiscalYearId] = useState('');         // รหัสปีงบประมาณที่เลือก
+  const [fiscalYears, setFiscalYears] = useState([]);           // รายการปีงบประมาณจาก Master Data
+  const [statusFilter, setStatusFilter] = useState('all');     // ตัวกรองความเสี่ยง: all, normal, warn, red
 
+  // ตัวเลือกประเภทรายงาน
   const reportTypeOptions = [
     { value: 'project', label: 'รายงานติดตามผลการดำเนินโครงการ (Project Report)' },
     { value: 'faculty', label: 'รายงานความสำเร็จแบ่งรายคณะ (Faculty Report)' },
@@ -21,6 +44,7 @@ const AdminReports = () => {
     { value: 'university', label: 'รายงานยุทธศาสตร์หลักมหาวิทยาลัย (University Report)' }
   ];
 
+  // ตัวเลือกปีงบประมาณ
   const fiscalYearOptions = [
     { value: '', label: 'ทุกปีงบประมาณ' },
     ...fiscalYears.map(fy => ({
@@ -29,8 +53,7 @@ const AdminReports = () => {
     }))
   ];
 
-  const [statusFilter, setStatusFilter] = useState('all');
-
+  // ตัวเลือกสถานะความเสี่ยง
   const statusOptions = [
     { value: 'all', label: 'ทุกสถานะความเสี่ยง' },
     { value: 'normal', label: '🟢 ปกติ (Normal)' },
@@ -38,12 +61,16 @@ const AdminReports = () => {
     { value: 'red', label: '🔴 วิกฤต (Red Flags)' }
   ];
 
+  /**
+   * กรองข้อมูลรายงานที่แสดงผลตามสถานะความเสี่ยง (Normal, Warn, Red Flags)
+   * @returns {Array} รายการข้อมูลที่ผ่านการกรองแล้ว
+   */
   const getFilteredData = () => {
     if (!Array.isArray(reportData)) return [];
     if (statusFilter === 'all') return reportData;
     return reportData.filter(row => {
       if (!row) return false;
-      // For project or budget type
+      // คำนวณสถานะความเสี่ยงโดยใช้ Helper
       const budget = Number(row.totalBudget || 0);
       const spent = Number(row.actualSpent || 0);
       const target = Number(row.targetCount || 0);
@@ -66,10 +93,11 @@ const AdminReports = () => {
     });
   };
 
-  const [reportData, setReportData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [reportData, setReportData] = useState([]); // ข้อมูลรายงานที่ดึงมาจาก API
+  const [loading, setLoading] = useState(false);       // สถานะกำลังประมวลผลข้อมูล
+  const [exporting, setExporting] = useState(false);   // สถานะกำลังดาวน์โหลดไฟล์ส่งออก
 
+  // โหลดรายการปีงบประมาณเมื่อเริ่มต้น
   useEffect(() => {
     const fetchYears = async () => {
       try {
@@ -84,6 +112,9 @@ const AdminReports = () => {
     fetchYears();
   }, []);
 
+  /**
+   * เรียก API เพื่อประมวลผลและสร้างข้อมูลตัวอย่างรายงาน (Preview)
+   */
   const generateReportPreview = async () => {
     setLoading(true);
     try {
@@ -103,12 +134,17 @@ const AdminReports = () => {
     }
   };
 
+  // ดึงข้อมูลใหม่ทุกครั้งที่ผู้ใช้เปลี่ยนประเภทรายงาน, ปีงบประมาณ หรือตัวกรองสถานะ
   useEffect(() => {
     if (fiscalYears.length > 0) {
       generateReportPreview();
     }
   }, [reportType, fiscalYearId, statusFilter, fiscalYears]);
 
+  /**
+   * ส่งออกรายงานเป็นไฟล์เอกสาร (PDF, Excel, CSV)
+   * @param {'pdf'|'excel'|'csv'} format - รูปแบบไฟล์ที่ต้องการส่งออก
+   */
   const handleExport = async (format) => {
     setExporting(true);
     try {

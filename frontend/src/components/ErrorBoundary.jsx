@@ -1,3 +1,14 @@
+/**
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: frontend/src/components/ErrorBoundary.jsx
+ * หน้าที่: React Error Boundary Component สำหรับดักจับ Runtime Errors ของแอพพลิเคชัน
+ *          - ป้องกันไม่ให้หน้าเว็บขึ้นหน้าจอขาว (White Screen of Death)
+ *          - ตรวจจับข้อผิดพลาด Chunk Mismatch เมื่อเซิร์ฟเวอร์เพิ่ง Deploy ใหม่
+ *          - แสดงหน้าต่างแจ้งเตือนสวยงามพร้อมปุ่ม Reload หน้าเว็บใหม่
+ * ============================================================================
+ */
+
 import React from 'react';
 
 class ErrorBoundary extends React.Component {
@@ -6,10 +17,12 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false, error: null };
   }
 
+  // อัปเดต State เมื่อเกิดข้อผิดพลาดในการเรนเดอร์ Component ลูก
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
   }
 
+  // บันทึก Log ข้อผิดพลาดและรีโหลดอัตโนมัติหากเป็น Dynamic Chunk Mismatch
   componentDidCatch(error, errorInfo) {
     console.error("React ErrorBoundary caught an error:", error, errorInfo);
     if (error?.message && (
@@ -30,6 +43,7 @@ class ErrorBoundary extends React.Component {
       const isChunkError = this.state.error?.message?.includes('dynamically imported module') ||
                            this.state.error?.message?.includes('Importing a module script failed');
 
+      // แสดง Fallback UI ที่เป็นมิตรกับผู้ใช้งาน
       return (
         <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-slate-50 text-center">
           <div className="p-8 bg-white rounded-3xl shadow-xl border border-slate-200 max-w-md w-full space-y-4">

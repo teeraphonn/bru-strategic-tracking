@@ -1,3 +1,14 @@
+/** ==============================================================================
+ * 📦 COMPONENT: REPORT ISSUE MODAL (หน้าต่างแจ้งปัญหาการใช้งานระบบและข้อเสนอแนะ)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   คอมโพเนนต์โมดอลสำหรับผู้ใช้งานทุกระดับ (Teacher, Dean, President, Admin)
+ *   - ฟอร์มส่งรายงานแจ้งปัญหาการใช้งานระบบ (หมวดหมู่, ระดับความเร่งด่วน, หัวข้อ, รายละเอียด)
+ *   - แท็บประวัติการแจ้งปัญหาของผู้ใช้ พร้อมติดตามสถานะการแก้ไข (Pending, In Progress, Resolved, Rejected)
+ *   - แสดงความคิดเห็นตอบกลับจากผู้ดูแลระบบ (Admin Note)
+ * ==============================================================================
+ */
+
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FiX, FiAlertCircle, FiSend, FiClock, FiCheckCircle, FiXCircle, FiList, FiPlusCircle, FiMessageSquare } from 'react-icons/fi';
@@ -5,16 +16,25 @@ import Swal from 'sweetalert2';
 import api from '../services/api';
 import CustomSelect from './CustomSelect';
 
+/**
+ * คอมโพเนนต์โมดอลแจ้งปัญหาระบบ
+ * @param {Object} props
+ * @param {boolean} props.isOpen - สถานะเปิด/ปิดโมดอล
+ * @param {Function} props.onClose - ฟังก์ชันสั่งปิดโมดอล
+ * @param {string} [props.initialTab='form'] - แท็บเริ่มต้นที่จะเปิด ('form' หรือ 'history')
+ */
 const ReportIssueModal = ({ isOpen, onClose, initialTab = 'form' }) => {
-  const [activeTab, setActiveTab] = useState(initialTab); // 'form' | 'history'
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('ทั่วไป');
-  const [priority, setPriority] = useState('MEDIUM');
-  const [description, setDescription] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  
-  const [myIssues, setMyIssues] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  // ─── State การจัดการแท็บและฟอร์ม ───
+  const [activeTab, setActiveTab] = useState(initialTab);     // แท็บปัจจุบัน: 'form' (แจ้งเรื่องใหม่) หรือ 'history' (ประวัติ)
+  const [title, setTitle] = useState('');                      // หัวข้อปัญหา
+  const [category, setCategory] = useState('ทั่วไป');         // หมวดหมู่ปัญหา
+  const [priority, setPriority] = useState('MEDIUM');          // ระดับความสำคัญ/เร่งด่วน
+  const [description, setDescription] = useState('');          // รายละเอียดปัญหา
+  const [submitting, setSubmitting] = useState(false);         // สถานะกำลังส่งข้อมูล
+
+  // ─── State สำหรับประวัติการแจ้งปัญหา ───
+  const [myIssues, setMyIssues] = useState([]);               // รายการปัญหาที่ผู้ใช้คนนี้เคยแจ้งไว้
+  const [loadingHistory, setLoadingHistory] = useState(false); // สถานะกำลังโหลดประวัติ
 
   useEffect(() => {
     if (isOpen) {
@@ -39,6 +59,9 @@ const ReportIssueModal = ({ isOpen, onClose, initialTab = 'form' }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  /**
+   * ดึงรายการปัญหาที่ผู้ใช้คนนี้เคยแจ้งไว้ทั้งหมดจากระบบ
+   */
   const fetchMyIssues = async () => {
     try {
       setLoadingHistory(true);
@@ -51,6 +74,9 @@ const ReportIssueModal = ({ isOpen, onClose, initialTab = 'form' }) => {
     }
   };
 
+  /**
+   * บันทึกและส่งรายงานปัญหาใหม่ไปยังแอดมิน
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !description.trim()) {
@@ -80,7 +106,7 @@ const ReportIssueModal = ({ isOpen, onClose, initialTab = 'form' }) => {
         showConfirmButton: false
       });
 
-      // Reset form & view history
+      // ล้างข้อมูลฟอร์ม และเปลี่ยนไปแสดงแท็บประวัติ
       setTitle('');
       setDescription('');
       setCategory('ทั่วไป');
@@ -101,6 +127,11 @@ const ReportIssueModal = ({ isOpen, onClose, initialTab = 'form' }) => {
 
   if (!isOpen) return null;
 
+  /**
+   * แสดง Badge สถานะของปัญหา (PENDING, IN_PROGRESS, RESOLVED, REJECTED)
+   * @param {string} status
+   * @returns {JSX.Element|null}
+   */
   const getStatusBadge = (status) => {
     switch (status) {
       case 'PENDING':
@@ -132,6 +163,11 @@ const ReportIssueModal = ({ isOpen, onClose, initialTab = 'form' }) => {
     }
   };
 
+  /**
+   * แสดง Badge ระดับความเร่งด่วนของปัญหา
+   * @param {string} prio
+   * @returns {JSX.Element}
+   */
   const getPriorityBadge = (prio) => {
     switch (prio) {
       case 'URGENT':

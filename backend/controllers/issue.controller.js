@@ -1,6 +1,23 @@
+/**
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: backend/controllers/issue.controller.js
+ * หน้าที่: คอนโทรลเลอร์สำหรับระบบแจ้งปัญหาการใช้งานและศูนย์ช่วยเหลือ (Issue Tracking Controller)
+ *          - ผู้ใช้งานเปิด Ticket แจ้งปัญหาการใช้งานระบบ (createIssue)
+ *          - ดึงประวัติรายการปัญหาของผู้ใช้ปัจจุบัน (getMyIssues)
+ *          - ดึงรายการแจ้งปัญหาทั้งหมดสำหรับผู้ดูแลระบบ (getAllIssues)
+ *          - อัปเดตสถานะการแก้ปัญหาและบันทึกหมายเหตุการตอบกลับ (updateIssue)
+ *          - ลบรายการแจ้งปัญหา (deleteIssue)
+ *          - สร้างและส่งข้อมูลแจ้งเตือน (Notifications) สำหรับไอคอนกระดิ่งบน Topbar (getNotifications)
+ * ============================================================================
+ */
+
 const prisma = require('../config/prisma');
 
-// Create a new issue report
+/**
+ * สร้างรายการแจ้งปัญหาการใช้งานระบบใหม่ (Create Issue Report)
+ * POST /api/issues
+ */
 exports.createIssue = async (req, res) => {
   try {
     const { title, description, category, priority } = req.body;
@@ -45,7 +62,10 @@ exports.createIssue = async (req, res) => {
   }
 };
 
-// Get current user's submitted issue reports
+/**
+ * ดึงรายการปัญหาที่ผู้ใช้ปัจจุบันเคยส่งแจ้งไว้ (Get My Submitted Issues)
+ * GET /api/issues/my
+ */
 exports.getMyIssues = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -62,7 +82,10 @@ exports.getMyIssues = async (req, res) => {
   }
 };
 
-// Admin: Get all issue reports with optional filtering
+/**
+ * ดึงรายการปัญหาทั้งหมดในระบบสำหรับผู้ดูแลระบบ (Get All Issues - Admin Only)
+ * GET /api/issues
+ */
 exports.getAllIssues = async (req, res) => {
   try {
     const { status, priority } = req.query;
@@ -97,7 +120,10 @@ exports.getAllIssues = async (req, res) => {
   }
 };
 
-// Admin: Update issue status and admin note
+/**
+ * อัปเดตสถานะปัญหาและตอบกลับข้อความ (Update Issue Status & Note - Admin Only)
+ * PATCH /api/issues/:id
+ */
 exports.updateIssue = async (req, res) => {
   try {
     const { id } = req.params;
@@ -143,7 +169,10 @@ exports.updateIssue = async (req, res) => {
   }
 };
 
-// Admin: Delete issue report
+/**
+ * ลบรายการแจ้งปัญหา (Delete Issue Report - Admin Only)
+ * DELETE /api/issues/:id
+ */
 exports.deleteIssue = async (req, res) => {
   try {
     const { id } = req.params;
@@ -167,14 +196,19 @@ exports.deleteIssue = async (req, res) => {
   }
 };
 
-// Get notifications for bell icon (Admin gets pending issues, User gets updated issues)
+/**
+ * ดึงรายการแจ้งเตือนสำหรับไอคอนกระดิ่งบน Topbar (Get Notification Feed)
+ * GET /api/issues/notifications
+ * - Admin: ได้รับแจ้งเตือนเมื่อมีปัญหาใหม่ที่ค้างอยู่ (PENDING)
+ * - User: ได้รับแจ้งเตือนเมื่อ Admin อัปเดตสถานะหรือตอบกลับข้อความ
+ */
 exports.getNotifications = async (req, res) => {
   try {
     const user = req.user;
     const notifications = [];
 
+    // ─── 1. แจ้งเตือนสำหรับ Admin: ปัญหาใหม่ที่รอดำเนินการ ────────────────
     if (user.role === 'ADMIN') {
-      // Get pending issue reports submitted by any user
       const pendingIssues = await prisma.issueReport.findMany({
         where: { status: 'PENDING' },
         include: {
@@ -199,7 +233,7 @@ exports.getNotifications = async (req, res) => {
       });
     }
 
-    // Get issue updates for current user (whenever Admin updates status or adminNote)
+    // ─── 2. แจ้งเตือนสำหรับ User: การอัปเดตสถานะหรือคำตอบจาก Admin ───────
     const userUpdatedIssues = await prisma.issueReport.findMany({
       where: {
         userId: user.id
@@ -209,7 +243,6 @@ exports.getNotifications = async (req, res) => {
     });
 
     userUpdatedIssues.forEach(issue => {
-      // Create notification if issue has been updated by Admin (adminNote present, status changed, or updatedAt > createdAt)
       const isUpdated = issue.adminNote !== null || issue.status !== 'PENDING' || issue.updatedAt.getTime() !== issue.createdAt.getTime();
 
       if (isUpdated) {
@@ -231,6 +264,7 @@ exports.getNotifications = async (req, res) => {
       }
     });
 
+    // เรียงลำดับแจ้งเตือนตามเวลาล่าสุด
     notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     return res.json({ data: notifications });
   } catch (error) {

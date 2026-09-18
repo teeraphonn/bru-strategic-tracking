@@ -1,3 +1,13 @@
+/** ==============================================================================
+ * หน้ารายการกิจกรรมย่อยทั้งหมดของอาจารย์/ผู้รับผิดชอบโครงการ (Teacher Activities List)
+ * ------------------------------------------------------------------------------
+ * รวบรวมกิจกรรมย่อยจากทุกโครงการที่ผู้ใช้ดูแล พร้อมทั้ง:
+ *   - แดชบอร์ดสรุปตัวชี้วัด KPI กิจกรรม (จำนวนโครงการ, กิจกรรมทั้งหมด, งบตามแผน, เบิกจ่ายจริง, อัตราความสำเร็จ)
+ *   - ตัวกรองสถานะกิจกรรม (ทั้งหมด, กำลังดำเนินการ, เสร็จสมบูรณ์)
+ *   - ตัวกรองตามปีงบประมาณ และช่องค้นหาแบบเรียลไทม์
+ *   - ตารางแสดงรายละเอียดกิจกรรมย่อย พร้อมแจ้งเตือนกรณีเบิกจ่ายเกินงบ
+ * ============================================================================== */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -25,16 +35,23 @@ import {
 } from 'react-icons/fi';
 import CustomSelect from '../../components/CustomSelect';
 
+/**
+ * คอมโพเนนต์หน้าแสดงและค้นหารายการกิจกรรมย่อยของโครงการ
+ * @returns {JSX.Element}
+ */
 const ActivitiesList = () => {
-  const { user } = useContext(AuthContext);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [fiscalYearId, setFiscalYearId] = useState('');
-  const [fiscalYears, setFiscalYears] = useState([]);
+  // ─── ข้อมูลผู้ใช้งานและ State ของระบบ ───
+  const { user } = useContext(AuthContext);                     // ข้อมูลผู้ใช้งานปัจจุบัน
+  const [projects, setProjects] = useState([]);                 // รายการโครงการทั้งหมดที่ดึงมา
+  const [loading, setLoading] = useState(true);                 // สถานะกำลังโหลดข้อมูล
+  const [search, setSearch] = useState('');                     // คำค้นหาโครงการหรือกิจกรรม
+  const [statusFilter, setStatusFilter] = useState('all');       // ตัวกรองสถานะกิจกรรม ('all', 'pending', 'completed')
+  const [fiscalYearId, setFiscalYearId] = useState('');         // รหัสปีงบประมาณที่เลือกกรอง
+  const [fiscalYears, setFiscalYears] = useState([]);           // รายการปีงบประมาณทั้งหมด
 
-  // Fetch fiscal years
+  /**
+   * ดึงข้อมูลปีงบประมาณทั้งหมดสำหรับใช้ในตัวกรอง
+   */
   useEffect(() => {
     const fetchFiscalYears = async () => {
       try {
@@ -47,10 +64,12 @@ const ActivitiesList = () => {
     fetchFiscalYears();
   }, []);
 
+  /**
+   * ดึงรายการโครงการและกิจกรรมย่อยที่เกี่ยวข้องกับผู้ใช้งานปัจจุบัน
+   */
   const fetchActivitiesData = async () => {
     setLoading(true);
     try {
-      // Fetch projects for current user including their activities, filtered by fiscalYear if selected
       const params = {
         limit: 100,
         fiscalYearId: fiscalYearId || undefined
@@ -64,18 +83,20 @@ const ActivitiesList = () => {
     }
   };
 
+  // ดึงข้อมูลกิจกรรมใหม่ทุกครั้งที่มีการเปลี่ยนตัวกรองปีงบประมาณ
   useEffect(() => {
     fetchActivitiesData();
   }, [fiscalYearId]);
 
-  // Calculate comprehensive KPI stats
-  let totalProjectsCount = projects.length;
-  let totalActivitiesCount = 0;
-  let pendingCount = 0;
-  let completedCount = 0;
-  let totalAllocatedBudget = 0;
-  let totalActualSpent = 0;
+  // ─── การคำนวณสถิติภาพรวม (KPI Stats Calculation) ───
+  let totalProjectsCount = projects.length;        // จำนวนโครงการทั้งหมด
+  let totalActivitiesCount = 0;                    // จำนวนกิจกรรมทั้งหมด
+  let pendingCount = 0;                            // กิจกรรมที่กำลังดำเนินการ
+  let completedCount = 0;                          // กิจกรรมที่เสร็จสมบูรณ์
+  let totalAllocatedBudget = 0;                    // งบประมาณตามแผนรวม
+  let totalActualSpent = 0;                        // งบประมาณที่เบิกจ่ายจริงรวม
 
+  // วนลูปคำนวณผลรวมของกิจกรรมทุกตัวในทุกโครงการ
   projects.forEach(p => {
     (p.activities || []).forEach(a => {
       totalActivitiesCount++;
@@ -89,20 +110,25 @@ const ActivitiesList = () => {
     });
   });
 
+  // คำนวณเปอร์เซ็นต์ความสำเร็จของกิจกรรมทั้งหมด
   const completionRate = totalActivitiesCount > 0 
     ? Math.round((completedCount / totalActivitiesCount) * 100) 
     : 0;
 
-  // Filter projects & activities based on search and statusFilter
+  /**
+   * กรองโครงการและกิจกรรมตามสถานะ (statusFilter) และคำค้นหา (search)
+   */
   const filteredProjects = projects.map(proj => {
     let acts = proj.activities || [];
 
+    // กรองตามสถานะกิจกรรม
     if (statusFilter === 'completed') {
       acts = acts.filter(a => a.success);
     } else if (statusFilter === 'pending') {
       acts = acts.filter(a => !a.success);
     }
 
+    // กรองตามคำค้นหา (ชื่อโครงการ หรือชื่อ/คำอธิบายกิจกรรม)
     if (search) {
       const q = search.toLowerCase();
       const projMatch = proj.name.toLowerCase().includes(q);

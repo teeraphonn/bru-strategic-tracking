@@ -1,13 +1,33 @@
+/**
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: backend/controllers/auth.controller.js
+ * หน้าที่: คอนโทรลเลอร์สำหรับระบบยืนยันตัวตนและโปรไฟล์ผู้ใช้งาน (Auth Controller)
+ *          - คำนวณรหัสประจำตัวบุคลากรตามโครงสร้างคณะ/ภาควิชา (computePersonnelCode)
+ *          - เข้าสู่ระบบและสร้าง JWT Token (login)
+ *          - เปลี่ยนรหัสผ่านและสร้าง Token Signature ใหม่ (changePassword)
+ *          - ดึงข้อมูลโปรไฟล์ผู้ใช้ปัจจุบัน (me)
+ *          - สถิติสาธารณะสำหรับแสดงที่หน้า Login (publicStats)
+ *          - อัปโหลดรูปโปรไฟล์ขึ้น Cloudinary / Local Storage (uploadAvatar)
+ * ============================================================================
+ */
+
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/prisma');
 const cloudinary = require('../config/cloudinary');
 
+/**
+ * ฟังก์ชันคำนวณรหัสประจำตัวบุคลากรตามโครงสร้างสังกัด (Personnel Code Generator)
+ * รูปแบบ: [รหัสคณะ 2 หลัก][ลำดับภาควิชา 2 หลัก][ลำดับบุคลากร 2 หลัก] เช่น "010201"
+ * @param {Object} user - ข้อมูลผู้ใช้จากฐานข้อมูล
+ * @returns {Promise<string>} รหัสประจำตัวบุคลากร 6 หลัก (หรือ 0000xx สำหรับส่วนกลาง)
+ */
 const computePersonnelCode = async (user) => {
   if (!user) return '';
   
-  // Get all faculties to compute faculty code
+  // ─── 1. ดึงรายชื่อคณะทั้งหมดเพื่อหารหัสลำดับคณะ ───────────────────────────
   const faculties = await prisma.faculty.findMany({
     orderBy: { id: 'asc' }
   });
@@ -23,6 +43,7 @@ const computePersonnelCode = async (user) => {
     return String(seq).padStart(2, '0');
   };
 
+  // ─── 2. กรณีผู้ใช้สังกัดภาควิชา/สาขาวิชา ─────────────────────────────────
   if (user.departmentId) {
     const dept = await prisma.department.findUnique({
       where: { id: user.departmentId },
@@ -51,7 +72,7 @@ const computePersonnelCode = async (user) => {
     }
   }
   
-  // Fallback for unaffiliated users (e.g. president/admin)
+  // ─── 3. กรณีผู้ใช้ส่วนกลาง (ไม่มีภาควิชา เช่น ผู้บริหาร หรือ Admin) ───────
   const siblingUsers = await prisma.user.findMany({
     where: { departmentId: null },
     orderBy: { id: 'asc' }
@@ -61,6 +82,11 @@ const computePersonnelCode = async (user) => {
   return `0000${userSeq}`;
 };
 
+/**
+ * เข้าสู่ระบบ (User Login)
+ * POST /api/auth/login
+ * ตรวจสอบ Username, Password และสร้าง JWT Bearer Token
+ */
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -70,7 +96,7 @@ const login = async (req, res) => {
 
     const cleanUsername = String(username).trim();
 
-    // Support case-insensitive search and username aliases (e.g. 'admin' <-> 'admin@bru.ac.th')
+    // ─── 1. ค้นหาผู้ใช้ (รองรับชื่อย่อ เช่น admin, president, dean, teacher) ───
     const user = await prisma.user.findFirst({
       where: {
         OR: [
@@ -95,18 +121,20 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
     }
 
+    // ─── 2. เปรียบเทียบรหัสผ่านด้วย Bcrypt ─────────────────────────────────
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
     }
 
+    // ─── 3. สร้าง JWT Token (ผูก Secret กับ Password Hash) ─────────────────
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET + user.password,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
     );
 
-    // Exclude password from output
+    // ─── 4. ตัด Password ออกและเพิ่มรหัสบุคลากร ───────────────────────────
     const { password: _, ...userWithoutPassword } = user;
     userWithoutPassword.personnelCode = await computePersonnelCode(user);
 
@@ -120,11 +148,16 @@ const login = async (req, res) => {
   }
 };
 
+/**
+ * เปลี่ยนรหัสผ่านของตนเอง (Change Password)
+ * POST /api/auth/change-password
+ */
 const changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const userId = req.user.id;
 
+    // ─── 1. ตรวจสอบรหัสผ่านเดิม ───────────────────────────────────────────
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -135,6 +168,7 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'Old password is incorrect' });
     }
 
+    // ─── 2. แฮชรหัสผ่านใหม่และอัปเดตลงฐานข้อมูล ───────────────────────────
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: userId },
@@ -148,6 +182,10 @@ const changePassword = async (req, res) => {
   }
 };
 
+/**
+ * ดึงข้อมูลผู้ใช้งานปัจจุบัน (Get Current Profile)
+ * GET /api/auth/me
+ */
 const me = async (req, res) => {
   try {
     const { password: _, ...userWithoutPassword } = req.user;
@@ -158,6 +196,10 @@ const me = async (req, res) => {
   }
 };
 
+/**
+ * ดึงสถิติภาพรวมสำหรับแสดงที่หน้า Login สาธารณะ
+ * GET /api/auth/public-stats
+ */
 const publicStats = async (req, res) => {
   try {
     const total = await prisma.project.count();
@@ -167,7 +209,7 @@ const publicStats = async (req, res) => {
       }
     });
     
-    // In-progress: project has some activities or progress > 0 but not fully completed
+    // โครงการที่กำลังดำเนินการ (มีความก้าวหน้า > 0 แต่ยังไม่ถึง 100%)
     const inProgress = await prisma.project.count({
       where: {
         progress: {
@@ -192,6 +234,10 @@ const publicStats = async (req, res) => {
   }
 };
 
+/**
+ * อัปโหลดและเปลี่ยนรูปภาพประจำตัว (Upload Profile Avatar)
+ * POST /api/auth/avatar
+ */
 const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
@@ -202,7 +248,7 @@ const uploadAvatar = async (req, res) => {
     let avatarUrl = `/uploads/${req.file.filename}`;
 
     try {
-      // Upload to Cloudinary for persistent cloud storage
+      // ─── 1. อัปโหลดขึ้นสู่ Cloudinary สำหรับการจัดเก็บบนคลาวด์ ─────────────
       const uploadResult = await cloudinary.uploader.upload(req.file.path, {
         folder: 'bru-strategic/avatars',
         resource_type: 'image',
@@ -216,11 +262,13 @@ const uploadAvatar = async (req, res) => {
       avatarUrl = uploadResult.secure_url;
     } catch (uploadErr) {
       console.error('Cloudinary avatar upload error:', uploadErr);
-      // Fallback: keep local path if Cloudinary fails
+      // Fallback: ใช้ Path รูปภาพภายในเครื่องหาก Cloudinary มีปัญหา
     } finally {
+      // ลบไฟล์ชั่วคราวออกจากดิสก์
       fs.unlink(req.file.path, () => {});
     }
 
+    // ─── 2. บันทึก URL รูปลงในฐานข้อมูล ──────────────────────────────────
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { avatar: avatarUrl },
@@ -243,7 +291,6 @@ const uploadAvatar = async (req, res) => {
     return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตรูปโปรไฟล์' });
   }
 };
-
 
 module.exports = {
   login,

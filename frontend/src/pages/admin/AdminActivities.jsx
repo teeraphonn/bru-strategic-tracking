@@ -1,3 +1,15 @@
+/** ==============================================================================
+ * ⚙️ PAGE: ADMIN ACTIVITIES (หน้ากำกับดูแลและจัดการกิจกรรมย่อยระดับสถาบัน)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   หน้ารายการกิจกรรมย่อยทั้งหมดในระบบสำหรับผู้ดูแลระบบ (Admin)
+ *   - ตรวจสอบ ติดตามความก้าวหน้า และเบิกจ่ายงบประมาณของกิจกรรมย่อยทุกโครงการ
+ *   - ระบบสั่งล็อก / ปลดล็อกแผนงานกิจกรรม (Toggle Lock): ป้องกันผู้ใช้แก้ไขแผนงานหลังอนุมัติ
+ *   - ระบบค้นหาและตัวกรองละเอียด (ปีงบประมาณ, สถานะ, คณะ, ภาควิชา/หน่วยงาน)
+ *   - สิทธิ์ในการลบกิจกรรมย่อยที่มีปัญหาออกจากระบบ (Delete Activity)
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -25,20 +37,25 @@ import {
   FiFilter
 } from 'react-icons/fi';
 
+/**
+ * คอมโพเนนต์หน้าบริหารจัดการกิจกรรมย่อยทั้งหมดของผู้ดูแลระบบ
+ */
 const AdminActivities = () => {
-  const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [facultyId, setFacultyId] = useState('');
-  const [departmentId, setDepartmentId] = useState('');
-  const [fiscalYearId, setFiscalYearId] = useState('');
+  // ─── States สำหรับข้อมูลกิจกรรมและตัวกรอง ───
+  const [activities, setActivities] = useState([]);       // รายการกิจกรรมทั้งหมดที่ดึงมาจาก API
+  const [loading, setLoading] = useState(true);            // สถานะกำลังโหลดข้อมูล
+  const [search, setSearch] = useState('');                // คำค้นหาชื่อกิจกรรม
+  const [statusFilter, setStatusFilter] = useState('all'); // ตัวกรองสถานะ: 'all', 'pending', 'completed'
+  const [facultyId, setFacultyId] = useState('');          // ตัวกรองคณะ
+  const [departmentId, setDepartmentId] = useState('');    // ตัวกรองภาควิชา
+  const [fiscalYearId, setFiscalYearId] = useState('');    // ตัวกรองปีงบประมาณ
 
+  // ─── Master Data สำหรับตัวเลือกใน Dropdown ตัวกรอง ───
   const [faculties, setFaculties] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [fiscalYears, setFiscalYears] = useState([]);
 
-  // Fetch filter dropdown options
+  // โหลดข้อมูล Master Data สำหรับสร้างตัวเลือกใน Select Filter
   useEffect(() => {
     const fetchMasterData = async () => {
       try {
@@ -57,7 +74,9 @@ const AdminActivities = () => {
     fetchMasterData();
   }, []);
 
-  // Fetch activities from backend
+  /**
+   * ดึงรายการกิจกรรมทั้งหมดจาก Backend ตามเงื่อนไขตัวกรอง (Search, Status, Faculty, Department, Fiscal Year)
+   */
   const fetchActivities = async () => {
     setLoading(true);
     try {
@@ -78,11 +97,16 @@ const AdminActivities = () => {
     }
   };
 
+  // เรียกโหลดข้อมูลใหม่เมื่อตัวกรองเปลี่ยนค่า
   useEffect(() => {
     fetchActivities();
   }, [statusFilter, facultyId, departmentId, fiscalYearId]);
 
-  // Handle Delete Activity
+  /**
+   * ลบกิจกรรมย่อยออกจากระบบ (สำหรับแอดมิน)
+   * @param {number} id - รหัสกิจกรรม
+   * @param {string} actName - ชื่อกิจกรรม
+   */
   const handleDeleteActivity = async (id, actName) => {
     const result = await Swal.fire({
       title: 'ยืนยันการลบกิจกรรมย่อย?',
@@ -107,7 +131,13 @@ const AdminActivities = () => {
     }
   };
 
-  // Handle Toggle Activity Lock Status (Admin)
+  /**
+   * สลับสถานะการล็อกแผนงานกิจกรรม (Toggle Activity Lock Status)
+   * เมื่อล็อกแล้ว ผู้รับผิดชอบโครงการจะไม่สามารถแก้ไขหรือลบกิจกรรมได้
+   * @param {number} id - รหัสกิจกรรม
+   * @param {boolean} currentLocked - สถานะล็อกปัจจุบัน
+   * @param {string} actName - ชื่อกิจกรรม
+   */
   const handleToggleActivityLock = async (id, currentLocked, actName) => {
     const actionText = currentLocked ? 'ปลดล็อกแผนงาน' : 'ล็อกแผนงาน';
     const result = await Swal.fire({

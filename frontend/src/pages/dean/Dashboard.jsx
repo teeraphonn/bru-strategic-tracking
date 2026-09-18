@@ -1,3 +1,17 @@
+/** ==============================================================================
+ * 🎓 PAGE: DEAN DASHBOARD (แดชบอร์ดกำกับติดตามยุทธศาสตร์ระดับคณะ)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   ศูนย์บัญชาการและรายงานผลสำหรับ คณบดี (Dean) และผู้บริหารคณะ
+ *   - ติดตามผลการดำเนินโครงการยุทธศาสตร์ของทุกภาควิชา/สาขาวิชาในคณะ
+ *   - ระบบเตือนโครงการติดธงแดงวิกฤต (Faculty Red Flags Alert System):
+ *     แจ้งเตือนโครงการที่ล่าช้าเกิน 60%, มีปัญหางบประมาณบานปลาย หรือใกล้ถึงกำหนดส่ง
+ *   - กราฟเปรียบเทียบผลงานและความก้าวหน้ารายภาควิชา (Department Benchmark)
+ *   - ตัวชี้วัดสรุป 30 วินาที พร้อมโมดอลเจาะลึกโครงการ (ExecutiveProjectModal)
+ *   - รองรับการแสดงผลทั้งในโหมดคณบดีปกติ และโหมด Admin View (ผู้ดูแลระบบสลับดูข้อมูลคณะ)
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../../services/api';
@@ -55,31 +69,45 @@ ChartJS.register(
   Legend
 );
 
+/**
+ * คอมโพเนนต์หน้าแดชบอร์ดระดับคณะสำหรับคณบดี
+ * @param {Object} props
+ * @param {boolean} [props.isAdminView=false] - เป็นมุมมองที่ผู้ดูแลระบบกำลังส่องดูหรือไม่
+ * @param {string|number} [props.selectedFacultyId=''] - รหัสคณะที่เลือกในกรณี Admin View
+ */
 const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
-  const { user } = useContext(AuthContext);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user } = useContext(AuthContext); // ข้อมูลผู้ใช้งานปัจจุบัน
+  const [data, setData] = useState(null);    // ข้อมูลสถิติแดชบอร์ดคณะ
+  const [loading, setLoading] = useState(true); // สถานะกำลังโหลดข้อมูล
+  const [error, setError] = useState(null);     // ข้อความผิดพลาด
 
-  // Filters
-  const [selectedFiscalYear, setSelectedFiscalYear] = useState('');
-  const [fiscalYears, setFiscalYears] = useState([]);
-  const [selectedBudgetSource, setSelectedBudgetSource] = useState('');
-  const [budgetSources, setBudgetSources] = useState([]);
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL'); // ALL, RED, YELLOW, GREEN
+  // ─── ตัวกรองข้อมูล (Filters) ───
+  const [selectedFiscalYear, setSelectedFiscalYear] = useState('');       // รหัสปีงบประมาณที่เลือก
+  const [fiscalYears, setFiscalYears] = useState([]);                     // รายการปีงบประมาณ
+  const [selectedBudgetSource, setSelectedBudgetSource] = useState('');   // รหัสแหล่งงบประมาณที่เลือก
+  const [budgetSources, setBudgetSources] = useState([]);                 // รายการแหล่งงบประมาณ
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL'); // ตัวกรองสถานะ: ALL, RED, YELLOW, GREEN
 
-  // Drill-down Modal state
-  const [selectedProjectModal, setSelectedProjectModal] = useState(null);
-  const [activePhotoIndex, setActivePhotoIndex] = useState(null);
-  const [selectedDeptName, setSelectedDeptName] = useState('');
-  const [deptProjects, setDeptProjects] = useState(null);
-  const [loadingDeptProjects, setLoadingDeptProjects] = useState(false);
-  const [expandedMainProjectId, setExpandedMainProjectId] = useState(null);
-  const [mpFilter, setMpFilter] = useState('ALL'); // 'ALL' | 'GREEN' | 'YELLOW' | 'RED'
+  // ─── States สำหรับ Drill-down Modal และการแสดงผลเจาะลึก ───
+  const [selectedProjectModal, setSelectedProjectModal] = useState(null); // โครงการที่คลิกดู Modal เจาะลึก
+  const [activePhotoIndex, setActivePhotoIndex] = useState(null);         // ลำดับรูปภาพใน Lightbox
+  const [selectedDeptName, setSelectedDeptName] = useState('');           // ชื่อภาควิชาที่คลิกดูโครงการ
+  const [deptProjects, setDeptProjects] = useState(null);                 // รายการโครงการของภาควิชาที่คลิก
+  const [loadingDeptProjects, setLoadingDeptProjects] = useState(false);   // สถานะกำลังโหลดโครงการของภาควิชา
+  const [expandedMainProjectId, setExpandedMainProjectId] = useState(null); // ID โครงการหลักที่คลิกขยาย
+  const [mpFilter, setMpFilter] = useState('ALL');                         // ตัวกรองโครงการหลัก: 'ALL' | 'GREEN' | 'YELLOW' | 'RED'
 
   const recentPhotos = data?.recentPhotos || [];
   const visiblePhotos = recentPhotos.slice(0, 4);
 
+  /**
+   * คำนวณสถานะความเสี่ยง RAG (Red-Amber-Green) ของโครงการ
+   * - RED (วิกฤต): ความคืบหน้าน้อยกว่า 40%, งบจ่ายเกิน 90% แต่ผลงานต่ำกว่า 50%, หรือมีกิจกรรมเบิกจ่ายเกินงบ
+   * - YELLOW (เฝ้าระวัง): ความคืบหน้า 40-74%, หรืออัตราเบิกจ่ายกับความคืบหน้าต่างกันเกิน 25%
+   * - GREEN (ปกติ): เป็นไปตามแผนงาน
+   * @param {Object} p - อ็อบเจกต์ข้อมูลโครงการ
+   * @returns {Object} { status, label, badgeColor }
+   */
   const getProjectRAG = (p) => {
     const target = p.targetCount || 1;
     const completed = p.completedCount || 0;
@@ -100,6 +128,11 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
     return { status: 'GREEN', label: 'ปกติ/เป็นไปตามแผน', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
   };
 
+  /**
+   * ดึงรายการโครงการเฉพาะของภาควิชาที่คลิกเลือก
+   * @param {number} departmentId
+   * @param {string} departmentName
+   */
   const handleDepartmentClick = async (departmentId, departmentName) => {
     try {
       setLoadingDeptProjects(true);
@@ -125,6 +158,11 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
     }
   };
 
+  /**
+   * เปิดโมดอลเจาะลึกโครงการสำหรับผู้บริหาร (ExecutiveProjectModal)
+   * คำนวณสรุปผลทางการเงินและ KPI ล่วงหน้าเพื่อส่งต่อให้ Modal
+   * @param {Object} p
+   */
   const handleOpenDetailModal = (p) => {
     const target = p.targetCount || 1;
     const completed = p.completedCount || 0;
@@ -162,17 +200,19 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
     setActivePhotoIndex((prev) => (prev + 1) % len);
   };
 
+  // ดักจับปุ่มคีย์บอร์ดซ้าย/ขวา/Esc สำหรับดูภาพถ่าย
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (activePhotoIndex === null) return;
       if (e.key === 'ArrowLeft') handlePrevPhoto();
-      if (e.key === 'ArrowRight') handleNextPhoto();
-      if (e.key === 'Escape') setActivePhotoIndex(null);
+      else if (e.key === 'ArrowRight') handleNextPhoto();
+      else if (e.key === 'Escape') setActivePhotoIndex(null);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activePhotoIndex, recentPhotos]);
 
+  // โหลด Master Filters สำหรับคณบดี
   useEffect(() => {
     const fetchMasterData = async () => {
       try {
@@ -196,6 +236,9 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
     fetchMasterData();
   }, []);
 
+  /**
+   * ดึงข้อมูลสถิติแดชบอร์ดระดับคณะจาก Backend
+   */
   const fetchDeanData = async () => {
     try {
       setLoading(true);

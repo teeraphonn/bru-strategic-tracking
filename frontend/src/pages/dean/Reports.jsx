@@ -1,3 +1,18 @@
+/** ==============================================================================
+ * 📑 PAGE: DEAN REPORTS (ศูนย์ประมวลผลและส่งออกรายงานสรุปยุทธศาสตร์ระดับคณะ)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   ศูนย์รายงานเชิงสถิติและการติดตามผลการดำเนินงานระดับคณะสำหรับ คณบดี (Dean)
+ *   - รูปแบบรายงาน 3 มิติ:
+ *     1. รายงานติดตามผลการดำเนินโครงการในคณะ (Project Report)
+ *     2. รายงานความสำเร็จภาพรวมระดับคณะ (Faculty Report)
+ *     3. รายงานความสำเร็จแบ่งรายภาควิชา/สาขาวิชา (Department Report)
+ *   - กรองข้อมูลตามปีงบประมาณ และสถานะความเสี่ยง (ปกติ / เฝ้าระวัง / วิกฤต Red Flags)
+ *   - แสดงตารางสรุปผลงานความก้าวหน้าและการเบิกจ่ายงบประมาณ พร้อมคำนวณยอดรวม (Totals)
+ *   - ส่งออกรายงานเป็นไฟล์ PDF, Excel (.xlsx) และ CSV
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import Swal from 'sweetalert2';
@@ -8,17 +23,24 @@ import {
 import CustomSelect from '../../components/CustomSelect';
 import { getProjectWarningState } from '../../utils/statusHelper';
 
+/**
+ * คอมโพเนนต์หน้าประมวลผลและส่งออกรายงานสรุประดับคณะของคณบดี
+ */
 const DeanReports = () => {
-  const [reportType, setReportType] = useState('project');
-  const [fiscalYearId, setFiscalYearId] = useState('');
-  const [fiscalYears, setFiscalYears] = useState([]);
+  // ─── States สำหรับตัวเลือกรายงานและตัวกรอง ───
+  const [reportType, setReportType] = useState('project'); // ประเภทรายงาน: project, faculty, department
+  const [fiscalYearId, setFiscalYearId] = useState('');     // รหัสปีงบประมาณที่เลือก
+  const [fiscalYears, setFiscalYears] = useState([]);       // รายการปีงบประมาณ
+  const [statusFilter, setStatusFilter] = useState('all'); // ตัวกรองความเสี่ยง: all, normal, warn, red
 
+  // รายการประเภทรายงานระดับคณะ
   const reportTypeOptions = [
     { value: 'project', label: 'รายงานติดตามผลการดำเนินโครงการ (Project Report)' },
     { value: 'faculty', label: 'รายงานความสำเร็จแบ่งรายคณะ (Faculty Report)' },
     { value: 'department', label: 'รายงานความสำเร็จแบ่งรายภาควิชา/หน่วยงาน (Department Report)' }
   ];
 
+  // ตัวเลือกปีงบประมาณ
   const fiscalYearOptions = [
     { value: '', label: 'ทุกปีงบประมาณ' },
     ...fiscalYears.map(fy => ({
@@ -27,8 +49,7 @@ const DeanReports = () => {
     }))
   ];
 
-  const [statusFilter, setStatusFilter] = useState('all');
-
+  // ตัวเลือกสถานะความเสี่ยง
   const statusOptions = [
     { value: 'all', label: 'ทุกสถานะความเสี่ยง' },
     { value: 'normal', label: '🟢 ปกติ (Normal)' },
@@ -36,12 +57,16 @@ const DeanReports = () => {
     { value: 'red', label: '🔴 วิกฤต (Red Flags)' }
   ];
 
+  /**
+   * กรองข้อมูลรายงานที่แสดงผลตามสถานะความเสี่ยง (Normal, Warn, Red Flags)
+   * @returns {Array}
+   */
   const getFilteredData = () => {
     if (!Array.isArray(reportData)) return [];
     if (statusFilter === 'all') return reportData;
     return reportData.filter(row => {
       if (!row) return false;
-      // For project or budget type
+      // คำนวณสถานะความเสี่ยงจากข้อมูลแถว
       const budget = Number(row.totalBudget || 0);
       const spent = Number(row.actualSpent || 0);
       const target = Number(row.targetCount || 0);
@@ -64,9 +89,9 @@ const DeanReports = () => {
     });
   };
 
-  const [reportData, setReportData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [reportData, setReportData] = useState([]); // ข้อมูลรายงานที่ดึงมาจาก API
+  const [loading, setLoading] = useState(false);       // สถานะกำลังประมวลผลข้อมูล
+  const [exporting, setExporting] = useState(false);   // สถานะกำลังสร้างไฟล์และดาวน์โหลด
 
   // Load fiscal years for dropdown filter
   useEffect(() => {
@@ -83,7 +108,9 @@ const DeanReports = () => {
     fetchYears();
   }, []);
 
-  // Fetch report JSON data for live preview
+  /**
+   * เรียก API เพื่อประมวลผลข้อมูลสรุปรายงานระดับคณะ
+   */
   const generateReportPreview = async () => {
     setLoading(true);
     try {
@@ -109,7 +136,10 @@ const DeanReports = () => {
     }
   }, [reportType, fiscalYearId, statusFilter, fiscalYears]);
 
-  // Handle Export request (Blob file download)
+  /**
+   * ส่งออกรายงานระดับคณะเป็นไฟล์เอกสาร (PDF, Excel, CSV)
+   * @param {'pdf'|'excel'|'csv'} format - รูปแบบไฟล์
+   */
   const handleExport = async (format) => {
     setExporting(true);
     try {
@@ -124,7 +154,7 @@ const DeanReports = () => {
         responseType: 'blob'
       });
 
-      // Create local file URL and trigger browser download
+      // สร้าง Blob URL เพื่อสั่งดาวน์โหลดไฟล์ผ่าน Browser
       const mimeType = format === 'pdf'
         ? 'application/pdf'
         : format === 'excel'

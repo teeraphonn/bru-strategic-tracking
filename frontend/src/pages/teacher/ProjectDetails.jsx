@@ -1,3 +1,19 @@
+/** ==============================================================================
+ * หน้ารายละเอียดโครงการและการบันทึกผลงาน (Teacher Project Details)
+ * ------------------------------------------------------------------------------
+ * ศูนย์กลางการบริหารและติดตามความก้าวหน้าโครงการของอาจารย์ผู้รับผิดชอบ:
+ *   - แสดงข้อมูลโครงการ, แท็บแผนงานกิจกรรม (Activities), สรุปโครงการ (Summary), และคลังภาพ (Gallery)
+ *   - รองรับการสร้างแผนกิจกรรมย่อยใหม่ (Add Activity Plan)
+ *   - รองรับการบันทึกรายงานผลความก้าวหน้า (Progress Tracking Modal):
+ *       * งบประมาณเบิกจ่ายจริง (Actual Budget)
+ *       * จำนวนผลผลิตที่ทำได้จริง (Actual Completed Count vs Target)
+ *       * สถานะเสร็จสิ้น (Success) และหมายเหตุ/ปัญหาอุปสรรค
+ *       * การอัปโหลดภาพถ่ายหลักฐานพร้อมระบบบีบอัดภาพอัตโนมัติ (compressImage)
+ *   - ระบบพับ/ขยายรายการกิจกรรม (Collapse/Expand) จดจำสถานะลงใน localStorage
+ *   - แสดงแถบข้อสั่งการจากฝ่ายบริหาร (Dean Directive & President Directive)
+ *   - ระบบ Photo Viewer ขยายภาพแบบเต็มจอ (Lightbox Modal)
+ * ============================================================================== */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
@@ -9,7 +25,7 @@ import {
   FiPlus, 
   FiLock, 
   FiUnlock, 
-  FiCheck,
+  FiCheck, 
   FiCheckCircle, 
   FiTrendingUp, 
   FiCalendar, 
@@ -36,17 +52,22 @@ import {
 } from 'react-icons/fi';
 import { getImageUrl, compressImage } from '../../utils/imageUrl';
 
+/**
+ * คอมโพเนนต์หน้าแสดงรายละเอียดและจัดการกิจกรรมในโครงการ
+ * @returns {JSX.Element}
+ */
 const ProjectDetails = () => {
-  const { id } = useParams();
-  const { user } = useContext(AuthContext);
+  const { id } = useParams();                   // รหัสโครงการจาก URL
+  const { user } = useContext(AuthContext);     // ข้อมูลผู้ใช้งานที่ล็อกอินอยู่
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeSubTab, setActiveSubTab] = useState('activities'); // activities, summary, gallery
+  // ─── State ข้อมูลโครงการและแท็บการแสดงผล ───
+  const [project, setProject] = useState(null);                       // ข้อมูลรายละเอียดโครงการและกิจกรรมย่อย
+  const [loading, setLoading] = useState(true);                       // สถานะกำลังโหลดข้อมูล
+  const [activeSubTab, setActiveSubTab] = useState('activities');     // แท็บย่อย ('activities', 'summary', 'gallery')
   
-  // Persistent collapsed activities state per project
+  // ─── State บันทึกสถานะการพับ/กางของกิจกรรมลงใน LocalStorage ───
   const [collapsedActivities, setCollapsedActivities] = useState(() => {
     try {
       const saved = localStorage.getItem(`collapsed_activities_proj_${id}`);
@@ -56,6 +77,10 @@ const ProjectDetails = () => {
     }
   });
 
+  /**
+   * สลับสถานะพับ/กางของกิจกรรมย่อยรายตัว พร้อมบันทึกสถานะลง localStorage
+   * @param {number} actId - รหัสกิจกรรมย่อย
+   */
   const toggleCollapseActivity = (actId) => {
     setCollapsedActivities(prev => {
       const nextState = {
@@ -69,6 +94,9 @@ const ProjectDetails = () => {
     });
   };
 
+  /**
+   * สั่งพับการแสดงผลกิจกรรมย่อยทุกรายการ
+   */
   const handleCollapseAll = () => {
     if (!project?.activities) return;
     const allCollapsed = {};
@@ -79,6 +107,9 @@ const ProjectDetails = () => {
     } catch (e) {}
   };
 
+  /**
+   * สั่งกางการแสดงผลกิจกรรมย่อยทุกรายการ
+   */
   const handleExpandAll = () => {
     setCollapsedActivities({});
     try {
@@ -86,46 +117,60 @@ const ProjectDetails = () => {
     } catch (e) {}
   };
 
-  // Activity Plan form states
-  const [activityFormOpen, setActivityFormOpen] = useState(false);
-  const [actName, setActName] = useState('');
-  const [actDesc, setActDesc] = useState('');
-  const [actDate, setActDate] = useState('');
-  const [actBudget, setActBudget] = useState('');
-  const [addingActivity, setAddingActivity] = useState(false);
+  // ─── State สำหรับฟอร์มเพิ่มแผนงานกิจกรรมย่อยใหม่ ───
+  const [activityFormOpen, setActivityFormOpen] = useState(false);  // เปิด/ปิดฟอร์มเพิ่มกิจกรรม
+  const [actName, setActName] = useState('');                      // ชื่อกิจกรรมย่อย
+  const [actDesc, setActDesc] = useState('');                      // รายละเอียด/คำอธิบายกิจกรรม
+  const [actDate, setActDate] = useState('');                      // วันที่จัดกิจกรรม
+  const [actBudget, setActBudget] = useState('');                  // งบประมาณตามแผน
+  const [addingActivity, setAddingActivity] = useState(false);      // สถานะกำลังส่งข้อมูลเพิ่มกิจกรรม
 
-  // Progress Tracking form states
-  const [progressModalOpen, setProgressModalOpen] = useState(false);
-  const [targetActivity, setTargetActivity] = useState(null);
-  const [actActualBudget, setActActualBudget] = useState('');
-  const [actSuccess, setActSuccess] = useState(false);
-  const [actCompletedCount, setActCompletedCount] = useState('');
-  const [actRemark, setActRemark] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [previews, setPreviews] = useState([]);
-  const [savingProgress, setSavingProgress] = useState(false);
+  // ─── State สำหรับ Modal รายงานความก้าวหน้าและการเบิกจ่ายจริง ───
+  const [progressModalOpen, setProgressModalOpen] = useState(false);    // เปิด/ปิด Modal บันทึกผล
+  const [targetActivity, setTargetActivity] = useState(null);          // กิจกรรมเป้าหมายที่กำลังบันทึกผล
+  const [actActualBudget, setActActualBudget] = useState('');          // งบประมาณที่ใช้จ่ายจริง
+  const [actSuccess, setActSuccess] = useState(false);                 // สถานะความสำเร็จของกิจกรรม
+  const [actCompletedCount, setActCompletedCount] = useState('');      // จำนวนผลผลิตที่ทำได้
+  const [actRemark, setActRemark] = useState('');                      // หมายเหตุ / ปัญหาอุปสรรค
+  const [selectedFiles, setSelectedFiles] = useState([]);              // ไฟล์รูปภาพที่เลือกอัปโหลด
+  const [previews, setPreviews] = useState([]);                        // URL ภาพตัวอย่างชั่วคราว
+  const [savingProgress, setSavingProgress] = useState(false);         // สถานะกำลังบันทึกผลความก้าวหน้า
 
-  // Photo Viewer states
+  // ─── State สำหรับ Photo Viewer (ดูภาพขยายเต็มจอ) ───
   const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
   const [viewerImages, setViewerImages] = useState([]);
   const [activeViewerIndex, setActiveViewerIndex] = useState(0);
 
+  /**
+   * เปิดหน้าต่างแสดงภาพขนาดใหญ่เต็มหน้าจอ
+   * @param {Array} imagesList - รายการรูปภาพ
+   * @param {number} index - ลำดับรูปที่เปิดดู
+   */
   const openPhotoViewer = (imagesList, index) => {
     setViewerImages(imagesList);
     setActiveViewerIndex(index);
     setPhotoViewerOpen(true);
   };
 
+  /**
+   * ดูภาพก่อนหน้าใน Photo Viewer
+   */
   const handlePrevPhoto = () => {
     if (viewerImages.length === 0) return;
     setActiveViewerIndex(prev => (prev - 1 + viewerImages.length) % viewerImages.length);
   };
 
+  /**
+   * ดูภาพถัดไปใน Photo Viewer
+   */
   const handleNextPhoto = () => {
     if (viewerImages.length === 0) return;
     setActiveViewerIndex(prev => (prev + 1) % viewerImages.length);
   };
 
+  /**
+   * ดักจับปุ่มลูกศรซ้าย/ขวา และปุ่ม Esc เพื่อนำทางใน Photo Viewer
+   */
   useEffect(() => {
     if (!photoViewerOpen) return;
     const handleKeyDown = (e) => {
@@ -137,6 +182,9 @@ const ProjectDetails = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [photoViewerOpen, viewerImages]);
 
+  /**
+   * ดึงข้อมูลรายละเอียดโครงการ กิจกรรมย่อย และรูปภาพจากเซิร์ฟเวอร์
+   */
   const fetchProjectDetails = async () => {
     try {
       const response = await api.get(`/projects/${id}`);
@@ -159,11 +207,12 @@ const ProjectDetails = () => {
     }
   };
 
+  // เรียกดึงข้อมูลโครงการเมื่อเปิดหน้าจอหรือเมื่อไอดีโครงการเปลี่ยน
   useEffect(() => {
     fetchProjectDetails();
   }, [id]);
 
-  // Automatically activate Activities tab and open Activity form if redirected from project creation
+  // หากเพิ่งสร้างโครงการใหม่เสร็จและส่ง state autoOpenAddActivity มา ให้เปิดฟอร์มเพิ่มกิจกรรมทันที
   useEffect(() => {
     if (location.state?.autoOpenAddActivity) {
       setActiveSubTab('activities');
@@ -177,7 +226,9 @@ const ProjectDetails = () => {
     }
   }, [location.state]);
 
-  // Handle Create Activity Plan
+  /**
+   * บันทึกแผนงานกิจกรรมย่อยใหม่เข้าสู่ฐานข้อมูล
+   */
   const handleAddActivity = async (e) => {
     e.preventDefault();
     setAddingActivity(true);
@@ -208,7 +259,9 @@ const ProjectDetails = () => {
     }
   };
 
-  // Helper for comma formatting in budget inputs
+  /**
+   * ฟังก์ชันฟอร์แมตตัวเลขงบประมาณให้มีเครื่องหมายจุลภาค (Comma) ขณะพิมพ์
+   */
   const formatCommaValue = (val) => {
     if (!val) return '';
     const raw = String(val).replace(/[^0-9.]/g, '');
@@ -218,7 +271,10 @@ const ProjectDetails = () => {
     return parts.length > 1 ? `${parts[0]}.${parts[1].slice(0, 2)}` : parts[0];
   };
 
-  // Open modal for recording actual progress
+  /**
+   * เปิด Modal สำหรับบันทึกความก้าวหน้าและการเบิกจ่ายจริงของกิจกรรมย่อย
+   * @param {Object} act - กิจกรรมเป้าหมายที่เลือก
+   */
   const openProgressModal = (act) => {
     setTargetActivity(act);
     const initialVal = act.actualBudget ? act.actualBudget : act.budget;
@@ -231,6 +287,9 @@ const ProjectDetails = () => {
     setProgressModalOpen(true);
   };
 
+  /**
+   * จัดการเมื่อผู้ใช้เลือกไฟล์รูปภาพหลักฐาน โดยสร้าง preview URL
+   */
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setSelectedFiles(prev => [...prev, ...files]);
@@ -239,12 +298,18 @@ const ProjectDetails = () => {
     setPreviews(prev => [...prev, ...newPreviews]);
   };
 
+  /**
+   * ลบรูปภาพที่เลือกไว้ก่อนกดบันทึก
+   * @param {number} index - ลำดับรูปที่ต้องการลบออกจากคิว
+   */
   const removeSelectedFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     setPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Save Activity Actual Progress
+  /**
+   * บันทึกข้อมูลผลการดำเนินงาน งบประมาณที่ใช้จริง และอัปโหลดภาพหลักฐาน (ผ่านการบีบอัดรูป)
+   */
   const handleSaveProgress = async (e) => {
     e.preventDefault();
     if (!targetActivity) return;
@@ -258,6 +323,7 @@ const ProjectDetails = () => {
       if (actCompletedCount) formData.append('completedCount', actCompletedCount);
       if (actRemark) formData.append('remark', actRemark);
 
+      // บีบอัดไฟล์รูปภาพก่อนอัปโหลดเพื่อประหยัด bandwidth และพื้นที่จัดเก็บ
       const compressedFiles = await Promise.all(
         selectedFiles.map(file => compressImage(file))
       );
@@ -281,7 +347,10 @@ const ProjectDetails = () => {
     }
   };
 
-  // Delete uploaded photo from activity
+  /**
+   * ขอลบรูปภาพหลักฐานของกิจกรรมออกจาก Cloud/Server
+   * @param {number} imageId - รหัสรูปภาพ
+   */
   const handleDeleteImage = async (imageId) => {
     Swal.fire({
       title: 'ลบรูปภาพนี้?',
@@ -306,7 +375,10 @@ const ProjectDetails = () => {
     });
   };
 
-  // Delete Activity Plan
+  /**
+   * ขอลบแผนงานกิจกรรมย่อยทั้งรายการ พร้อมข้อมูลที่เกี่ยวข้อง
+   * @param {number} activityId - รหัสกิจกรรมย่อย
+   */
   const handleDeleteActivity = async (activityId) => {
     Swal.fire({
       title: 'ลบกิจกรรมนี้?',

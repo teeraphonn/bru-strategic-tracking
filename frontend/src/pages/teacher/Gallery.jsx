@@ -1,3 +1,13 @@
+/** ==============================================================================
+ * หน้าแกลเลอรีภาพกิจกรรมโครงการ (Teacher Project Gallery)
+ * ------------------------------------------------------------------------------
+ * ศูนย์รวมรูปภาพกิจกรรมและการดำเนินงานทั้งหมดที่อาจารย์รับผิดชอบ:
+ *   - ระบบค้นหาภาพตามชื่อโครงการ และตัวกรองจำแนกตามโครงการ
+ *   - ตารางแสดงภาพขนาดย่อ (Compact Thumbnail Grid) แยกตามกิจกรรม
+ *   - หน้าต่างดูภาพรวมโครงการ (Project Overview Modal) รวมรูปภาพทุกกิจกรรมในโครงการเดียว
+ *   - หน้าต่าง Lightbox Modal สำหรับขยายดูรูปภาพเต็มหน้าจอ พร้อมปุ่มเลื่อนและแป้นพิมพ์ลัด
+ * ============================================================================== */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
@@ -20,27 +30,34 @@ import {
   FiLayers as FiLayersIcon
 } from 'react-icons/fi';
 
+/**
+ * คอมโพเนนต์แกลเลอรีภาพถ่ายกิจกรรมโครงการของอาจารย์
+ * @returns {JSX.Element}
+ */
 const Gallery = () => {
-  const { user } = useContext(AuthContext);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [selectedProjectId, setSelectedProjectId] = useState('all');
+  // ─── State การจัดการข้อมูลและตัวกรอง ───
+  const { user } = useContext(AuthContext);                                     // ข้อมูลผู้ใช้ปัจจุบัน
+  const [projects, setProjects] = useState([]);                                 // รายการโครงการทั้งหมด
+  const [loading, setLoading] = useState(true);                                 // สถานะกำลังโหลดข้อมูล
+  const [search, setSearch] = useState('');                                     // ข้อความค้นหาโครงการ
+  const [selectedProjectId, setSelectedProjectId] = useState('all');            // โครงการที่เลือกกรอง ('all' หรือ id)
 
-  // Modal Lightbox state
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxImages, setLightboxImages] = useState([]);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+  // ─── State สำหรับ Lightbox Modal (ดูรูปขยายเต็มจอ) ───
+  const [lightboxOpen, setLightboxOpen] = useState(false);                      // เปิด/ปิด Lightbox
+  const [lightboxImages, setLightboxImages] = useState([]);                     // รายการภาพใน Lightbox
+  const [lightboxIndex, setLightboxIndex] = useState(0);                        // ลำดับรูปที่กำลังแสดง
 
-  // Project Overview Modal state
-  const [overviewProject, setOverviewProject] = useState(null);
+  // ─── State สำหรับ Project Overview Modal (ดูภาพรวมกิจกรรมของโครงการ) ───
+  const [overviewProject, setOverviewProject] = useState(null);                 // โครงการที่เปิดดู Overview
 
+  /**
+   * ดึงรายการโครงการและกิจกรรมที่มีรูปภาพจากเซิร์ฟเวอร์
+   */
   useEffect(() => {
     const fetchGalleryData = async () => {
       setLoading(true);
       try {
         const response = await api.get('/projects', { params: { limit: 100 } });
-        // Filter projects that have activities with images
         setProjects(response.data.projects || []);
       } catch (err) {
         console.error('Failed to load gallery projects:', err);
@@ -51,13 +68,22 @@ const Gallery = () => {
     fetchGalleryData();
   }, []);
 
-  // Filter projects by search & project selection
+  /**
+   * กรองโครงการตามคำค้นหาและตัวเลือกโครงการที่ระบุ
+   */
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchesProject = selectedProjectId === 'all' || p.id === parseInt(selectedProjectId);
     return matchesSearch && matchesProject;
   });
 
+  /**
+   * เปิด Lightbox เพื่อดูรูปภาพขนาดใหญ่เต็มหน้าจอ
+   * @param {Array} images - รายการรูปภาพ
+   * @param {number} index - ลำดับรูปที่ต้องการแสดง
+   * @param {string} projectName - ชื่อโครงการ
+   * @param {string} activityName - ชื่อกิจกรรม
+   */
   const openLightbox = (images, index, projectName = '', activityName = '') => {
     const formattedImages = images.map(img => ({
       ...img,
@@ -69,14 +95,23 @@ const Gallery = () => {
     setLightboxOpen(true);
   };
 
+  /**
+   * เปลี่ยนไปดูภาพก่อนหน้าใน Lightbox
+   */
   const handlePrev = () => {
     setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
   };
 
+  /**
+   * เปลี่ยนไปดูภาพถัดไปใน Lightbox
+   */
   const handleNext = () => {
     setLightboxIndex((prev) => (prev + 1) % lightboxImages.length);
   };
 
+  /**
+   * ดักจับปุ่มบนคีย์บอร์ด (Esc เพื่อปิด, ซ้าย/ขวาเพื่อเปลี่ยนรูป)
+   */
   useEffect(() => {
     if (!lightboxOpen && !overviewProject) return;
     const handleKeyDown = (e) => {

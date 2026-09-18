@@ -1,7 +1,27 @@
+/**
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: backend/controllers/master.controller.js
+ * หน้าที่: คอนโทรลเลอร์สำหรับจัดการข้อมูลพื้นฐาน Master Data ทั้งหมด (9 หมวดหมู่หลัก)
+ *          1. คณะและหน่วยงานหลัก (Faculties)
+ *          2. ภาควิชาและสาขาวิชา (Departments)
+ *          3. ปีงบประมาณ (Fiscal Years)
+ *          4. แหล่งเงินงบประมาณ (Budget Sources)
+ *          5. ประเด็นการพัฒนาท้องถิ่น (Local Issues)
+ *          6. แผนงานหลัก (Strategies)
+ *          7. แผนงานย่อย (Sub-Strategies)
+ *          8. โครงการหลัก / ตัวชี้วัด (Strategic Indicators)
+ *          9. บัญชีผู้ใช้งานระบบ (Users & Password Reset)
+ *          - มีระบบ In-Memory Cache (TTL 60s) เพื่อการตอบสนองระดับ Sub-millisecond
+ * ============================================================================
+ */
+
 const bcrypt = require('bcryptjs');
 const prisma = require('../config/prisma');
 
-// Helper to handle standard CRUD errors
+/**
+ * ฟังก์ชันช่วยจัดการ Error มาตรฐานสำหรับ CRUD
+ */
 const handleError = (res, error, customMessage = 'Internal server error') => {
   console.error(error);
   if (error.code === 'P2002') {
@@ -10,9 +30,9 @@ const handleError = (res, error, customMessage = 'Internal server error') => {
   res.status(500).json({ message: customMessage, error: error.message });
 };
 
-// In-memory cache for ultra-fast master data queries (sub-millisecond response)
+// ─── ระบบ In-Memory Cache สำหรับ Master Data (ความเร็วระดับ Sub-millisecond) ──
 const masterCache = new Map();
-const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+const CACHE_TTL_MS = 60 * 1000; // แคชมีอายุ 60 วินาที
 
 const getCached = (key) => {
   const item = masterCache.get(key);
@@ -27,6 +47,9 @@ const setCached = (key, data) => {
   masterCache.set(key, { data, timestamp: Date.now() });
 };
 
+/**
+ * ล้างแคชเมื่อมีการ CUD ข้อมูลพื้นฐาน
+ */
 const invalidateMasterCache = (prefix) => {
   if (prefix) {
     for (const key of masterCache.keys()) {
@@ -38,7 +61,7 @@ const invalidateMasterCache = (prefix) => {
 };
 
 // ==========================================
-// FACULTIES CRUD
+// 1. คณะและหน่วยงานหลัก (FACULTIES CRUD)
 // ==========================================
 const getFaculties = async (req, res) => {
   try {

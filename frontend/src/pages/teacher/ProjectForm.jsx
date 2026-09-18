@@ -1,3 +1,19 @@
+/** ==============================================================================
+ * หน้าฟอร์มสร้างและแก้ไขข้อมูลโครงการยุทธศาสตร์ (Teacher Project Form)
+ * ------------------------------------------------------------------------------
+ * ฟอร์มจัดการข้อมูลโครงการระดับอาจารย์/ผู้รับผิดชอบ:
+ *   - บันทึกข้อมูลพื้นฐาน: ชื่อโครงการ, รายละเอียด, ปีงบประมาณ, แหล่งงบประมาณ
+ *   - ระบบ Cascading Dropdowns เชื่อมโยงยุทธศาสตร์ 4 ระดับ:
+ *       1. ประเด็นการพัฒนาท้องถิ่น (Local Issue)
+ *       2. ยุทธศาสตร์หลัก (Strategy)
+ *       3. กลยุทธ์/ยุทธศาสตร์ย่อย (Sub-Strategy)
+ *       4. ตัวชี้วัดเป้าหมาย (KPI Indicator)
+ *   - กำหนดกรอบงบประมาณรวม (Total Budget), เป้าหมายตัวชี้วัด (Target Count), และหน่วยนับ
+ *   - เลือกระยะเวลาดำเนินงาน (วันเริ่มต้น - วันสิ้นสุด)
+ *   - แต่งตั้งอาจารย์ผู้ร่วมรับผิดชอบโครงการ (Co-Responsibles) กรองตามสังกัดคณะเดียวกัน
+ *   - ตรวจสอบเงื่อนไข Plan Lock (หากมีกิจกรรมแล้ว จะไม่อนุญาตให้แก้ไขงบประมาณหรือเป้าหมาย)
+ * ============================================================================== */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -7,6 +23,7 @@ import CustomSelect from '../../components/CustomSelect';
 import Swal from 'sweetalert2';
 import { FiArrowLeft, FiSave, FiCompass, FiLayers, FiLock } from 'react-icons/fi';
 
+// รายการตัวเลือกหน่วยนับมาตรฐาน
 const UNIT_OPTIONS = [
   { value: 'กิจกรรม', label: 'กิจกรรม' },
   { value: 'ครั้ง', label: 'ครั้ง' },
@@ -21,35 +38,41 @@ const UNIT_OPTIONS = [
 
 const ESSENTIAL_UNITS = UNIT_OPTIONS.filter(o => o.value !== '__custom__').map(o => o.value);
 
+/**
+ * คอมโพเนนต์ฟอร์มบันทึก/แก้ไขข้อมูลโครงการยุทธศาสตร์
+ * @returns {JSX.Element}
+ */
 const ProjectForm = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);               // ข้อมูลผู้ใช้งานปัจจุบัน
   const navigate = useNavigate();
-  const { id } = useParams(); // present if edit mode
-  const isEdit = !!id;
+  const { id } = useParams();                             // รับ id เมื่ออยู่ในโหมดแก้ไข
+  const isEdit = !!id;                                    // true = โหมดแก้ไข, false = สร้างใหม่
 
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [isCustomUnit, setIsCustomUnit] = useState(false);
+  // ─── State ทั่วไปของฟอร์ม ───
+  const [loading, setLoading] = useState(false);          // สถานะกำลังโหลดข้อมูล Master Data
+  const [saving, setSaving] = useState(false);            // สถานะกำลังบันทึกข้อมูล
+  const [isCustomUnit, setIsCustomUnit] = useState(false);// ระบุหน่วยนับเองหรือไม่
 
-  // Dropdown options arrays
-  const [fiscalYears, setFiscalYears] = useState([]);
-  const [budgetSources, setBudgetSources] = useState([]);
-  const [users, setUsers] = useState([]);
+  // ─── State สำหรับ Master Data Dropdowns ───
+  const [fiscalYears, setFiscalYears] = useState([]);     // รายการปีงบประมาณ
+  const [budgetSources, setBudgetSources] = useState([]); // รายการแหล่งงบประมาณ
+  const [users, setUsers] = useState([]);                 // รายชื่ออาจารย์สำหรับเลือกผู้ร่วมรับผิดชอบ
 
-  // Cascading Strategies Options
-  const [strategies, setStrategies] = useState([]);
-  const [localIssues, setLocalIssues] = useState([]);
-  const [subStrategies, setSubStrategies] = useState([]);
-  const [indicators, setIndicators] = useState([]);
+  // ─── State สำหรับโครงสร้างยุทธศาสตร์แบบ Cascading ───
+  const [strategies, setStrategies] = useState([]);       // ยุทธศาสตร์หลัก
+  const [localIssues, setLocalIssues] = useState([]);     // ประเด็นการพัฒนาท้องถิ่น
+  const [subStrategies, setSubStrategies] = useState([]); // ยุทธศาสตร์ย่อย
+  const [indicators, setIndicators] = useState([]);       // ตัวชี้วัด
 
-  // Selected cascade states for filtering dropdowns
+  // State ติดตามค่าที่เลือกในระดับยุทธศาสตร์
   const [selectedLocalIssueId, setSelectedLocalIssueId] = useState('');
   const [selectedStrategyId, setSelectedStrategyId] = useState('');
   const [selectedSubStrategyId, setSelectedSubStrategyId] = useState('');
 
-  // Project details if edit mode
+  // ข้อมูลโครงการเดิมกรณีเป็นโหมดแก้ไข (Edit Mode)
   const [project, setProject] = useState(null);
 
+  // ─── React Hook Form Configuration ───
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
@@ -68,6 +91,7 @@ const ProjectForm = () => {
     }
   });
 
+  // Watch ตัวแปรต่างๆ เพื่อนำมาควบคุม UI
   const watchedFiscalYearId = watch('fiscalYearId');
   const watchedBudgetSourceId = watch('budgetSourceId');
   const watchedIndicatorId = watch('indicatorId');
@@ -168,7 +192,9 @@ const ProjectForm = () => {
     loadMasters();
   }, [id, isEdit, setValue]);
 
-  // When Local Issue changes, reset downstream selections
+  /**
+   * เมื่อผู้ใช้เปลี่ยน "ประเด็นการพัฒนาท้องถิ่น" ให้ล้างค่ายุทธศาสตร์และตัวชี้วัดที่อยู่ลำดับล่างทั้งหมด
+   */
   const handleLocalIssueChange = (val) => {
     setSelectedLocalIssueId(val);
     setSelectedStrategyId('');
@@ -178,7 +204,9 @@ const ProjectForm = () => {
     setValue('indicatorId', '', { shouldValidate: true });
   };
 
-  // When Strategy changes, auto-sync Local Issue if applicable and reset downstream
+  /**
+   * เมื่อผู้ใช้เปลี่ยน "ยุทธศาสตร์หลัก" ให้ดึงประเด็นท้องถิ่นที่สอดคล้อง และล้างค่ายุทธศาสตร์ย่อย/ตัวชี้วัด
+   */
   const handleStrategyChange = (val) => {
     setSelectedStrategyId(val);
     setValue('strategyId', val, { shouldValidate: true });
@@ -191,31 +219,36 @@ const ProjectForm = () => {
     setValue('indicatorId', '', { shouldValidate: true });
   };
 
-  // When Sub-strategy changes, reset indicator
+  /**
+   * เมื่อผู้ใช้เปลี่ยน "กลยุทธ์/ยุทธศาสตร์ย่อย" ให้ล้างค่าตัวชี้วัดเดิมออก
+   */
   const handleSubStrategyChange = (val) => {
     setSelectedSubStrategyId(val);
     setValue('subStrategyId', val, { shouldValidate: true });
     setValue('indicatorId', '', { shouldValidate: true });
   };
 
+  /**
+   * บันทึกค่าตัวชี้วัดที่เลือก
+   */
   const handleIndicatorChange = (val) => {
     setValue('indicatorId', val, { shouldValidate: true });
   };
 
-  // Filter lists based on selections
+  // ─── การกรองรายการยุทธศาสตร์แบบ Cascading ตามลำดับชั้น ───
   const filteredStrategies = selectedLocalIssueId
     ? strategies.filter(s => s.localIssueId === parseInt(selectedLocalIssueId, 10))
     : strategies;
   const filteredSubStrategies = subStrategies.filter(ss => ss.strategyId === parseInt(selectedStrategyId, 10));
   const filteredIndicators = indicators.filter(ind => ind.subStrategyId === parseInt(selectedSubStrategyId, 10));
 
-  // Active hierarchy path labels
+  // ค้นหา Object ข้อมูลยุทธศาสตร์ปัจจุบันสำหรับแสดงผล Breadcrumb เส้นทางยุทธศาสตร์
   const currentLocalIssue = localIssues.find(li => String(li.id) === String(selectedLocalIssueId));
   const currentStrategy = strategies.find(s => String(s.id) === String(selectedStrategyId));
   const currentSubStrategy = subStrategies.find(ss => String(ss.id) === String(selectedSubStrategyId));
   const currentIndicator = indicators.find(ind => String(ind.id) === String(watchedIndicatorId));
 
-  // Faculty filtering & co-responsibles logic
+  // ─── การกรองผู้ร่วมรับผิดชอบโครงการ (เฉพาะคณะเดียวกันและไม่รวมผู้สร้าง) ───
   const currentFacultyId = isEdit
     ? (project?.facultyId || project?.department?.facultyId || user?.department?.facultyId)
     : (user?.department?.facultyId || user?.department?.faculty?.id);
@@ -227,10 +260,10 @@ const ProjectForm = () => {
   const creatorUserId = isEdit ? project?.creatorId : user?.id;
 
   const coResponsibles = users.filter(u => {
-    // 1. Exclude the creator
+    // 1. ตัดผู้สร้างโครงการออก (เพราะเป็นผู้รับผิดชอบหลักอยู่แล้ว)
     if (u.id === creatorUserId) return false;
 
-    // 2. Filter strictly to the same faculty if current user/project has a faculty
+    // 2. กรองเฉพาะอาจารย์ที่สังกัดคณะเดียวกัน
     if (currentFacultyId) {
       const uFacId = u.department?.facultyId || u.department?.faculty?.id;
       return uFacId === currentFacultyId;
@@ -239,13 +272,17 @@ const ProjectForm = () => {
     return true;
   });
 
-  // Plan lock detection (if project has activities, total budget and target count cannot be changed by non-admins)
+  // ─── การล็อกแผนโครงการ (Plan Lock Detection) ───
+  // หากโครงการมีการสร้างกิจกรรมย่อยแล้ว จะไม่อนุญาตให้อาจารย์แก้ไขงบรวมและเป้าหมาย (ยกเว้นผู้ดูแลระบบ ADMIN)
   const hasActivities = isEdit && project?.activities && project.activities.length > 0;
   const isPlanLocked = hasActivities && user?.role !== 'ADMIN';
 
-  // Submit Handler
+  /**
+   * ฟังก์ชันประมวลผลและส่งข้อมูลฟอร์มโครงการไปยังเซิร์ฟเวอร์
+   * @param {Object} data - ข้อมูลทั้งหมดจากฟอร์ม
+   */
   const onSubmit = async (data) => {
-    // 1. Validate dates
+    // 1. ตรวจสอบความถูกต้องของวันเริ่มต้นและสิ้นสุด
     if (!data.startDate || !data.endDate) {
       Swal.fire({
         icon: 'error',
@@ -276,7 +313,7 @@ const ProjectForm = () => {
       return;
     }
 
-    // 2. Parse and validate budget
+    // 2. แปลงและตรวจสอบงบประมาณรวมโครงการ (ต้องเป็นตัวเลข >= 0)
     const cleanBudgetStr = typeof data.totalBudget === 'string'
       ? data.totalBudget.replace(/,/g, '').trim()
       : String(data.totalBudget ?? '');
@@ -290,7 +327,7 @@ const ProjectForm = () => {
       return;
     }
 
-    // 3. Parse and validate target count
+    // 3. ตรวจสอบจำนวนเป้าหมายตัวชี้วัด (ต้องเป็นจำนวนเต็ม >= 1)
     const targetCount = parseInt(data.targetCount, 10);
     if (isNaN(targetCount) || targetCount < 1) {
       Swal.fire({
@@ -301,7 +338,7 @@ const ProjectForm = () => {
       return;
     }
 
-    // 4. Validate unit
+    // 4. ตรวจสอบหน่วยนับความสำเร็จ
     const unit = (data.unit || '').trim();
     if (!unit) {
       Swal.fire({
@@ -312,7 +349,7 @@ const ProjectForm = () => {
       return;
     }
 
-    // 5. Completed count verification vs new target count if edit
+    // 5. กรณีแก้ไข: ตรวจสอบไม่ให้ลดเป้าหมายรวมต่ำกว่าจำนวนกิจกรรมที่ทำเสร็จไปแล้ว
     if (isEdit && project && project.completedCount > targetCount && user?.role !== 'ADMIN') {
       Swal.fire({
         icon: 'error',
@@ -322,7 +359,7 @@ const ProjectForm = () => {
       return;
     }
 
-    // 6. Safe userIds normalization (handling array, string, number, or boolean single checkbox)
+    // 6. แปลง userIds ของผู้ร่วมรับผิดชอบให้อยู่ในรูปแบบ Array ของ Integer อย่างปลอดภัย
     let normalizedUserIds = [];
     if (Array.isArray(data.userIds)) {
       normalizedUserIds = data.userIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
@@ -335,6 +372,7 @@ const ProjectForm = () => {
 
     setSaving(true);
     try {
+      // ประกอบข้อมูล Payload สำหรับเรียก API
       const payload = {
         name: (data.name || '').trim(),
         description: data.description ? data.description.trim() : '',
@@ -351,10 +389,12 @@ const ProjectForm = () => {
       };
 
       if (isEdit) {
+        // อัปเดตโครงการเดิม
         await api.put(`/projects/${id}`, payload);
         Swal.fire({ icon: 'success', title: 'ปรับปรุงโครงการสำเร็จ', showConfirmButton: false, timer: 1500 });
         navigate(`/projects/${id}`);
       } else {
+        // บันทึกสร้างโครงการใหม่ และนำทางไปยังหน้าจัดการกิจกรรมโครงการโดยอัตโนมัติ
         const response = await api.post('/projects', payload);
         const newProject = response.data;
         Swal.fire({ 

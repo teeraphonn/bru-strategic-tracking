@@ -3,13 +3,16 @@ import { createPortal } from 'react-dom';
 import { FiChevronDown, FiCheck, FiSearch, FiX } from 'react-icons/fi';
 
 /**
- * CustomSelect — High-performance searchable dropdown for large data sets
- * Features:
- *   - Uses React Portal to document.body: completely immune to parent overflow/clipping
- *   - Auto-search filter when list has > 6 items
- *   - Smart direction detection (opens downwards or upwards based on viewport space)
- *   - Auto-scroll to selected option on open
- *   - Dark & Light theme support
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: frontend/src/components/CustomSelect.jsx
+ * หน้าที่: ดรอปดาวน์เลือกข้อมูลประสิทธิภาพสูงพร้อมระบบค้นหา (Searchable Portal Dropdown)
+ *          - เรนเดอร์เมนูผ่าน React Portal ไปยัง document.body ป้องกันปัญหาถูกบังด้วย overflow:hidden
+ *          - ระบบคำนวณตำแหน่งเปิดอัตโนมัติ (เปิดขึ้นบนหรือลงล่างตามพื้นที่ว่างหน้าจอ)
+ *          - ช่องค้นหาข้อความ (Auto-Search) เมื่อมีตัวเลือกมากกว่า 6 รายการ
+ *          - เลื่อน Scroll ไปยังตัวเลือกที่ถูกเลือกอยู่โดยอัตโนมัติ (Auto-scroll to selected)
+ *          - รองรับทั้ง Light Theme และ Dark Theme
+ * ============================================================================
  */
 const CustomSelect = ({
   value,

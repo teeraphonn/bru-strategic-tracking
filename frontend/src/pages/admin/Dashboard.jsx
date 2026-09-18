@@ -1,3 +1,19 @@
+/** ==============================================================================
+ * 📊 PAGE: ADMIN DASHBOARD (แดชบอร์ดภาพรวมระบบและการบริหารจัดการเชิงสถาบัน)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   ศูนย์ควบคุมและแดชบอร์ดหลักของผู้ดูแลระบบ (Admin Control Center)
+ *   - ภาพรวมสถานะระบบและการขับเคลื่อนยุทธศาสตร์ทั่วทั้งมหาวิทยาลัย
+ *   - แท็บสลับโหมดการมองเห็น (Perspective Tabs):
+ *     1. ภาพรวมระบบ (System Overview)
+ *     2. มุมมองอธิการบดี (President Perspective - Strategic Heatmap & KPIs)
+ *     3. มุมมองคณบดี (Dean Perspective - Faculty Breakdown & Red Flags)
+ *   - ตรวจสอบสถานะสุขภาพระบบ (System Health: Node, Memory, DB Latency, Cache)
+ *   - ปุ่มล้างแคชระบบ (Clear Cache) และการแจ้งเตือนปัญหาที่รอดำเนินการ (Pending Issues)
+ *   - ตัวชี้วัดสรุปผล (KPI Cards), กราฟการเบิกจ่ายงบประมาณ, ภาพถ่ายความสำเร็จล่าสุด
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../../services/api';
@@ -54,6 +70,7 @@ import PresidentDashboard from '../president/Dashboard';
 import DeanDashboard from '../dean/Dashboard';
 import { getImageUrl } from '../../utils/imageUrl';
 
+// ลงทะเบียนปลั๊กอินและคอมโพเนนต์สำหรับ Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -66,24 +83,31 @@ ChartJS.register(
   Legend
 );
 
+/**
+ * คอมโพเนนต์หน้าแดชบอร์ดภาพรวมระบบของผู้ดูแลระบบ (Admin)
+ */
 const AdminDashboard = () => {
-  const { user } = useContext(AuthContext);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentTab, setCurrentTab] = useState('system'); // system, president, dean
-  const [faculties, setFaculties] = useState([]);
-  const [selectedFacultyId, setSelectedFacultyId] = useState('');
-  const [systemHealth, setSystemHealth] = useState(null);
-  const [clearingCache, setClearingCache] = useState(false);
+  const { user } = useContext(AuthContext); // ข้อมูลผู้ใช้งานปัจจุบัน
+  const [data, setData] = useState(null);    // ข้อมูลสถิติแดชบอร์ด
+  const [loading, setLoading] = useState(true); // สถานะกำลังโหลดข้อมูล
+  const [error, setError] = useState(null);     // ข้อความผิดพลาดถ้ามี
+  const [currentTab, setCurrentTab] = useState('system'); // แท็บมุมมอง: 'system', 'president', 'dean'
+  const [faculties, setFaculties] = useState([]);         // รายชื่อคณะทั้งหมด
+  const [selectedFacultyId, setSelectedFacultyId] = useState(''); // คณะที่เลือกในมุมมองคณบดี
+  const [systemHealth, setSystemHealth] = useState(null); // ข้อมูลสถานะสุขภาพระบบ (RAM, Latency, DB)
+  const [clearingCache, setClearingCache] = useState(false); // สถานะกำลังล้างแคช
 
-  // Filters
-  const [selectedFiscalYear, setSelectedFiscalYear] = useState('');
-  const [fiscalYears, setFiscalYears] = useState([]);
-  const [selectedBudgetSource, setSelectedBudgetSource] = useState('');
-  const [budgetSources, setBudgetSources] = useState([]);
-  const [pendingIssues, setPendingIssues] = useState([]);
+  // ─── ตัวกรองข้อมูล (Filters) ───
+  const [selectedFiscalYear, setSelectedFiscalYear] = useState('');     // ปีงบประมาณที่เลือก
+  const [fiscalYears, setFiscalYears] = useState([]);                   // รายการปีงบประมาณ
+  const [selectedBudgetSource, setSelectedBudgetSource] = useState(''); // แหล่งงบประมาณที่เลือก
+  const [budgetSources, setBudgetSources] = useState([]);               // รายการแหล่งงบประมาณ
+  const [pendingIssues, setPendingIssues] = useState([]);               // รายการปัญหาที่รอดำเนินการ (Pending)
 
+  /**
+   * ดึงข้อมูลสถานะสุขภาพของระบบ (System Health Metrics)
+   * แสดง RAM, Server Latency, Database Connection
+   */
   const fetchSystemHealth = async () => {
     try {
       const res = await api.get('/master/system/health');
@@ -93,6 +117,9 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * ดึงรายการปัญหาที่รอดำเนินการ (Pending Issues) เพื่อแจ้งเตือนแอดมิน
+   */
   const fetchPendingIssues = async () => {
     try {
       const res = await api.get('/issues', { params: { status: 'PENDING' } });
@@ -102,6 +129,7 @@ const AdminDashboard = () => {
     }
   };
 
+  // ดึง Master Filters, สถานะระบบ และรายการปัญหาเมื่อเปิดหน้าแดชบอร์ด
   useEffect(() => {
     const fetchMasterFilters = async () => {
       try {
@@ -122,6 +150,9 @@ const AdminDashboard = () => {
     fetchPendingIssues();
   }, []);
 
+  /**
+   * ล้างแคชระบบ (Flush Cache) และรีเฟรชการเชื่อมต่อฐานข้อมูล
+   */
   const handleClearCache = async () => {
     try {
       setClearingCache(true);
@@ -142,6 +173,9 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * ส่งออกรายงานแดชบอร์ดภาพรวมระบบเป็นไฟล์ PDF
+   */
   const handleExportDashboardReport = async () => {
     try {
       const response = await api.get('/reports/export/pdf?type=university', {
@@ -162,27 +196,39 @@ const AdminDashboard = () => {
     }
   };
 
-  // Photo Viewer states
+  // ─── Photo Viewer / Lightbox States (สำหรับดูรูปภาพกิจกรรม) ───
   const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
   const [viewerImages, setViewerImages] = useState([]);
   const [activeViewerIndex, setActiveViewerIndex] = useState(0);
 
+  /**
+   * เปิดหน้าต่างดูภาพถ่ายขนาดใหญ่
+   * @param {Array} imagesList
+   * @param {number} index
+   */
   const openPhotoViewer = (imagesList, index) => {
     setViewerImages(imagesList);
     setActiveViewerIndex(index);
     setPhotoViewerOpen(true);
   };
 
+  /**
+   * เลื่อนดูรูปภาพก่อนหน้า
+   */
   const handlePrevPhoto = () => {
     if (viewerImages.length === 0) return;
     setActiveViewerIndex(prev => (prev - 1 + viewerImages.length) % viewerImages.length);
   };
 
+  /**
+   * เลื่อนดูรูปภาพถัดไป
+   */
   const handleNextPhoto = () => {
     if (viewerImages.length === 0) return;
     setActiveViewerIndex(prev => (prev + 1) % viewerImages.length);
   };
 
+  // ดักจับคีย์บอร์ดซ้าย/ขวา/Esc สำหรับ Photo Viewer
   useEffect(() => {
     if (!photoViewerOpen) return;
     const handleKeyDown = (e) => {
@@ -194,6 +240,9 @@ const AdminDashboard = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [photoViewerOpen, viewerImages]);
 
+  /**
+   * ดึงข้อมูลสถิติภาพรวมแดชบอร์ดตามตัวกรองปีงบประมาณและแหล่งงบประมาณ
+   */
   const fetchDashboardData = async () => {
     try {
       setLoading(true);

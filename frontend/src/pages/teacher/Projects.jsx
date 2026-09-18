@@ -1,3 +1,14 @@
+/** ==============================================================================
+ * หน้ารายการโครงการยุทธศาสตร์ของอาจารย์ (Teacher Strategic Projects)
+ * ------------------------------------------------------------------------------
+ * นำเสนอและจัดการโครงการที่อาจารย์เป็นผู้สร้างหรือผู้ร่วมรับผิดชอบ:
+ *   - แถบสรุป KPI ส่วนตัว: จำนวนโครงการ, กิจกรรมย่อย, ความก้าวหน้าเป้าหมายสะสม, งบเบิกจ่ายจริง
+ *   - ตัวกรองโครงการ: สถานะโครงการ (ทั้งหมด, กำลังดำเนินการ, เสร็จสมบูรณ์), ปีงบประมาณ, และช่องค้นหา
+ *   - บัตรแสดงโครงการ (Project Cards) ระบุสถานะ RAG / แจ้งเตือนโครงการใกล้ถึงกำหนดส่งผลงาน
+ *   - ระบบลบโครงการ / ส่งคำร้องขอปลดล็อกและลบโครงการไปยัง Admin (Issues System)
+ *   - ส่งออกรายงานสรุปโครงการในรูปแบบเอกสาร PDF
+ * ============================================================================== */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -23,27 +34,33 @@ import {
   FiDownload
 } from 'react-icons/fi';
 
+/**
+ * คอมโพเนนต์หน้ารายการโครงการยุทธศาสตร์ของอาจารย์
+ * @returns {JSX.Element}
+ */
 const TeacherProjects = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);               // ข้อมูลผู้ใช้งานที่ล็อกอินอยู่
   const navigate = useNavigate();
 
-  // Projects list state
-  const [projects, setProjects] = useState([]);
+  // ─── State รายการโครงการและการแบ่งหน้า (Pagination) ───
+  const [projects, setProjects] = useState([]);           // รายการโครงการที่ดึงมาแสดงผล
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);          // สถานะกำลังโหลดข้อมูล
 
-  // Filters State
-  const [search, setSearch] = useState('');
-  const [fiscalYearId, setFiscalYearId] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  // ─── State สำหรับตัวกรองการค้นหา ───
+  const [search, setSearch] = useState('');               // คำค้นหาชื่อ/รายละเอียดโครงการ
+  const [fiscalYearId, setFiscalYearId] = useState('');   // รหัสปีงบประมาณที่เลือกกรอง
+  const [statusFilter, setStatusFilter] = useState('all');// สถานะโครงการ ('all', 'inprogress', 'completed')
 
-  // Stats summary state
-  const [stats, setStats] = useState(null);
+  // ─── State สถิติภาพรวมแดชบอร์ด ───
+  const [stats, setStats] = useState(null);               // ข้อมูลสรุป KPI ภาพรวมของอาจารย์
 
-  // Dropdown lists
+  // รายการปีงบประมาณทั้งหมดสำหรับใส่ใน CustomSelect
   const [fiscalYears, setFiscalYears] = useState([]);
 
-  // Load initial dropdowns and personal stats
+  /**
+   * ดึงสถิติภาพรวมแดชบอร์ดของอาจารย์ (จำนวนโครงการ, กิจกรรม, งบเบิกจ่าย)
+   */
   const fetchStats = async () => {
     try {
       const response = await api.get('/dashboard');
@@ -53,13 +70,16 @@ const TeacherProjects = () => {
     }
   };
 
+  /**
+   * ดึงข้อมูลปีงบประมาณทั้งหมดสำหรับใช้ในตัวกรอง และตั้งค่าเริ่มต้นเป็นปีปัจจุบัน
+   */
   useEffect(() => {
     const fetchFilters = async () => {
       try {
         const years = await api.get('/master/fiscal-years');
         setFiscalYears(years.data);
 
-        // Pre-select active fiscal year if any
+        // เลือกปีงบประมาณปัจจุบันเป็นค่าเริ่มต้น
         const activeYear = years.data.find(y => y.active);
         if (activeYear) setFiscalYearId(activeYear.id);
       } catch (err) {
@@ -70,7 +90,10 @@ const TeacherProjects = () => {
     fetchStats();
   }, []);
 
-  // Fetch projects list matching filters
+  /**
+   * ดึงรายการโครงการตามเงื่อนไขตัวกรอง (ค้นหา, ปีงบ, สถานะ) และหน้า (Pagination)
+   * @param {number} page - ลำดับหน้าที่ต้องการดึงข้อมูล
+   */
   const fetchProjects = async (page = 1) => {
     setLoading(true);
     try {
@@ -93,17 +116,24 @@ const TeacherProjects = () => {
     }
   };
 
+  // ดึงรายการโครงการใหม่ทุกครั้งที่ผู้ใช้เปลี่ยนคำค้นหา ปีงบประมาณ หรือสถานะ
   useEffect(() => {
     fetchProjects(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, fiscalYearId, statusFilter]);
 
-  // Handle Delete Project / Send Deletion Request
+  /**
+   * จัดการการลบโครงการ:
+   *   - หากโครงการปลดล็อกแล้ว (isLocked === false): สามารถลบออกจากระบบได้ทันที
+   *   - หากโครงการล็อกอยู่ (isLocked === true): จะเปิด Modal ให้กรอกเหตุผลแล้วสร้าง Issue ส่งไปยัง Admin เพื่อขออนุมัติปลดล็อก
+   * @param {Event} e - คลิกอีเวนต์
+   * @param {Object} projectItem - โครงการที่ต้องการลบ
+   */
   const handleDelete = async (e, projectItem) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // If project is unlocked, user can delete directly
+    // กรณีที่ 1: โครงการได้รับการปลดล็อกแล้ว สามารถลบได้ทันที
     if (!projectItem.isLocked) {
       const confirmDelete = await Swal.fire({
         title: 'โครงการนี้ถูกปลดล็อกแล้ว ต้องการลบใช่หรือไม่?',
@@ -130,7 +160,7 @@ const TeacherProjects = () => {
       return;
     }
 
-    // If project is locked, prompt to send deletion request to Admin
+    // กรณีที่ 2: โครงการติดล็อก ต้องยื่นคำร้องผ่านระบบ Issues ไปยัง Admin
     const result = await Swal.fire({
       title: 'ยื่นคำร้องขอลบโครงการ',
       text: `เพื่อความปลอดภัยของข้อมูลโครงการ "${projectItem.name}" การลบโครงการจำเป็นต้องยื่นคำร้องให้ผู้ดูแลระบบ (Admin) พิจารณาปลดล็อกก่อนลบ`,
@@ -175,6 +205,9 @@ const TeacherProjects = () => {
     }
   };
 
+  /**
+   * ส่งออกรายงานสรุปโครงการเป็นเอกสาร PDF
+   */
   const handleExportPDF = async () => {
     try {
       const response = await api.get('/reports/export/pdf?type=project', {
@@ -199,15 +232,25 @@ const TeacherProjects = () => {
     }
   };
 
+  /**
+   * ตรวจสอบว่าโครงการใกล้ถึงกำหนดสิ้นสุดหรือไม่ (เหลือ 30 วันหรือน้อยกว่า และยังไม่เสร็จ 100%)
+   * @param {Object} project - ข้อมูลโครงการ
+   * @returns {boolean}
+   */
   const isNearDeadline = (project) => {
     if (project.progress >= 100) return false;
     const endDate = new Date(project.endDate);
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 30; // 30 days or less
+    return diffDays <= 30; // 30 วันหรือน้อยกว่า
   };
 
+  /**
+   * สร้างข้อความแจ้งเตือนสถานะวันสิ้นสุดโครงการ (เช่น ใกล้ครบกำหนด หรือเกินกำหนดกี่วัน)
+   * @param {Object} project - ข้อมูลโครงการ
+   * @returns {string}
+   */
   const getDeadlineText = (project) => {
     const endDate = new Date(project.endDate);
     const today = new Date();

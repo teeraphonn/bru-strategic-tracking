@@ -1,10 +1,28 @@
+/**
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: backend/controllers/activity.controller.js
+ * หน้าที่: คอนโทรลเลอร์สำหรับบริหารจัดการกิจกรรมย่อยของโครงการ (Activity Controller)
+ *          - สร้างกิจกรรมย่อยใหม่และล็อกแผนงานอัตโนมัติ (createActivity)
+ *          - รายงานผลความก้าวหน้า ผลผลิต ยอดเบิกจ่าย และอัปโหลดภาพ (updateActivity)
+ *          - ลบภาพถ่ายความสำเร็จทั้งบน Cloudinary และ Local Disk (deleteActivityImage)
+ *          - ลบกิจกรรมย่อยพร้อมคำนวณยอดโครงการใหม่ (deleteActivity)
+ *          - สลับสถานะล็อก/ปลดล็อกกิจกรรมสำหรับ Admin (toggleActivityLock)
+ *          - ดึงรายการกิจกรรมทั้งหมดพร้อมระบบค้นหาและกรองสิทธิ์ RBAC (getActivities)
+ * ============================================================================
+ */
+
 const fs = require('fs');
 const path = require('path');
 const prisma = require('../config/prisma');
 const cloudinary = require('../config/cloudinary');
 const { updateProjectProgress } = require('./project.controller');
 
-// Add a new activity (Plan Phase - Locks automatically upon creation)
+/**
+ * สร้างกิจกรรมย่อยใหม่ภายใต้โครงการ (Create Activity)
+ * POST /api/activities
+ * ระบบจะตั้งค่า isLocked: true อัตโนมัติ เพื่อป้องกันการแก้ไขขอบเขตแผนงานภายหลัง
+ */
 const createActivity = async (req, res) => {
   try {
     const { projectId, name, description, activityDate, budget } = req.body;
@@ -13,7 +31,7 @@ const createActivity = async (req, res) => {
       return res.status(400).json({ message: 'รหัสโครงการไม่ถูกต้อง (Invalid Project ID)' });
     }
 
-    // Verify project exists and user has access
+    // ─── 1. ตรวจสอบว่าโครงการมีอยู่จริงและผู้ใช้มีสิทธิ์เข้าถึง ─────────────
     const project = await prisma.project.findUnique({
       where: { id: pId },
       include: { users: true }
@@ -31,7 +49,7 @@ const createActivity = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to add activities to this project' });
     }
 
-    // Create activity (isLocked = true, meaning planning fields are locked immediately)
+    // ─── 2. บันทึกกิจกรรมย่อยใหม่ลงฐานข้อมูล (isLocked: true ทันที) ────────
     const activity = await prisma.activity.create({
       data: {
         projectId: pId,
@@ -39,13 +57,13 @@ const createActivity = async (req, res) => {
         description,
         activityDate: new Date(activityDate),
         budget: parseFloat(budget),
-        isLocked: true, // Lock immediately upon save
+        isLocked: true, // ล็อกข้อมูลแผนงานทันทีเมื่อบันทึก
         success: false,
         completedCount: 0
       }
     });
 
-    // Recalculate project totals automatically
+    // ─── 3. คำนวณยอดความก้าวหน้าโครงการใหม่โดยอัตโนมัติ ────────────────────
     await updateProjectProgress(pId);
 
     res.status(201).json(activity);
@@ -55,7 +73,13 @@ const createActivity = async (req, res) => {
   }
 };
 
-// Update activity progress or plan details
+/**
+ * แก้ไขกิจกรรม / รายงานผลความก้าวหน้าและการเบิกจ่าย (Update Activity & Progress)
+ * PUT /api/activities/:id
+ * - ป้องกันการแก้ไขแผนงาน (ชื่อ, งบประมาณแผน, วันที่) หากกิจกรรมถูกล็อกอยู่ (ยกเว้น Admin)
+ * - รองรับการอัปโหลดภาพถ่ายความสำเร็จขึ้นสู่ Cloudinary
+ * - คำนวณความก้าวหน้าของโครงการแม่ใหม่ทันที
+ */
 const updateActivity = async (req, res) => {
   try {
     const { id } = req.params;
@@ -74,6 +98,7 @@ const updateActivity = async (req, res) => {
       remark
     } = req.body;
 
+    // ─── 1. ตรวจสอบการมีอยู่ของกิจกรรมและสิทธิ์ผู้ใช้งาน ───────────────────
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
       include: { project: { include: { users: true } } }
@@ -91,12 +116,12 @@ const updateActivity = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to modify this activity' });
     }
 
-    // Enforce lock: if locked and not admin, name, description, date, and planned budget cannot be modified
+    // ─── 2. ตรวจสอบกฎการล็อกแผนงาน (Lock Enforcement) ─────────────────────
     const isLocked = activity.isLocked;
     const dataUpdate = {};
 
+    // เฉพาะ Admin หรือกิจกรรมที่ปลดล็อกแล้วเท่านั้น ที่แก้ไขข้อมูลแผนงานได้
     if (userRole === 'ADMIN' || !isLocked) {
-      // Admin or unlocked plans can edit plan fields
       if (name !== undefined) dataUpdate.name = name;
       if (description !== undefined) dataUpdate.description = description;
       if (activityDate !== undefined) dataUpdate.activityDate = new Date(activityDate);
@@ -109,7 +134,7 @@ const updateActivity = async (req, res) => {
       }
     }
 
-    // Progress updates with boundary validations
+    // ─── 3. อัปเดตข้อมูลผลการดำเนินงานจริง (Progress Updates) ──────────────
     if (actualBudget !== undefined && actualBudget !== null) {
       const parsedActual = parseFloat(actualBudget);
       if (isNaN(parsedActual) || parsedActual < 0) {
@@ -129,7 +154,7 @@ const updateActivity = async (req, res) => {
     }
     if (remark !== undefined) dataUpdate.remark = remark;
 
-    // Handle files upload - upload to Cloudinary for persistent cloud storage
+    // ─── 4. อัปโหลดภาพถ่ายหลักฐานขึ้น Cloudinary ──────────────────────────
     const images = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
@@ -145,16 +170,16 @@ const updateActivity = async (req, res) => {
           });
         } catch (uploadErr) {
           console.error('Cloudinary upload error:', uploadErr);
-          // Fallback: store as local path if Cloudinary fails
+          // Fallback: ใช้ Path ในเครื่องหาก Cloudinary มีปัญหา
           images.push({ filePath: `/uploads/${file.filename}` });
         } finally {
-          // Always clean up temp file from disk
+          // ลบไฟล์ชั่วคราวออกจากเซิร์ฟเวอร์
           fs.unlink(file.path, () => {});
         }
       }
     }
 
-    // Perform update and progress recalculation inside single transaction
+    // ─── 5. บันทึกข้อมูลและคำนวณยอดโครงการใหม่ใน Transaction เดียวกัน ──────
     const updated = await prisma.$transaction(async (tx) => {
       const act = await tx.activity.update({
         where: { id: activityId },
@@ -165,6 +190,7 @@ const updateActivity = async (req, res) => {
         include: { images: true }
       });
 
+      // อัปเดต % ความก้าวหน้าของโครงการหลัก
       await updateProjectProgress(activity.projectId, tx);
       return act;
     });
@@ -176,7 +202,11 @@ const updateActivity = async (req, res) => {
   }
 };
 
-// Delete image from activity
+/**
+ * ลบรูปภาพหลักฐานความสำเร็จรายรูป (Delete Activity Image)
+ * DELETE /api/activities/images/:imageId
+ * ลบทั้งข้อมูลในตาราง ActivityImage และไฟล์จริงบน Cloudinary / Local Disk
+ */
 const deleteActivityImage = async (req, res) => {
   try {
     const { imageId } = req.params;
@@ -194,7 +224,7 @@ const deleteActivityImage = async (req, res) => {
       return res.status(404).json({ message: 'Image not found' });
     }
 
-    // Auth validation
+    // ตรวจสอบสิทธิ์ผู้ลบ
     const userRole = req.user.role;
     const userId = req.user.id;
     const isAssigned = image.activity.project.users.some(u => u.userId === userId);
@@ -203,10 +233,9 @@ const deleteActivityImage = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to delete this image' });
     }
 
-    // Delete from Cloudinary if it's a Cloudinary URL
+    // ลบไฟล์ออกจาก Cloudinary หากเป็น Cloudinary URL
     if (image.filePath && image.filePath.includes('cloudinary.com')) {
       try {
-        // Extract public_id from Cloudinary URL (format: .../bru-strategic/activities/filename)
         const urlParts = image.filePath.split('/');
         const folderIdx = urlParts.findIndex(p => p === 'bru-strategic');
         if (folderIdx !== -1) {
@@ -217,13 +246,14 @@ const deleteActivityImage = async (req, res) => {
         console.error('Cloudinary delete error (non-fatal):', cdnErr);
       }
     } else if (image.filePath && !image.filePath.startsWith('data:') && !image.filePath.startsWith('http')) {
+      // ลบไฟล์บนเครื่องเซิร์ฟเวอร์
       const absolutePath = path.join(__dirname, '..', image.filePath);
       if (fs.existsSync(absolutePath)) {
         fs.unlinkSync(absolutePath);
       }
     }
 
-    // Delete record from database
+    // ลบเรคคอร์ดออกจากฐานข้อมูล
     await prisma.activityImage.delete({ where: { id: imgId } });
 
     res.json({ message: 'Image deleted successfully' });
@@ -233,7 +263,11 @@ const deleteActivityImage = async (req, res) => {
   }
 };
 
-// Delete activity
+/**
+ * ลบกิจกรรมย่อยออกจากโครงการ (Delete Activity)
+ * DELETE /api/activities/:id
+ * ลบกิจกรรม ไฟล์ภาพที่เกี่ยวข้อง และคำนวณความก้าวหน้าโครงการใหม่
+ */
 const deleteActivity = async (req, res) => {
   try {
     const { id } = req.params;
@@ -251,7 +285,6 @@ const deleteActivity = async (req, res) => {
       return res.status(404).json({ message: 'Activity not found' });
     }
 
-    // Auth validation: Admin or Project Creator or Assigned User can delete activity automatically
     const userRole = req.user.role;
     const userId = req.user.id;
     const isAssigned = activity.project.users ? activity.project.users.some(u => u.userId === userId) : false;
@@ -260,7 +293,7 @@ const deleteActivity = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to delete this activity' });
     }
 
-    // Delete images from disk if local path
+    // ลบไฟล์ภาพบนเครื่อง
     activity.images.forEach(img => {
       if (img.filePath && !img.filePath.startsWith('data:')) {
         const absolutePath = path.join(__dirname, '..', img.filePath);
@@ -272,7 +305,7 @@ const deleteActivity = async (req, res) => {
 
     await prisma.activity.delete({ where: { id: activityId } });
 
-    // Recalculate project accomplishments
+    // คำนวณความก้าวหน้าโครงการใหม่
     await updateProjectProgress(activity.projectId);
 
     res.json({ message: 'Activity deleted successfully' });
@@ -282,7 +315,11 @@ const deleteActivity = async (req, res) => {
   }
 };
 
-// Toggle Activity lock status (Admin only)
+/**
+ * สลับสถานะล็อกกิจกรรม (Toggle Activity Lock)
+ * PATCH /api/activities/:id/toggle-lock
+ * สงวนสิทธิ์เฉพาะ Admin: สำหรับอนุญาตหรือระงับการแก้ไขแผนกิจกรรม
+ */
 const toggleActivityLock = async (req, res) => {
   try {
     const { id } = req.params;
@@ -314,7 +351,11 @@ const toggleActivityLock = async (req, res) => {
   }
 };
 
-// Get all activities (filtered by project or user assignment)
+/**
+ * ดึงรายการกิจกรรมทั้งหมดตามเงื่อนไข (Get Activities List with Filters)
+ * GET /api/activities
+ * รองรับการกรองตามโครงการ, ปีงบประมาณ, คณะ, ภาควิชา, และสิทธิ์ RBAC
+ */
 const getActivities = async (req, res) => {
   try {
     const { projectId, search, status, facultyId, departmentId, fiscalYearId } = req.query;
@@ -342,7 +383,7 @@ const getActivities = async (req, res) => {
       whereClause.success = false;
     }
 
-    // Prepare project conditions
+    // ─── กรองตามเงื่อนไขของโครงการแม่และสิทธิ์บทบาท ───────────────────────
     let projectConditions = {};
 
     const parsedFiscalYearId = parseInt(fiscalYearId);
@@ -350,7 +391,6 @@ const getActivities = async (req, res) => {
       projectConditions.fiscalYearId = parsedFiscalYearId;
     }
 
-    // Role-based visibility and filters
     if (userRole === 'TEACHER') {
       projectConditions.OR = [
         { creatorId: userId },

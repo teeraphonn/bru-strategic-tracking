@@ -1,3 +1,17 @@
+/** ==============================================================================
+ * 🏛️ PAGE: PRESIDENT DASHBOARD (แดชบอร์ดกำกับติดตามยุทธศาสตร์ระดับอธิการบดี)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   ศูนย์สั่งการและกำกับติดตามยุทธศาสตร์สำหรับ อธิการบดี (President) และผู้บริหารระดับสูง
+ *   - บริหารจัดการแบบ Management by Exception: เน้นตรวจจับและแก้ไขปัญหาคอขวด (Bottlenecks)
+ *   - ภาพรวมยุทธศาสตร์มหาวิทยาลัย 4 เสาหลัก (4 Strategic Pillars)
+ *   - Matrix เปรียบเทียบผลงานข้ามคณะ (Cross-Faculty Matrix Benchmark)
+ *   - ระบบออกข้อสั่งการตรง (Executive Directives) ถึงผู้รับผิดชอบโครงการที่ล่าช้า
+ *   - การเจาะลึก 3 ระดับ (3-Tier Drill-down: สรุปภาพรวม -> โมดอล 30 วินาที -> หน้ารายงานฉบับเต็ม)
+ *   - แกลเลอรีภาพถ่ายกิจกรรมความสำเร็จทั่วทั้งมหาวิทยาลัย
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../../services/api';
@@ -59,41 +73,49 @@ ChartJS.register(
   Legend
 );
 
+/**
+ * คอมโพเนนต์หน้าแดชบอร์ดระดับมหาวิทยาลัยสำหรับอธิการบดี
+ */
 const PresidentDashboard = () => {
-  const { user } = useContext(AuthContext);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user } = useContext(AuthContext); // ข้อมูลผู้ใช้งานปัจจุบัน
+  const [data, setData] = useState(null);    // ข้อมูลสถิติแดชบอร์ดระดับสถาบัน
+  const [loading, setLoading] = useState(true); // สถานะกำลังโหลดข้อมูล
+  const [error, setError] = useState(null);     // ข้อความผิดพลาด
 
-  // Filters
-  const [selectedFiscalYear, setSelectedFiscalYear] = useState('');
-  const [fiscalYears, setFiscalYears] = useState([]);
-  const [selectedBudgetSource, setSelectedBudgetSource] = useState('');
-  const [budgetSources, setBudgetSources] = useState([]);
-  const [facultiesList, setFacultiesList] = useState([]);
-  const [selectedPhotoFaculty, setSelectedPhotoFaculty] = useState('');
+  // ─── ตัวกรองข้อมูล (Filters) ───
+  const [selectedFiscalYear, setSelectedFiscalYear] = useState('');     // ปีงบประมาณที่เลือก
+  const [fiscalYears, setFiscalYears] = useState([]);                   // รายการปีงบประมาณ
+  const [selectedBudgetSource, setSelectedBudgetSource] = useState(''); // แหล่งงบประมาณที่เลือก
+  const [budgetSources, setBudgetSources] = useState([]);               // รายการแหล่งงบประมาณ
+  const [facultiesList, setFacultiesList] = useState([]);               // รายชื่อคณะทั้งหมด
+  const [selectedPhotoFaculty, setSelectedPhotoFaculty] = useState(''); // คณะที่เลือกกรองภาพถ่าย
 
-  // Drill-down Modal state
-  const [selectedProjectModal, setSelectedProjectModal] = useState(null);
-  const [activePhotoIndex, setActivePhotoIndex] = useState(null);
-  const [selectedFacultyName, setSelectedFacultyName] = useState('');
-  const [facultyProjects, setFacultyProjects] = useState(null);
-  const [loadingFacultyProjects, setLoadingFacultyProjects] = useState(false);
-  const [showAllFaculties, setShowAllFaculties] = useState(false);
-  const [bottlenecksViewMode, setBottlenecksViewMode] = useState('CARDS'); // 'CARDS' | 'TABLE'
-  const [expandedMainProjectId, setExpandedMainProjectId] = useState(null);
-  const [mpFilter, setMpFilter] = useState('ALL'); // 'ALL' | 'GREEN' | 'YELLOW' | 'RED'
+  // ─── States สำหรับ Drill-down Modal และการแสดงผลเจาะลึก ───
+  const [selectedProjectModal, setSelectedProjectModal] = useState(null); // โครงการที่เปิด Modal เจาะลึก
+  const [activePhotoIndex, setActivePhotoIndex] = useState(null);         // ลำดับรูปภาพ Lightbox
+  const [selectedFacultyName, setSelectedFacultyName] = useState('');     // ชื่อคณะที่คลิกเลือก
+  const [facultyProjects, setFacultyProjects] = useState(null);           // รายการโครงการของคณะที่คลิก
+  const [loadingFacultyProjects, setLoadingFacultyProjects] = useState(false); // สถานะโหลดโครงการคณะ
+  const [showAllFaculties, setShowAllFaculties] = useState(false);       // แสดงคณะทั้งหมด / ซ่อน
+  const [bottlenecksViewMode, setBottlenecksViewMode] = useState('CARDS'); // โหมดแสดงจุดวิกฤต: 'CARDS' | 'TABLE'
+  const [expandedMainProjectId, setExpandedMainProjectId] = useState(null); // ID โครงการหลักที่ขยาย
+  const [mpFilter, setMpFilter] = useState('ALL');                         // ตัวกรองโครงการหลัก: 'ALL' | 'GREEN' | 'YELLOW' | 'RED'
 
   const allPhotos = data?.recentPhotos || [];
   const filteredPhotos = selectedPhotoFaculty
     ? allPhotos.filter(p => String(p.facultyId) === String(selectedPhotoFaculty))
     : allPhotos;
 
+  /**
+   * ดึงรายการโครงการทั้งหมดของคณะที่คลิกเลือก
+   * @param {number} facultyId - รหัสคณะ
+   * @param {string} facultyName - ชื่อคณะ
+   */
   const handleFacultyClick = async (facultyId, facultyName) => {
     try {
       setLoadingFacultyProjects(true);
       setSelectedFacultyName(facultyName);
-      setFacultyProjects([]); // clear old projects
+      setFacultyProjects([]); // ล้างรายการเดิมก่อน
       const response = await api.get('/projects', { 
         params: { 
           facultyId, 
@@ -115,6 +137,11 @@ const PresidentDashboard = () => {
     }
   };
 
+  /**
+   * ประเมินสถานะ RAG ของโครงการสำหรับอธิการบดี
+   * @param {Object} p
+   * @returns {Object} { status, label, badgeColor }
+   */
   const getProjectRAG = (p) => {
     const target = p.targetCount || 1;
     const completed = p.completedCount || 0;
@@ -135,6 +162,11 @@ const PresidentDashboard = () => {
     return { status: 'GREEN', label: 'ปกติ/เป็นไปตามแผน', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
   };
 
+  /**
+   * เปิดโมดอลเจาะลึกโครงการระดับผู้บริหาร (ExecutiveProjectModal)
+   * คำนวณสรุปทางการเงินล่วงหน้าเพื่อส่งต่อไปแสดงผล
+   * @param {Object} p
+   */
   const handleOpenDetailModal = (p) => {
     const target = p.targetCount || 1;
     const completed = p.completedCount || 0;
@@ -172,17 +204,19 @@ const PresidentDashboard = () => {
     setActivePhotoIndex((prev) => (prev + 1) % len);
   };
 
+  // ดักจับคีย์บอร์ดซ้าย/ขวา/Esc สำหรับ Photo Viewer
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (activePhotoIndex === null) return;
       if (e.key === 'ArrowLeft') handlePrevPhoto();
-      if (e.key === 'ArrowRight') handleNextPhoto();
-      if (e.key === 'Escape') setActivePhotoIndex(null);
+      else if (e.key === 'ArrowRight') handleNextPhoto();
+      else if (e.key === 'Escape') setActivePhotoIndex(null);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activePhotoIndex, filteredPhotos]);
 
+  // ดึง Master Filters สำหรับแดชบอร์ดอธิการบดี
   useEffect(() => {
     const fetchMasterData = async () => {
       try {
@@ -208,6 +242,9 @@ const PresidentDashboard = () => {
     fetchMasterData();
   }, []);
 
+  /**
+   * ดึงข้อมูลสรุปแดชบอร์ดระดับมหาวิทยาลัยสำหรับอธิการบดี
+   */
   const fetchPresidentData = async () => {
     try {
       setLoading(true);

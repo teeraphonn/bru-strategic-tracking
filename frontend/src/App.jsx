@@ -1,9 +1,21 @@
+/**
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: frontend/src/App.jsx
+ * หน้าที่: ตัวจัดการ Routing หลักของระบบ (Client-Side Router & Role Resolvers)
+ *          - รองรับการโหลดหน้าเว็บแบบ Lazy Loading (React.lazy + Suspense)
+ *          - ระบบ Dynamic Role Resolvers: สลับหน้าจออัตโนมัติตามสิทธิ์ผู้ใช้ (ADMIN, DEAN, TEACHER, PRESIDENT)
+ *          - มิดเดิลแวร์หน้าบ้าน: ProtectedRoute (ตรวจการ Login), AdminRoute (ตรวจสิทธิ์ Admin)
+ *          - โครงสร้างเส้นทางทั้งหมดของระบบ (Dashboard, Projects, Reports, MasterData, Issues)
+ * ============================================================================
+ */
+
 import React, { useContext, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './contexts/AuthContext';
 import AppLayout from './layouts/AppLayout';
 
-// Lightweight fallback loader while lazy chunks load
+// ─── Component โหลดหน้าระหว่างรอ Dynamic Chunk (PageLoader) ───────────────
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[400px] w-full">
     <div className="flex flex-col items-center gap-3">
@@ -13,10 +25,10 @@ const PageLoader = () => (
   </div>
 );
 
-// Common pages
+// ─── หน้าสำหรับการยืนยันตัวตน (โหลดทันที) ──────────────────────────────────
 import Login from './pages/auth/Login';
 
-// Lazy-loaded Admin pages
+// ─── หน้าจอสำหรับผู้ดูแลระบบ (Admin Role: Lazy Loaded) ─────────────────────
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 const AdminProjects = lazy(() => import('./pages/admin/Projects'));
 const AdminReports = lazy(() => import('./pages/admin/Reports'));
@@ -24,7 +36,7 @@ const MasterData = lazy(() => import('./pages/admin/MasterData'));
 const AdminIssues = lazy(() => import('./pages/admin/Issues'));
 const AdminActivities = lazy(() => import('./pages/admin/AdminActivities'));
 
-// Lazy-loaded Teacher pages
+// ─── หน้าจอสำหรับอาจารย์และเจ้าหน้าที่ (Teacher Role: Lazy Loaded) ─────────
 const TeacherDashboard = lazy(() => import('./pages/teacher/Dashboard'));
 const TeacherProjects = lazy(() => import('./pages/teacher/Projects'));
 const ActivitiesList = lazy(() => import('./pages/teacher/ActivitiesList'));
@@ -32,20 +44,24 @@ const ProjectForm = lazy(() => import('./pages/teacher/ProjectForm'));
 const ProjectDetails = lazy(() => import('./pages/teacher/ProjectDetails'));
 const Gallery = lazy(() => import('./pages/teacher/Gallery'));
 
-// Lazy-loaded Dean pages
+// ─── หน้าจอสำหรับคณบดี (Dean Role: Lazy Loaded) ───────────────────────────
 const DeanDashboard = lazy(() => import('./pages/dean/Dashboard'));
 const DeanProjects = lazy(() => import('./pages/dean/Projects'));
 const DeanReports = lazy(() => import('./pages/dean/Reports'));
 
-// Lazy-loaded President pages
+// ─── หน้าจอสำหรับอธิการบดี (President Role: Lazy Loaded) ───────────────────
 const PresidentDashboard = lazy(() => import('./pages/president/Dashboard'));
 const PresidentProjects = lazy(() => import('./pages/president/Projects'));
 const PresidentReports = lazy(() => import('./pages/president/Reports'));
 
-// Lazy-loaded Executive pages
+// ─── หน้าจอรายละเอียดโครงการสำหรับผู้บริหาร (Executive Project Detail) ─────
 const ExecutiveProjectDetail = lazy(() => import('./pages/executive/ProjectDetail'));
 
-// Dynamic Resolver for Activities page
+/**
+ * ตัวสลับหน้ากิจกรรมอัตโนมัติตามบทบาท (Dynamic Activities Resolver)
+ * - Admin: แสดงหน้า AdminActivities (กำกับติดตามกิจกรรมทุกโครงการ)
+ * - บทบาทอื่น: แสดงหน้า ActivitiesList (กิจกรรมในโครงการที่ตนเองรับผิดชอบ)
+ */
 const ActivitiesResolver = () => {
   const { user } = useContext(AuthContext);
   switch (user?.role) {
@@ -56,7 +72,9 @@ const ActivitiesResolver = () => {
   }
 };
 
-// Protect routes requiring authentication
+/**
+ * ตัวป้องกันเส้นทางสำหรับผู้ใช้ที่เข้าสู่ระบบแล้วเท่านั้น (Protected Route Guard)
+ */
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
 
@@ -75,7 +93,9 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Protect routes requiring ADMIN role
+/**
+ * ตัวป้องกันเส้นทางสงวนสิทธิ์เฉพาะผู้ดูแลระบบ (Admin Only Guard)
+ */
 const AdminRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
 
@@ -94,7 +114,13 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-// Dynamic Resolver for Dashboard page
+/**
+ * ตัวสลับหน้าแดชบอร์ดอัตโนมัติตามบทบาท (Dynamic Dashboard Resolver)
+ * - ADMIN -> AdminDashboard
+ * - TEACHER -> TeacherDashboard
+ * - DEAN -> DeanDashboard
+ * - PRESIDENT -> PresidentDashboard
+ */
 const DashboardResolver = () => {
   const { user } = useContext(AuthContext);
   switch (user?.role) {
@@ -111,7 +137,9 @@ const DashboardResolver = () => {
   }
 };
 
-// Dynamic Resolver for Projects page
+/**
+ * ตัวสลับหน้ารายการโครงการอัตโนมัติตามบทบาท (Dynamic Projects Resolver)
+ */
 const ProjectsResolver = () => {
   const { user } = useContext(AuthContext);
   switch (user?.role) {
@@ -128,7 +156,9 @@ const ProjectsResolver = () => {
   }
 };
 
-// Dynamic Resolver for Reports page
+/**
+ * ตัวสลับหน้ารายงานสรุปตามบทบาท (Dynamic Reports Resolver)
+ */
 const ReportsResolver = () => {
   const { user } = useContext(AuthContext);
   switch (user?.role) {
@@ -151,10 +181,10 @@ function App() {
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Public Login Route */}
+            {/* เส้นทางสาธารณะ: เข้าสู่ระบบ */}
             <Route path="/login" element={<Login />} />
 
-            {/* Protected Application Routes */}
+            {/* เส้นทางที่ต้องยืนยันตัวตนภายใต้ AppLayout */}
             <Route 
               path="/" 
               element={
@@ -163,10 +193,10 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              {/* Dashboard */}
+              {/* หน้าหลัก: สลับแดชบอร์ดตาม Role */}
               <Route index element={<DashboardResolver />} />
               
-              {/* Admin Dashboard */}
+              {/* แดชบอร์ดเฉพาะ Admin */}
               <Route 
                 path="dashboard" 
                 element={
@@ -176,7 +206,7 @@ function App() {
                 } 
               />
               
-              {/* Projects lifecycle */}
+              {/* วงจรการจัดการโครงการ (Projects Lifecycle) */}
               <Route path="projects" element={<ProjectsResolver />} />
               <Route path="projects/new" element={<ProjectForm />} />
               <Route path="projects/:id" element={<ProjectDetails />} />
@@ -185,10 +215,10 @@ function App() {
               <Route path="gallery" element={<Gallery />} />
               <Route path="activities" element={<ActivitiesResolver />} />
               
-              {/* Report modules */}
+              {/* หน้ารายงานสรุปผล (Reports) */}
               <Route path="reports" element={<ReportsResolver />} />
 
-              {/* Admin only Master Data CRUDs */}
+              {/* การจัดการข้อมูลพื้นฐาน (เฉพาะ Admin) */}
               <Route 
                 path="master-data" 
                 element={
@@ -198,7 +228,7 @@ function App() {
                 } 
               />
 
-              {/* Admin Issue Management Center */}
+              {/* ศูนย์จัดการปัญหาการใช้งานระบบ (เฉพาะ Admin) */}
               <Route 
                 path="admin/issues" 
                 element={
@@ -209,7 +239,7 @@ function App() {
               />
             </Route>
 
-            {/* Catch-all Redirect */}
+            {/* ดักจับเส้นทางไม่ถูกต้อง (Redirect กลับหน้าแรก) */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

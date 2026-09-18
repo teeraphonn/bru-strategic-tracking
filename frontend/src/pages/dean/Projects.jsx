@@ -1,3 +1,15 @@
+/** ==============================================================================
+ * 📁 PAGE: DEAN PROJECTS (หน้ารายการโครงการยุทธศาสตร์ระดับคณะ)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   หน้ารวมโครงการยุทธศาสตร์ทั้งหมดที่สังกัดคณะของคณบดี (Dean Projects View)
+ *   - ติดตามสถานะความก้าวหน้าและการเบิกจ่ายงบประมาณของโครงการทุกภาควิชาในคณะ
+ *   - ระบบค้นหาและตัวกรองตามปีงบประมาณ และภาควิชา/สาขาวิชา
+ *   - ตารางแสดงผลงาน KPI ร้อยละความสำเร็จ และอัตราการใช้จ่ายงบประมาณ (Burn Rate)
+ *   - ลิงก์เจาะลึกไปยังหน้ารายละเอียดโครงการ (Project Details)
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -10,22 +22,25 @@ import {
   FiBriefcase
 } from 'react-icons/fi';
 
+/**
+ * คอมโพเนนต์หน้ารายการโครงการยุทธศาสตร์ระดับคณะสำหรับคณบดี
+ */
 const DeanProjects = () => {
-  // Projects list state
-  const [projects, setProjects] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-  const [loading, setLoading] = useState(false);
+  // ─── States สำหรับรายการโครงการและการแบ่งหน้า ───
+  const [projects, setProjects] = useState([]);                              // รายการโครงการในคณะ
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 }); // ข้อมูลการแบ่งหน้า
+  const [loading, setLoading] = useState(false);                             // สถานะกำลังโหลดข้อมูล
 
-  // Filters State
-  const [search, setSearch] = useState('');
-  const [fiscalYearId, setFiscalYearId] = useState('');
-  const [departmentId, setDepartmentId] = useState('');
+  // ─── States สำหรับตัวกรอง ───
+  const [search, setSearch] = useState('');                                 // คำค้นหาชื่อโครงการ
+  const [fiscalYearId, setFiscalYearId] = useState('');                     // รหัสปีงบประมาณ
+  const [departmentId, setDepartmentId] = useState('');                     // รหัสภาควิชาในสังกัดคณะ
 
-  // Dropdown lists
+  // ─── Master Data สำหรับตัวเลือกใน Select Filter ───
   const [fiscalYears, setFiscalYears] = useState([]);
   const [departments, setDepartments] = useState([]);
 
-  // Load initial dropdowns
+  // โหลดรายการปีงบประมาณและภาควิชาในคณะเมื่อเริ่มต้น
   useEffect(() => {
     const fetchFilters = async () => {
       try {
@@ -36,7 +51,7 @@ const DeanProjects = () => {
         setFiscalYears(years.data);
         setDepartments(depts.data);
 
-        // Pre-select active fiscal year if any
+        // เลือกปีงบประมาณที่ active โดยอัตโนมัติ
         const activeYear = years.data.find(y => y.active);
         if (activeYear) setFiscalYearId(activeYear.id);
       } catch (err) {
@@ -46,7 +61,10 @@ const DeanProjects = () => {
     fetchFilters();
   }, []);
 
-  // Fetch projects list matching filters
+  /**
+   * ดึงรายการโครงการระดับคณะตามเงื่อนไขตัวกรองและการแบ่งหน้า
+   * @param {number} page - ลำดับหน้าที่ต้องการดึงข้อมูล
+   */
   const fetchProjects = async (page = 1) => {
     setLoading(true);
     try {

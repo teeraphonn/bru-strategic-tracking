@@ -561,3 +561,4 @@ Table issue_reports {
 | **14** | `projects` | **1 : N** | `activities` | หนึ่งโครงการแบ่งการดำเนินงานออกเป็นหลายกิจกรรมย่อย (Cascade Delete) |
 | **15** | `activities` | **1 : N** | `activity_images` | หนึ่งกิจกรรมมีรูปภาพหลักฐานยืนยันได้หลายภาพ (Cascade Delete) |
 | **16** | `users` | **1 : N** | `issue_reports` | ผู้ใช้งานหนึ่งคนสามารถส่งรายงานแจ้งปัญหาได้หลายครั้ง |
+

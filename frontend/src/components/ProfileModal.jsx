@@ -1,8 +1,30 @@
+/** ==============================================================================
+ * 📦 COMPONENT: PROFILE MODAL (หน้าต่างข้อมูลส่วนตัวและจัดการรูปโปรไฟล์ผู้ใช้งาน)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   โมดอลสำหรับแสดงข้อมูลส่วนตัวของผู้ใช้งานที่เข้าสู่ระบบ
+ *   - แสดงรูปโปรไฟล์ พร้อมฟังก์ชันคลิกเพื่อเลือกไฟล์รูปภาพใหม่ (JPG, PNG) และอัปโหลด
+ *   - แสดงชื่อ-สกุล, รหัสบุคลากร, บทบาทในระบบ (Admin, President, Dean, Teacher)
+ *   - แสดงสังกัดคณะ และภาควิชา/หน่วยงาน
+ *   - รองรับการปิดหน้าต่างด้วยปุ่มปิด, การคลิกพื้นหลัง (Backdrop) หรือกดปุ่ม Escape
+ * ==============================================================================
+ */
+
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FiX, FiUser, FiKey, FiBriefcase, FiLayers, FiBookmark, FiCamera } from 'react-icons/fi';
 import { getImageUrl } from '../utils/imageUrl';
 
+/**
+ * คอมโพเนนต์โมดอลแสดงโปรไฟล์ผู้ใช้
+ * @param {Object} props
+ * @param {boolean} props.isOpen - สถานะการเปิด/ปิดโมดอล
+ * @param {Function} props.onClose - ฟังก์ชันสำหรับสั่งปิดโมดอล
+ * @param {Object} props.user - ข้อมูลผู้ใช้งานปัจจุบัน
+ * @param {boolean} props.uploadingAvatar - สถานะกำลังอัปโหลดรูปภาพใหม่
+ * @param {Function} props.onAvatarUpload - ฟังก์ชัน Callback เมื่อเลือกไฟล์ภาพโปรไฟล์
+ * @param {Object} props.avatarInputRef - Ref ของ input type="file" ซ่อนอยู่
+ */
 const ProfileModal = ({ 
   isOpen, 
   onClose, 
@@ -11,6 +33,7 @@ const ProfileModal = ({
   onAvatarUpload, 
   avatarInputRef 
 }) => {
+  // ดักจับปุ่ม Escape บนแป้นพิมพ์เพื่อปิดโมดอล
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -25,11 +48,21 @@ const ProfileModal = ({
 
   if (!isOpen || !user) return null;
 
+  /**
+   * ดึง URL ของรูปภาพโปรไฟล์จาก Path ในฐานข้อมูล
+   * @param {string} avatarPath
+   * @returns {string|null}
+   */
   const getAvatarSrc = (avatarPath) => {
     if (!avatarPath || typeof avatarPath !== 'string') return null;
     return getImageUrl(avatarPath);
   };
 
+  /**
+   * แปลงรหัส Role เป็นชื่อภาษาไทยที่เข้าใจง่าย
+   * @param {string} role
+   * @returns {string}
+   */
   const getRoleTitle = (role) => {
     switch (role) {
       case 'ADMIN': return 'ผู้ดูแลระบบ (Admin)';
@@ -39,6 +72,7 @@ const ProfileModal = ({
     }
   };
 
+  // ดึงชื่อภาควิชาและคณะที่ถูกต้อง (รองรับทั้งแบบ Object และ String)
   const departmentName = typeof user.department === 'object' && user.department?.name 
     ? user.department.name 
     : (typeof user.department === 'string' ? user.department : 'ส่วนกลาง');

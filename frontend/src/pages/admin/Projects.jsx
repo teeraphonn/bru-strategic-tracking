@@ -1,3 +1,16 @@
+/** ==============================================================================
+ * 📁 PAGE: ADMIN PROJECTS (หน้ากำกับดูแลและจัดการโครงการยุทธศาสตร์ระดับมหาวิทยาลัย)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   หน้ารายการโครงการยุทธศาสตร์ทั้งหมดของมหาวิทยาลัยสำหรับผู้ดูแลระบบ (Admin)
+ *   - ตรวจสอบรายการโครงการจากทุกคณะและหน่วยงาน
+ *   - ระบบสั่งล็อก / ปลดล็อกโครงการ (Toggle Project Lock): ป้องกันผู้ใช้ทั่วไปลบโครงการที่มีข้อมูลสำคัญ
+ *   - ระบบค้นหาและตัวกรองตามปีงบประมาณ คณะ และภาควิชา
+ *   - ปุ่มสร้างโครงการใหม่ และการแบ่งหน้าข้อมูล (Pagination)
+ *   - สิทธิ์ในการลบโครงการและกิจกรรมย่อยที่เกี่ยวข้องทั้งหมด
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
@@ -16,19 +29,25 @@ import {
   FiEye
 } from 'react-icons/fi';
 
+/**
+ * คอมโพเนนต์หน้าบริหารโครงการยุทธศาสตร์ทั้งหมดของผู้ดูแลระบบ
+ */
 const AdminProjects = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [projects, setProjects] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-  const [loading, setLoading] = useState(false);
+  // ─── States สำหรับรายการโครงการและการแบ่งหน้า ───
+  const [projects, setProjects] = useState([]);                              // รายการโครงการ
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 }); // ข้อมูลการแบ่งหน้า
+  const [loading, setLoading] = useState(false);                             // สถานะกำลังโหลดข้อมูล
 
-  const [search, setSearch] = useState('');
-  const [fiscalYearId, setFiscalYearId] = useState('');
-  const [departmentId, setDepartmentId] = useState('');
-  const [facultyId, setFacultyId] = useState(searchParams.get('facultyId') || '');
+  // ─── States สำหรับตัวกรองค้นหา ───
+  const [search, setSearch] = useState('');                                 // คำค้นหาชื่อโครงการ
+  const [fiscalYearId, setFiscalYearId] = useState('');                     // รหัสปีงบประมาณ
+  const [departmentId, setDepartmentId] = useState('');                     // รหัสภาควิชา
+  const [facultyId, setFacultyId] = useState(searchParams.get('facultyId') || ''); // รหัสคณะ
 
+  // ─── Master Data ตัวเลือก Dropdown ───
   const [fiscalYears, setFiscalYears] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [faculties, setFaculties] = useState([]);
@@ -54,6 +73,10 @@ const AdminProjects = () => {
     fetchFilters();
   }, []);
 
+  /**
+   * ดึงรายการโครงการตามหน้าที่เลือกและเงื่อนไขตัวกรอง
+   * @param {number} page - ลำดับหน้าที่ต้องการดึงข้อมูล
+   */
   const fetchProjects = async (page = 1) => {
     setLoading(true);
     try {
@@ -82,6 +105,11 @@ const AdminProjects = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, fiscalYearId, departmentId, facultyId]);
 
+  /**
+   * ลบโครงการยุทธศาสตร์และข้อมูลกิจกรรมทั้งหมดที่สังกัดโครงการนี้
+   * @param {Event} e
+   * @param {number} id - รหัสโครงการ
+   */
   const handleDelete = async (e, id) => {
     e.preventDefault();
     e.stopPropagation();
@@ -109,6 +137,13 @@ const AdminProjects = () => {
     });
   };
 
+  /**
+   * สลับสถานะล็อก/ปลดล็อกโครงการ (ป้องกันไม่ให้ผู้ใช้ทั่วไปแก้ไขหรือลบ)
+   * @param {Event} e
+   * @param {number} id - รหัสโครงการ
+   * @param {boolean} currentLocked - สถานะล็อกปัจจุบัน
+   * @param {string} projName - ชื่อโครงการ
+   */
   const handleToggleProjectLock = async (e, id, currentLocked, projName) => {
     e.preventDefault();
     e.stopPropagation();

@@ -1,3 +1,13 @@
+/** ==============================================================================
+ * หน้าแดชบอร์ดสำหรับอาจารย์และผู้รับผิดชอบโครงการ (Teacher/Project Manager Dashboard)
+ * ------------------------------------------------------------------------------
+ * นำเสนอภาพรวมการดำเนินโครงการที่อาจารย์ท่านนั้นเป็นผู้รับผิดชอบ:
+ *   - แถบเกจสรุป 4 มิติ: ความก้าวหน้าเป้าหมายตัวชี้วัด, อัตราเบิกจ่ายงบประมาณ (Burn Rate),
+ *     จำนวนโครงการในความดูแล (กำลังดำเนินการ/เสร็จ), สถานะกิจกรรม
+ *   - รายการโครงการล่าสุด (Recent Projects) พร้อมลิงก์ไปยังหน้ารายละเอียด
+ *   - แกลเลอรีภาพถ่ายกิจกรรมล่าสุด (Activity Photos) พร้อม Photo Viewer แบบ Full-Screen Modal
+ * ============================================================================== */
+
 import React, { useEffect, useState, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../../services/api';
@@ -13,33 +23,52 @@ import {
 import { Link } from 'react-router-dom';
 import { getImageUrl } from '../../utils/imageUrl';
 
+/**
+ * คอมโพเนนต์แดชบอร์ดหลักของบทบาทอาจารย์/ผู้รับผิดชอบโครงการ
+ * @returns {JSX.Element}
+ */
 const TeacherDashboard = () => {
-  const { user } = useContext(AuthContext);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // ─── ข้อมูลผู้ใช้และ State ข้อมูลแดชบอร์ด ───
+  const { user } = useContext(AuthContext);             // ข้อมูลผู้ใช้งานที่ล็อกอินอยู่
+  const [data, setData] = useState(null);               // ข้อมูลสรุปแดชบอร์ดจาก API
+  const [loading, setLoading] = useState(true);         // สถานะกำลังโหลดข้อมูล
+  const [error, setError] = useState(null);             // ข้อความแจ้งเตือนข้อผิดพลาด
 
-  // Photo Viewer states
-  const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
-  const [viewerImages, setViewerImages] = useState([]);
-  const [activeViewerIndex, setActiveViewerIndex] = useState(0);
+  // ─── State สำหรับระบบ Photo Viewer (ดูรูปภาพขยายเต็มจอ) ───
+  const [photoViewerOpen, setPhotoViewerOpen] = useState(false);  // เปิด/ปิด Modal ขยายรูป
+  const [viewerImages, setViewerImages] = useState([]);          // รายการรูปภาพทั้งหมดที่นำมาแสดงใน Modal
+  const [activeViewerIndex, setActiveViewerIndex] = useState(0); // ดัชนีของรูปภาพที่กำลังเปิดดูอยู่
 
+  /**
+   * เปิดหน้าต่างแสดงภาพขยายเต็มหน้าจอ
+   * @param {Array} imagesList - รายการรูปภาพ
+   * @param {number} index - ลำดับของรูปภาพที่ต้องการเปิด
+   */
   const openPhotoViewer = (imagesList, index) => {
     setViewerImages(imagesList);
     setActiveViewerIndex(index);
     setPhotoViewerOpen(true);
   };
 
+  /**
+   * เปลี่ยนไปดูรูปภาพก่อนหน้า (รองรับการวนกลับไปท้ายสุด)
+   */
   const handlePrevPhoto = () => {
     if (viewerImages.length === 0) return;
     setActiveViewerIndex(prev => (prev - 1 + viewerImages.length) % viewerImages.length);
   };
 
+  /**
+   * เปลี่ยนไปดูรูปภาพถัดไป (รองรับการวนกลับไปรูปแรก)
+   */
   const handleNextPhoto = () => {
     if (viewerImages.length === 0) return;
     setActiveViewerIndex(prev => (prev + 1) % viewerImages.length);
   };
 
+  /**
+   * ดักจับปุ่มคีย์บอร์ดสำหรับการนำทางใน Photo Viewer (ลูกศรซ้าย, ขวา, และปุ่ม Esc เพื่อปิด)
+   */
   useEffect(() => {
     if (!photoViewerOpen) return;
     const handleKeyDown = (e) => {
@@ -51,6 +80,9 @@ const TeacherDashboard = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [photoViewerOpen, viewerImages]);
 
+  /**
+   * ดึงข้อมูลสรุปแดชบอร์ดของอาจารย์จากเซิร์ฟเวอร์
+   */
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {

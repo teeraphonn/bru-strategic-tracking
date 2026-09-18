@@ -3,11 +3,11 @@ const path = require('path');
 const puppeteer = require('puppeteer-core');
 const { marked } = require('marked');
 
-async function generateCodeExplainedPdf() {
-  console.log('Reading CODE_EXPLAINED.md to compile CODE_EXPLAINED.pdf...');
-  const mdPath = path.join(__dirname, 'CODE_EXPLAINED.md');
+async function generatePresentPdf() {
+  console.log('Reading present.md to compile present.pdf...');
+  const mdPath = path.join(__dirname, 'present.md');
   if (!fs.existsSync(mdPath)) {
-    throw new Error('CODE_EXPLAINED.md not found at ' + mdPath);
+    throw new Error('present.md not found at ' + mdPath);
   }
   const markdownText = fs.readFileSync(mdPath, 'utf8');
 
@@ -35,6 +35,11 @@ async function generateCodeExplainedPdf() {
       return `<h2 class="major-chapter" id="${encodeURIComponent(text.trim())}">${text}</h2>`;
     }
 
+    // Check if this is a Q&A heading (e.g. "### Q1:", "### Q2:")
+    if (level === 3 && /^Q\d+:/.test(text.trim())) {
+      return `<h3 class="qa-heading" id="${encodeURIComponent(text.trim())}">${text}</h3>`;
+    }
+
     return `<h${level}>${text}</h${level}>`;
   };
 
@@ -50,7 +55,7 @@ async function generateCodeExplainedPdf() {
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>คู่มืออธิบายโค้ดและการทำงานทั้งระบบ (CODE_EXPLAINED.pdf)</title>
+  <title>คู่มือเตรียมสอบโครงการจบ: ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์มหาวิทยาลัย (present.pdf)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -69,8 +74,8 @@ async function generateCodeExplainedPdf() {
 
     body {
       font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 11pt;
-      line-height: 1.6;
+      font-size: 11.5pt;
+      line-height: 1.65;
       color: #1e293b;
       background: #ffffff;
       margin: 0;
@@ -89,7 +94,7 @@ async function generateCodeExplainedPdf() {
 
     .doc-title-main {
       font-family: 'Prompt', sans-serif;
-      font-size: 15.5pt;
+      font-size: 16pt;
       font-weight: 700;
       color: #1e1b4b;
       line-height: 1.3;
@@ -97,7 +102,7 @@ async function generateCodeExplainedPdf() {
 
     .doc-subtitle-main {
       font-family: 'Prompt', sans-serif;
-      font-size: 10.5pt;
+      font-size: 11pt;
       color: #4f46e5;
       font-weight: 600;
       margin-top: 4px;
@@ -114,27 +119,29 @@ async function generateCodeExplainedPdf() {
       border: 1px solid #c7d2fe;
     }
 
-    /* ── Headings & Page Break Rules ── */
+    /* ── Headings & Page Break Rules (ป้องกันหัวข้อตกไปอยู่ท้ายกระดาษ) ── */
     h1, h2, h3, h4, h5, h6 {
       font-family: 'Prompt', sans-serif;
       color: #0f172a;
-      margin-top: 20px;
-      margin-bottom: 8px;
+      margin-top: 22px;
+      margin-bottom: 10px;
       line-height: 1.35;
+      /* กฎสำคัญ: ห้ามตัดหน้ากระดาษทันทีหลังหัวข้อโดยเด็ดขาด */
       page-break-after: avoid !important;
       break-after: avoid !important;
     }
 
     h1 {
-      font-size: 17pt;
+      font-size: 18pt;
       color: #1e1b4b;
       border-bottom: 2px solid #e2e8f0;
       padding-bottom: 6px;
       margin-top: 0;
     }
 
+    /* หัวข้อหลักบทที่ 1 - 7 บังคับขึ้นหน้าใหม่เสมอ */
     h2.major-chapter {
-      font-size: 14pt;
+      font-size: 15pt;
       color: #312e81;
       border-left: 5px solid #4f46e5;
       padding-left: 10px;
@@ -142,26 +149,43 @@ async function generateCodeExplainedPdf() {
       padding-top: 6px;
       padding-bottom: 6px;
       border-radius: 0 6px 6px 0;
-      margin-top: 26px;
+      margin-top: 28px;
       page-break-before: always !important;
       break-before: page !important;
     }
 
     h2 {
-      font-size: 13.5pt;
+      font-size: 14pt;
       color: #1e293b;
     }
 
     h3 {
-      font-size: 12pt;
+      font-size: 12.5pt;
       color: #334155;
-      margin-top: 16px;
+      margin-top: 18px;
+    }
+
+    /* หัวข้อคำถาม Q&A */
+    h3.qa-heading {
+      color: #4338ca;
+      background: #f5f3ff;
+      border-left: 4px solid #6366f1;
+      padding: 6px 10px;
+      border-radius: 0 4px 4px 0;
+      margin-top: 18px;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
     }
 
     h4 {
-      font-size: 11pt;
+      font-size: 11.5pt;
       color: #475569;
-      margin-top: 12px;
+      margin-top: 14px;
+    }
+
+    h5 {
+      font-size: 10.5pt;
+      color: #64748b;
     }
 
     p, li {
@@ -169,23 +193,28 @@ async function generateCodeExplainedPdf() {
       widows: 3;
     }
 
+    /* ── Blockquote (Callouts) ── */
     blockquote {
-      margin: 10px 0;
-      padding: 8px 12px;
+      margin: 12px 0;
+      padding: 10px 14px;
       background: #f8fafc;
       border-left: 4px solid #6366f1;
       border-radius: 0 6px 6px 0;
       color: #334155;
-      font-size: 10.5pt;
+      font-size: 11pt;
       page-break-inside: avoid;
       break-inside: avoid;
+    }
+
+    blockquote strong {
+      color: #1e1b4b;
     }
 
     /* ── Tables ── */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 12px 0;
+      margin: 14px 0;
       font-size: 9.5pt;
       page-break-inside: auto;
       break-inside: auto;
@@ -205,13 +234,13 @@ async function generateCodeExplainedPdf() {
       color: #1e1b4b;
       font-family: 'Prompt', sans-serif;
       font-weight: 600;
-      padding: 6px 8px;
+      padding: 7px 9px;
       border: 1px solid #cbd5e1;
       text-align: left;
     }
 
     td {
-      padding: 5px 8px;
+      padding: 6px 8px;
       border: 1px solid #e2e8f0;
       vertical-align: top;
     }
@@ -223,7 +252,7 @@ async function generateCodeExplainedPdf() {
     /* ── Code & ASCII Trees ── */
     code {
       font-family: 'Fira Code', Consolas, monospace;
-      font-size: 8.5pt;
+      font-size: 9pt;
       background-color: #f1f5f9;
       color: #4338ca;
       padding: 1.5px 4px;
@@ -242,7 +271,7 @@ async function generateCodeExplainedPdf() {
       line-height: 1.45;
       page-break-inside: avoid;
       break-inside: avoid;
-      margin: 10px 0;
+      margin: 12px 0;
       border: 1px solid #334155;
       white-space: pre-wrap;
       word-break: break-word;
@@ -287,7 +316,7 @@ async function generateCodeExplainedPdf() {
       border: none;
       height: 1px;
       background: #e2e8f0;
-      margin: 16px 0;
+      margin: 18px 0;
       page-break-after: avoid;
       break-after: avoid;
     }
@@ -298,12 +327,12 @@ async function generateCodeExplainedPdf() {
     }
 
     ul, ol {
-      margin: 6px 0 10px 0;
-      padding-left: 20px;
+      margin: 8px 0 12px 0;
+      padding-left: 22px;
     }
 
     li {
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
   </style>
 </head>
@@ -312,11 +341,11 @@ async function generateCodeExplainedPdf() {
   <div class="doc-header-main">
     <div>
       <div class="doc-title-main">มหาวิทยาลัยราชภัฏบุรีรัมย์ — Strategic Performance Tracking System</div>
-      <div class="doc-subtitle-main">คู่มืออธิบายสถาปัตยกรรมโค้ดและการทำงานทั้งระบบ (System & Code Architecture Guide)</div>
+      <div class="doc-subtitle-main">คู่มือเตรียมสอบโครงการจบ: การทำงานระบบ การแก้ไขโค้ด และแนวทางการตอบข้อซักถาม (Defense Masterplan)</div>
     </div>
     <div style="text-align: right;">
-      <span class="meta-badge">เอกสารอธิบายโค้ด</span>
-      <div style="font-size: 8.5pt; color: #64748b; margin-top: 4px;">ฉบับละเอียด & สมบูรณ์</div>
+      <span class="meta-badge">เอกสารเตรียมสอบ</span>
+      <div style="font-size: 9pt; color: #64748b; margin-top: 4px;">ฉบับเข้าใจง่าย & ครบถ้วน</div>
     </div>
   </div>
 
@@ -341,6 +370,14 @@ async function generateCodeExplainedPdf() {
             secondaryColor: '#f1f5f9',
             tertiaryColor: '#faf5ff',
             fontSize: '12px'
+          },
+          flowchart: {
+            useMaxWidth: false,
+            htmlLabels: true,
+            curve: 'basis',
+            nodeSpacing: 25,
+            rankSpacing: 25,
+            padding: 8
           },
           sequence: {
             useMaxWidth: false,
@@ -373,7 +410,7 @@ async function generateCodeExplainedPdf() {
 </body>
 </html>`;
 
-  const htmlPath = path.join(__dirname, 'code_explained_temp.html');
+  const htmlPath = path.join(__dirname, 'present_temp.html');
   fs.writeFileSync(htmlPath, fullHtml, 'utf8');
 
   const chromePaths = [
@@ -421,7 +458,7 @@ async function generateCodeExplainedPdf() {
   await page.evaluateHandle('document.fonts.ready');
   await new Promise(r => setTimeout(r, 2000));
 
-  const pdfPath = path.join(__dirname, 'CODE_EXPLAINED.pdf');
+  const pdfPath = path.join(__dirname, 'present.pdf');
   console.log('Printing to PDF:', pdfPath);
 
   await page.pdf({
@@ -436,10 +473,10 @@ async function generateCodeExplainedPdf() {
     },
     displayHeaderFooter: true,
     headerTemplate: `<div style="font-family: 'Prompt', 'Sarabun', sans-serif; font-size: 8px; width: 100%; text-align: right; padding-right: 14mm; color: #64748b;">
-      มหาวิทยาลัยราชภัฏบุรีรัมย์ | BRU Strategic Tracking — คู่มืออธิบายโค้ดระบบ (CODE_EXPLAINED.pdf)
+      มหาวิทยาลัยราชภัฏบุรีรัมย์ | BRU Strategic Tracking System — คู่มือเตรียมสอบนำเสนอ (present.pdf)
     </div>`,
     footerTemplate: `<div style="font-family: 'Prompt', 'Sarabun', sans-serif; font-size: 8.5px; width: 100%; display: flex; justify-content: space-between; padding: 0 14mm; color: #64748b;">
-      <span>คู่มืออธิบายโค้ดและการทำงานทั้งระบบ (System & Code Architecture Guide)</span>
+      <span>คู่มือเตรียมสอบโครงการจบ (Defense Masterplan)</span>
       <span>หน้า <span class="pageNumber"></span> จาก <span class="totalPages"></span></span>
     </div>`
   });
@@ -450,11 +487,11 @@ async function generateCodeExplainedPdf() {
     fs.unlinkSync(htmlPath);
   }
 
-  console.log('Successfully generated CODE_EXPLAINED.pdf at:', pdfPath);
+  console.log('Successfully generated present.pdf at:', pdfPath);
 }
 
-generateCodeExplainedPdf().catch(err => {
-  console.error('Failed to generate CODE_EXPLAINED.pdf:', err);
+generatePresentPdf().catch(err => {
+  console.error('Failed to generate present.pdf:', err);
   process.exit(1);
 });
 

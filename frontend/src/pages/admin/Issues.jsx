@@ -1,3 +1,15 @@
+/** ==============================================================================
+ * 🛠️ PAGE: ADMIN ISSUES (ศูนย์รับแจ้งและแก้ไขปัญหาระบบสารสนเทศ)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   หน้าจอสำหรับผู้ดูแลระบบ (Admin) เพื่อบริหารจัดการเรื่องแจ้งปัญหาและข้อเสนอแนะจากผู้ใช้
+ *   - แผงสถิติสรุปภาพรวมเรื่องแจ้ง (รอดำเนินการ, กำลังแก้ไข, แก้ไขเรียบร้อย, ยกเลิก)
+ *   - ตารางรายการปัญหา พร้อมตัวกรองตามสถานะและระดับความเร่งด่วน
+ *   - โมดอลอัปเดตสถานะและพิมพ์ข้อความตอบกลับไปยังผู้แจ้ง (Admin Note Feedback)
+ *   - ระบบลบรายการแจ้งปัญหาที่ไม่เกี่ยวข้องออกจากระบบ
+ * ==============================================================================
+ */
+
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -9,23 +21,30 @@ import Swal from 'sweetalert2';
 import api from '../../services/api';
 import CustomSelect from '../../components/CustomSelect';
 
+/**
+ * คอมโพเนนต์หน้าจัดการปัญหาระบบสำหรับแอดมิน
+ */
 const AdminIssues = () => {
-  const [issues, setIssues] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
+  // ─── States สำหรับรายการปัญหาและตัวกรอง ───
+  const [issues, setIssues] = useState([]);               // รายการปัญหาทั้งหมดที่ดึงมาจาก API
+  const [loading, setLoading] = useState(true);            // สถานะกำลังโหลดข้อมูล
+  const [searchTerm, setSearchTerm] = useState('');        // ข้อความค้นหาในตาราง
+  const [statusFilter, setStatusFilter] = useState('');    // ตัวกรองสถานะ: PENDING, IN_PROGRESS, RESOLVED, REJECTED
+  const [priorityFilter, setPriorityFilter] = useState(''); // ตัวกรองระดับความเร่งด่วน: LOW, MEDIUM, HIGH, URGENT
 
-  // Selected issue for status update modal
-  const [selectedIssue, setSelectedIssue] = useState(null);
-  const [newStatus, setNewStatus] = useState('');
-  const [adminNote, setAdminNote] = useState('');
-  const [updating, setUpdating] = useState(false);
+  // ─── States สำหรับโมดอลอัปเดตสถานะปัญหา ───
+  const [selectedIssue, setSelectedIssue] = useState(null); // ปัญหาที่เลือกเพื่ออัปเดต
+  const [newStatus, setNewStatus] = useState('');          // สถานะใหม่ที่จะบันทึก
+  const [adminNote, setAdminNote] = useState('');          // ข้อความตอบกลับจากแอดมิน
+  const [updating, setUpdating] = useState(false);         // สถานะกำลังบันทึกการอัปเดต
 
   useEffect(() => {
     fetchIssues();
   }, [statusFilter, priorityFilter]);
 
+  /**
+   * ดึงรายการปัญหาทั้งหมดจากระบบตามเงื่อนไขตัวกรอง
+   */
   const fetchIssues = async () => {
     try {
       setLoading(true);
@@ -48,12 +67,19 @@ const AdminIssues = () => {
     }
   };
 
+  /**
+   * เปิดหน้าต่างโมดอลเพื่ออัปเดตสถานะและพิมพ์ข้อความตอบกลับ
+   * @param {Object} issue
+   */
   const handleOpenUpdateModal = (issue) => {
     setSelectedIssue(issue);
     setNewStatus(issue.status);
     setAdminNote(issue.adminNote || '');
   };
 
+  /**
+   * บันทึกการอัปเดตสถานะปัญหาและส่ง Admin Note
+   */
   const handleUpdateStatus = async (e) => {
     e.preventDefault();
     if (!selectedIssue) return;
@@ -88,6 +114,10 @@ const AdminIssues = () => {
     }
   };
 
+  /**
+   * ลบรายการแจ้งปัญหาออกจากระบบ
+   * @param {number} id
+   */
   const handleDeleteIssue = async (id) => {
     const result = await Swal.fire({
       title: 'ยืนยันการลบเรื่องนี้?',

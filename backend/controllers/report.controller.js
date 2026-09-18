@@ -1,9 +1,26 @@
+/**
+ * ============================================================================
+ * ระบบติดตามและประเมินผลโครงการตามยุทธศาสตร์ (BRU Strategic Tracking System)
+ * ไฟล์: backend/controllers/report.controller.js
+ * หน้าที่: คอนโทรลเลอร์สำหรับออกรายงานและส่งออกข้อมูล (Report & Export Controller)
+ *          - ฝังฟอนต์ภาษาไทย (Sarabun / Thai-Regular) ใน PDFKit (registerThaiFonts)
+ *          - ประเมินสถานะแจ้งเตือนโครงการล่าช้า/เกินงบ (getProjectWarningState)
+ *          - ดึงชุดข้อมูลรายงานตามประเภทและสิทธิ์ (fetchReportDataset)
+ *          - แสดงรายงานสรุปบนหน้าเว็บ (getReport)
+ *          - ส่งออกไฟล์ CSV, Excel (.xlsx) ด้วย ExcelJS, และ PDF ด้วย PDFKit
+ * ============================================================================
+ */
+
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 const prisma = require('../config/prisma');
 
+/**
+ * ลงทะเบียนฟอนต์ภาษาไทยสำหรับสร้างเอกสาร PDF (Thai Fonts Registration)
+ * @param {PDFDocument} doc - อินสแตนซ์ของ PDFKit Document
+ */
 const registerThaiFonts = (doc) => {
   const fontRegular = path.join(__dirname, '../fonts/Thai-Regular.ttf');
   const fontBold = path.join(__dirname, '../fonts/Thai-Bold.ttf');
@@ -12,12 +29,16 @@ const registerThaiFonts = (doc) => {
     doc.registerFont('ThaiRegular', fontRegular);
     doc.registerFont('ThaiBold', fontBold);
   } else {
-    // Fallback standard fonts if custom fonts missing
+    // กรณีไม่มีไฟล์ฟอนต์ภาษาไทย ให้ใช้ Standard Fonts แทน
     doc.registerFont('ThaiRegular', 'Helvetica');
     doc.registerFont('ThaiBold', 'Helvetica-Bold');
   }
 };
 
+/**
+ * วิเคราะห์สถานะเตือนภัยของโครงการ (Project Warning State Analyzer)
+ * @returns {string|null} 'RED' (วิกฤต), 'WARN' (เฝ้าระวัง), หรือ null (ปกติ)
+ */
 const getProjectWarningState = (budget, spent, target, completed, progress, endDate) => {
   const budgetRatio = budget > 0 ? (spent / budget) * 100 : 0;
   const isExpired = endDate ? new Date(endDate) < new Date() : false;
@@ -34,7 +55,14 @@ const getProjectWarningState = (budget, spent, target, completed, progress, endD
   return null;
 };
 
-// Helper to query and prepare report datasets
+/**
+ * ฟังก์ชันช่วยดึงและจัดกลุ่มชุดข้อมูลสำหรับสร้างรายงาน
+ * @param {string} type - ประเภทชุดข้อมูล ('project' หรืออื่นๆ)
+ * @param {number|string} fiscalYearId - รหัสปีงบประมาณ
+ * @param {Object} user - ข้อมูลผู้ใช้เพื่อกรองสิทธิ์ RBAC
+ * @param {string} statusFilter - ตัวกรองสถานะ
+ * @returns {Promise<Array>} รายการข้อมูลที่พร้อมนำไปออกรายงาน
+ */
 const fetchReportDataset = async (type, fiscalYearId, user, statusFilter) => {
   const where = {};
   if (fiscalYearId) {

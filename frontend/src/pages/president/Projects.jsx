@@ -1,3 +1,15 @@
+/** ==============================================================================
+ * 📁 PAGE: PRESIDENT PROJECTS (หน้ารายการโครงการยุทธศาสตร์ระดับสถาบัน)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   หน้ารวมโครงการยุทธศาสตร์ทั้งหมดทั่วทั้งมหาวิทยาลัยราชภัฏบุรีรัมย์สำหรับอธิการบดี
+ *   - ติดตามผลงานความก้าวหน้ารายโครงการจากทุกคณะและทุกภาควิชา
+ *   - ระบบค้นหาและตัวกรองตามปีงบประมาณ คณะ และภาควิชา
+ *   - ตารางแสดงผลสัมฤทธิ์ KPI ร้อยละความสำเร็จ และยอดการเบิกจ่ายงบประมาณ
+ *   - ลิงก์ตรงเข้าสู่หน้ารายงานโครงการฉบับเต็มเพื่อตรวจสอบรายละเอียดเชิงลึก
+ * ==============================================================================
+ */
+
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
@@ -10,26 +22,29 @@ import {
   FiBriefcase
 } from 'react-icons/fi';
 
+/**
+ * คอมโพเนนต์หน้ารายการโครงการระดับมหาวิทยาลัยสำหรับอธิการบดี
+ */
 const PresidentProjects = () => {
   const [searchParams] = useSearchParams();
 
-  // Projects list state
-  const [projects, setProjects] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-  const [loading, setLoading] = useState(false);
+  // ─── States สำหรับรายการโครงการและการแบ่งหน้า ───
+  const [projects, setProjects] = useState([]);                              // รายการโครงการทั้งหมด
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 }); // ข้อมูลการแบ่งหน้า
+  const [loading, setLoading] = useState(false);                             // สถานะกำลังโหลดข้อมูล
 
-  // Filters State
-  const [search, setSearch] = useState('');
-  const [fiscalYearId, setFiscalYearId] = useState('');
-  const [departmentId, setDepartmentId] = useState('');
-  const [facultyId, setFacultyId] = useState(searchParams.get('facultyId') || '');
+  // ─── States สำหรับตัวกรอง ───
+  const [search, setSearch] = useState('');                                 // คำค้นหาชื่อโครงการ
+  const [fiscalYearId, setFiscalYearId] = useState('');                     // รหัสปีงบประมาณ
+  const [departmentId, setDepartmentId] = useState('');                     // รหัสภาควิชา
+  const [facultyId, setFacultyId] = useState(searchParams.get('facultyId') || ''); // รหัสคณะ
 
-  // Dropdown lists
+  // ─── Master Data สำหรับตัวเลือกใน Select Filter ───
   const [fiscalYears, setFiscalYears] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [faculties, setFaculties] = useState([]);
 
-  // Load initial dropdowns
+  // โหลดรายการปีงบประมาณ ภาควิชา และคณะเมื่อเริ่มต้น
   useEffect(() => {
     const fetchFilters = async () => {
       try {
@@ -52,7 +67,10 @@ const PresidentProjects = () => {
     fetchFilters();
   }, []);
 
-  // Fetch projects list matching filters
+  /**
+   * ดึงรายการโครงการยุทธศาสตร์ระดับสถาบันตามเงื่อนไขตัวกรอง
+   * @param {number} page - ลำดับหน้าที่ต้องการดึงข้อมูล
+   */
   const fetchProjects = async (page = 1) => {
     setLoading(true);
     try {

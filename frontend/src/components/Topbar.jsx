@@ -1,3 +1,23 @@
+/** ==============================================================================
+ * 📦 COMPONENT: TOPBAR (แถบด้านบนระบบ ติดตามการขับเคลื่อนยุทธศาสตร์ BRU)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   แถบเครื่องมือด้านบนสุด (Sticky Topbar) ของระบบ
+ *   - แสดงปุ่ม Toggle Sidebar (สำหรับ Mobile Drawer และ Desktop Collapse)
+ *   - แสดงชื่อหน้าปัจจุบันแบบไดนามิก (Dynamic Page Title) ปรับเปลี่ยนตาม Route และ Role
+ *   - ระบบการแจ้งเตือนแบบเรียลไทม์ (Notifications):
+ *     1. แจ้งเตือนข้อสั่งการจากอธิการบดี / คณบดี (Executive Directives)
+ *     2. แจ้งเตือนโครงการใกล้ถึงกำหนดส่ง / เกินกำหนดส่ง (Project Deadline Alerts)
+ *     3. แจ้งเตือนอัปเดตสถานะปัญหาที่เคยแจ้งไว้ (Issue Notifications)
+ *     4. ระบบลบการแจ้งเตือน (ลบเดี่ยว / ลบหลายรายการ / ล้างทั้งหมด)
+ *   - เมนูข้อมูลส่วนตัว (Profile Dropdown):
+ *     - ดูโปรไฟล์ผู้ใช้ และเปลี่ยนรูปประจำตัว (Avatar)
+ *     - เมนูเปลี่ยนรหัสผ่าน (Change Password Modal)
+ *     - เมนูแจ้งปัญหาการใช้งานระบบ (Report Issue Modal)
+ *     - เมนูออกจากระบบ (Logout)
+ * ==============================================================================
+ */
+
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -9,18 +29,31 @@ import ReportIssueModal from './ReportIssueModal';
 import ProfileModal from './ProfileModal';
 import { getImageUrl, compressImage } from '../utils/imageUrl';
 
+/**
+ * คอมโพเนนต์แถบเมนูด้านบน (Topbar)
+ * @param {Object} props
+ * @param {Function} props.toggleSidebar - สลับเปิด/ปิด Sidebar บนมือถือ
+ * @param {Function} props.toggleCollapse - สลับย่อ/ขยาย Sidebar บนเดสก์ท็อป
+ * @param {boolean} props.isCollapsed - สถานะการย่อแถบเมนูด้านข้าง
+ */
 const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
-  const { user, setUser, logout, changePassword } = useContext(AuthContext);
+  const { user, setUser, logout, changePassword } = useContext(AuthContext); // ข้อมูลผู้ใช้และฟังก์ชันระบบความปลอดภัย
   const navigate = useNavigate();
   const location = useLocation();
-  const avatarInputRef = useRef(null);
+  const avatarInputRef = useRef(null); // Ref สำหรับเลือกไฟล์รูปประจำตัว
 
-  // Dynamic page title from pathname, query params, and user role
+  /**
+   * คำนวณชื่อหน้าปัจจุบันแบบไดนามิกตาม Path, Query Params, และ Role ของผู้ใช้งาน
+   * @param {string} pathname
+   * @param {string} search
+   * @param {string} role
+   * @returns {string}
+   */
   const getPageTitle = (pathname, search, role) => {
     const params = new URLSearchParams(search);
     const tab = params.get('tab');
 
-    // Root path '/'
+    // หน้าแรก ('/')
     if (pathname === '/') {
       if (role === 'ADMIN') return 'แดชบอร์ดภาพรวมระบบ';
       if (role === 'TEACHER') return 'แดชบอร์ดงานของฉัน';
@@ -67,10 +100,14 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     return 'ระบบติดตามการทำงานโครงการยุทธศาสตร์';
   };
   const pageTitle = getPageTitle(location.pathname, location.search, user?.role);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+
+  // ─── States สำหรับโปรไฟล์และการแจ้งเตือน ───
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);  // สถานะกำลังประมวลผลอัปโหลดรูปโปรไฟล์
+  const [dropdownOpen, setDropdownOpen] = useState(false);        // สถานะเปิด/ปิดเมนู Dropdown โปรไฟล์
+  const [notifOpen, setNotifOpen] = useState(false);              // สถานะเปิด/ปิดแถบแจ้งเตือน
+  const [notifications, setNotifications] = useState([]);          // รายการแจ้งเตือนทั้งหมด
+  
+  // รายการ ID การแจ้งเตือนที่ผู้ใช้กดลบไปแล้ว (เก็บใน LocalStorage แยกตาม user.id)
   const [clearedNotifIds, setClearedNotifIds] = useState(() => {
     if (!user?.id) return [];
     try {
@@ -80,6 +117,8 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
       return [];
     }
   });
+
+  // รายการ ID การแจ้งเตือนที่ผู้ใช้กดอ่านแล้ว (เก็บใน LocalStorage แยกตาม user.id)
   const [readNotifIds, setReadNotifIds] = useState(() => {
     if (!user?.id) return [];
     try {
@@ -89,18 +128,25 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
       return [];
     }
   });
-  const [selectedNotifIds, setSelectedNotifIds] = useState([]);
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const [issueModalOpen, setIssueModalOpen] = useState(false);
-  const [issueModalTab, setIssueModalTab] = useState('form');
+  const [selectedNotifIds, setSelectedNotifIds] = useState([]);  // รายการ ID การแจ้งเตือนที่ถูกเลือก Checkbox
 
+  // ─── States ควบคุมหน้าต่างโมดอลต่างๆ ───
+  const [modalOpen, setModalOpen] = useState(false);             // โมดอลเปลี่ยนรหัสผ่าน
+  const [profileModalOpen, setProfileModalOpen] = useState(false); // โมดอลดูข้อมูลโปรไฟล์
+  const [issueModalOpen, setIssueModalOpen] = useState(false);   // โมดอลแจ้งปัญหาการใช้งาน
+  const [issueModalTab, setIssueModalTab] = useState('form');     // แท็บในโมดอลแจ้งปัญหา ('form' หรือ 'history')
+
+  // States สำหรับฟอร์มเปลี่ยนรหัสผ่าน
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /**
+   * จัดการอัปโหลดรูปภาพประจำตัว (Avatar)
+   * รองรับการบีบอัดภาพ (Compress) อัตโนมัติก่อนส่งขึ้นเซิร์ฟเวอร์
+   */
   const handleAvatarUpload = async (e) => {
     try {
       const file = e.target.files?.[0];
@@ -159,7 +205,8 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     }
   }, [user?.id]);
 
-  // Fetch notifications for all roles (Issues updates for users, pending issues for Admin, deadline projects for Teachers)
+  // ─── ดึงข้อมูลการแจ้งเตือนตามบทบาทผู้ใช้งาน (Notification Engine) ───
+  // อัปเดตทุก 10 วินาที และเมื่อหน้าต่างกลับมา Active (Window Focus)
   useEffect(() => {
     if (!user) return;
 
@@ -167,7 +214,7 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
       try {
         const combinedNotifs = [];
 
-        // 1. Fetch system issue notifications
+        // 1. ดึงการแจ้งเตือนรายงานปัญหาระบบ (Issues Notifications)
         try {
           const res = await api.get('/issues/notifications');
           const issueNotifs = res.data.data || [];
@@ -176,7 +223,7 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
           console.error('Failed to load issue notifications:', err);
         }
 
-        // 2. Fetch near-deadline projects for TEACHER role
+        // 2. ดึงการแจ้งเตือนสำหรับอาจารย์ (TEACHER): โครงการใกล้ครบกำหนดส่งผลงาน (Deadline)
         if (user?.role === 'TEACHER') {
           try {
             const response = await api.get('/projects', { params: { limit: 100 } });
@@ -208,7 +255,7 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
             console.error('Failed to load project notifications:', err);
           }
 
-          // 3. Fetch Executive Directives notifications for TEACHER role (separate DEAN and PRESIDENT)
+          // 3. ดึงข้อสั่งการของผู้บริหาร (Executive Directives) สำหรับอาจารย์ผู้รับผิดชอบ
           try {
             const response = await api.get('/projects', { params: { limit: 100 } });
             const teacherProjects = response.data.projects || [];
@@ -255,9 +302,7 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
           }
         }
 
-        // Attach standardized timestamp and sort strictly:
-        // 1. Unread notifications first
-        // 2. Newest timestamp first
+        // จัดเรียงการแจ้งเตือน: รายการที่ยังไม่อ่านมาก่อน และเวลาล่าสุดอยู่บนสุด
         combinedNotifs.forEach(n => {
           n.timestamp = n.timestamp || n.directiveUpdatedAt || n.createdAt || n.updatedAt || n.endDate || new Date();
         });
@@ -266,9 +311,9 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
           const aRead = readNotifIds.includes(a.id) ? 1 : 0;
           const bRead = readNotifIds.includes(b.id) ? 1 : 0;
           if (aRead !== bRead) {
-            return aRead - bRead; // Unread (0) comes before read (1)
+            return aRead - bRead; // รายการยังไม่อ่าน (0) แสดงก่อน
           }
-          return new Date(b.timestamp) - new Date(a.timestamp); // Newest first
+          return new Date(b.timestamp) - new Date(a.timestamp); // ใหม่สุดอยู่บน
         });
 
         setNotifications(combinedNotifs);
@@ -287,10 +332,15 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     };
   }, [user]);
 
-  // Filter out cleared notifications
+  // กรองรายการแจ้งเตือนที่ไม่ได้ถูกกดลบ
   const visibleNotifications = notifications.filter(n => !clearedNotifIds.includes(n.id));
+  // รายการที่ยังไม่ได้เปิดอ่าน
   const unreadNotifications = visibleNotifications.filter(n => !readNotifIds.includes(n.id));
 
+  /**
+   * ทำเครื่องหมายรายการแจ้งเตือนว่าอ่านแล้ว
+   * @param {string} id
+   */
   const markNotifAsRead = (id) => {
     if (!readNotifIds.includes(id)) {
       const updated = [...readNotifIds, id];
@@ -301,6 +351,10 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     }
   };
 
+  /**
+   * บันทึกรายการแจ้งเตือนที่ถูกลบลง LocalStorage
+   * @param {Array<string>} ids
+   */
   const saveClearedIds = (ids) => {
     setClearedNotifIds(ids);
     if (user?.id) {
@@ -308,6 +362,9 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     }
   };
 
+  /**
+   * ลบการแจ้งเตือนรายการเดียว
+   */
   const handleClearSingleNotification = (id, e) => {
     e.stopPropagation();
     const updated = [...clearedNotifIds, id];
@@ -315,6 +372,9 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     setSelectedNotifIds(prev => prev.filter(item => item !== id));
   };
 
+  /**
+   * ลบการแจ้งเตือนตามรายการที่เลือก Checkbox
+   */
   const handleClearSelectedNotifications = () => {
     if (selectedNotifIds.length === 0) return;
     Swal.fire({
@@ -341,6 +401,9 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     });
   };
 
+  /**
+   * ล้างการแจ้งเตือนทั้งหมดออกจากระบบ
+   */
   const handleClearAllNotifications = () => {
     if (visibleNotifications.length === 0) return;
     Swal.fire({
@@ -368,6 +431,9 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     });
   };
 
+  /**
+   * สลับเลือก/ไม่เลือก Checkbox ของการแจ้งเตือน
+   */
   const toggleSelectNotif = (id, e) => {
     e.stopPropagation();
     setSelectedNotifIds(prev => 
@@ -394,7 +460,7 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     setIssueModalOpen(true);
   };
 
-  // ESC key listener for profile & password modals
+  // ดักจับปุ่ม Escape เพื่อปิดหน้าต่างโมดอล
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
@@ -408,6 +474,9 @@ const Topbar = ({ toggleSidebar, toggleCollapse, isCollapsed }) => {
     return () => window.removeEventListener('keydown', handleEsc);
   }, [profileModalOpen, modalOpen]);
 
+  /**
+   * จัดการบันทึกเปลี่ยนรหัสผ่านผู้ใช้งาน
+   */
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {

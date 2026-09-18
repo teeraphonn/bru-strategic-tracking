@@ -1,3 +1,19 @@
+/** ==============================================================================
+ * 🔐 PAGE: LOGIN (หน้าเข้าสู่ระบบติดตามการขับเคลื่อนยุทธศาสตร์ มรภ.บุรีรัมย์)
+ * ==============================================================================
+ * คำอธิบาย:
+ *   หน้าจอลงชื่อเข้าใช้งานระบบ (Authentication Page)
+ *   - ด้านซ้าย: ภาพสไลด์โชว์ทัศนียภาพมหาวิทยาลัยราชภัฏบุรีรัมย์ (Slideshow Carousel)
+ *   - ด้านขวา: ฟอร์มระบุชื่อผู้ใช้และรหัสผ่าน พร้อมการตรวจสอบความถูกต้องด้วย react-hook-form
+ *   - ปุ่มสลับดูรหัสผ่าน (Show/Hide Password)
+ *   - แผงบัญชีทดสอบระบบ (Demo Accounts Selector) รองรับการคลิกเพื่อกรอกอัตโนมัติ 4 บทบาท:
+ *     1. ผู้ดูแลระบบ (Admin)
+ *     2. อธิการบดี (President)
+ *     3. คณบดีคณะวิทยาศาสตร์ (Dean)
+ *     4. อาจารย์ผู้รับผิดชอบโครงการ สาขาวิทยาการคอมพิวเตอร์ (Teacher)
+ * ==============================================================================
+ */
+
 import React, { useContext, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -5,16 +21,23 @@ import { AuthContext } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
 import { FiEye, FiEyeOff, FiUser, FiLock, FiInfo, FiChevronDown } from 'react-icons/fi';
 
+// รายการภาพทัศนียภาพสำหรับแสดงสไลด์โชว์พื้นหลัง
 const slideshowImages = ['/login1.jpg', '/login2.jpg', '/login3.jpg'];
 
+/**
+ * คอมโพเนนต์หน้าเข้าสู่ระบบ (Login)
+ */
 const Login = () => {
-  const { login } = useContext(AuthContext);
+  const { login } = useContext(AuthContext); // ฟังก์ชันเข้าสู่ระบบจาก Context
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showDemoAccounts, setShowDemoAccounts] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // ─── States สำหรับการควบคุม UI และสไลด์โชว์ ───
+  const [loading, setLoading] = useState(false);                     // สถานะกำลังตรวจสอบข้อมูลเข้าสู่ระบบ
+  const [showPassword, setShowPassword] = useState(false);           // แสดง/ซ่อนรหัสผ่านใน input
+  const [showDemoAccounts, setShowDemoAccounts] = useState(false);   // แสดง/ซ่อนแผงเลือกบัญชีทดสอบ
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);     // ลำดับรูปภาพสไลด์โชว์ปัจจุบัน
+
+  // เลื่อนเปลี่ยนภาพสไลด์โชว์อัตโนมัติทุกๆ 3 วินาที
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % slideshowImages.length);
@@ -22,8 +45,13 @@ const Login = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Hook สำหรับจัดการฟอร์มและความผิดพลาดของฟอร์ม
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
+  /**
+   * ฟังก์ชันส่งข้อมูลเข้าสู่ระบบ (Submit Login)
+   * @param {Object} data - { username, password }
+   */
   const onSubmit = async (data) => {
     setLoading(true);
     try {
