@@ -451,7 +451,13 @@ const DeanDashboard = ({ isAdminView = false, selectedFacultyId = '' }) => {
                 <span className="text-xs text-sky-300 font-bold">{healthCheck.totalSpent.toLocaleString()} ฿</span>
               </div>
             </div>
-            <div className="text-[10px] text-violet-300/70 mt-2 truncate">จากงบประมาณรวม {healthCheck.totalBudget.toLocaleString()} ฿</div>
+            <div className="mt-2 flex items-center">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-400/15 border border-amber-400/30 text-amber-200 text-[10px] font-bold shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <span className="text-violet-200/90 font-medium">จากงบประมาณรวม</span>
+                <span className="text-amber-300 font-black">{healthCheck.totalBudget.toLocaleString()} ฿</span>
+              </span>
+            </div>
           </div>
 
           <div className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
